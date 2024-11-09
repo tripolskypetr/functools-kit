@@ -1,6 +1,5 @@
 export { randomString } from './utils/randomString';
 export { compareFulltext } from './utils/compareFulltext';
-export { promiseState, promiseValue } from './utils/promiseState';
 
 export { compareArray } from './utils/compareArray';
 export { isObject } from './utils/isObject';
@@ -12,12 +11,16 @@ export { singlerun, Task } from './utils/hof/singlerun';
 export { cancelable, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL } from './utils/hof/cancelable';
 export { debounce } from './utils/hof/debounce';
 export { queued } from './utils/hof/queued';
+export { execpool } from './utils/hof/execpool';
+export { retry } from './utils/hof/retry';
 export { cached } from './utils/hof/cached';
 export { memoize } from './utils/hof/memoize';
 export { trycatch } from './utils/hof/trycatch';
 
 export { sleep } from './utils/sleep';
 export { deepFlat } from './utils/deepFlat';
+
+export { createAwaiter } from './utils/createAwaiter';
 
 export { BehaviorSubject } from './utils/rx/BehaviorSubject';
 export { EventEmitter } from './utils/rx/EventEmitter';

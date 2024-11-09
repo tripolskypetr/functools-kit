@@ -17,16 +17,6 @@ declare const randomString: () => string;
 declare const compareFulltext: <T extends Record<string, any>>(data: T, search: string, ...keys: string[]) => boolean;
 
 /**
- * Determines the state of a given promise.
- *
- * @param promise - The promise to check the state of.
- *
- * @returns - The state of the promise, which can be either 'sync' or 'async'.
- */
-declare const promiseState: <T = any>(promise: Promise<T> | T) => "sync" | "async";
-declare const promiseValue: <T = any>(promise: Promise<T> | T) => T | null;
-
-/**
  * Compares two arrays and determines if they are equal.
  *
  * @param a_arr - The first array to compare.
@@ -131,7 +121,7 @@ declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & ICle
  * @template T - The type of the result of the wrapped function.
  * @template P - The types of the parameters of the wrapped function.
  */
-interface IWrappedFn$1<T extends any = any, P extends any[] = any> {
+interface IWrappedFn$3<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
     cancel(): void;
 }
@@ -150,7 +140,7 @@ declare const CANCELED_SYMBOL: unique symbol;
  * @template T - The type of the promise's resolved value.
  * @template P - The type of the promise function's arguments.
  */
-declare const cancelable: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedFn$1<T, P>;
+declare const cancelable: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedFn$3<T, P>;
 
 /**
  * Interface representing an object that can be cleared and flushed.
@@ -175,7 +165,7 @@ declare const debounce: <T extends (...args: any[]) => any>(run: T, delay?: numb
  * @template T - The type of the value returned by the wrapped function.
  * @template P - The types of the parameters of the wrapped function.
  */
-interface IWrappedFn<T extends any = any, P extends any[] = any> {
+interface IWrappedFn$2<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
     clear(): void;
     cancel(): void;
@@ -188,7 +178,66 @@ interface IWrappedFn<T extends any = any, P extends any[] = any> {
  * @param promise - The promise function to be wrapped.
  * @returns - The wrapped function.
  */
-declare const queued: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedFn<T, P>;
+declare const queued: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedFn$2<T, P>;
+
+/**
+ * Represents the configuration options for the execution pool.
+ *
+ * @interface
+ * @property maxExec - The maximum number of executions allowed concurrently.
+ * @property delay - The delay in milliseconds between executions.
+ */
+interface IConfig$1 {
+    maxExec: number;
+    delay: number;
+}
+/**
+ * Represents a wrapped function that returns a promise.
+ *
+ * @template T - The type of the result of the wrapped function.
+ * @template P - The types of the parameters of the wrapped function.
+ *
+ * @interface
+ * @function
+ * @param args - The arguments to pass to the wrapped function.
+ * @returns A promise that resolves with the result of the wrapped function.
+ * @function clear - Clears all pending executions in the execution pool.
+ */
+interface IWrappedFn$1<T extends any = any, P extends any[] = any> {
+    (...args: P): Promise<T>;
+    clear(): void;
+}
+/**
+ * Creates an execution pool for asynchronous functions with a limited concurrency.
+ *
+ * @template T - The type of the result of the wrapped function.
+ * @template P - The types of the parameters of the wrapped function.
+ *
+ * @function
+ * @param run - The function to be executed in the pool.
+ * @param options - Optional configuration options for the execution pool.
+ * @returns A wrapped function that executes asynchronously within the execution pool.
+ */
+declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, { maxExec, delay, }?: Partial<IConfig$1>) => IWrappedFn$1<T, P>;
+
+/**
+ * Represents a wrapped function that returns a promise.
+ * @template T - The type of the promise's resolved value.
+ * @template P - The type of the function's arguments.
+ */
+interface IWrappedFn<T extends any = any, P extends any[] = any> {
+    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    cancel(): void;
+    clear(): void;
+}
+/**
+ * Retries a function multiple times until it succeeds or reaches the maximum number of retries.
+ *
+ * @param run - The function to run.
+ * @param count - The maximum number of retries (default is 5).
+ * @returns - The wrapped function that can be canceled.
+ */
+declare const retry: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count?: number) => IWrappedFn<T, P>;
 
 /**
  * Interface for objects that can be cleared.
@@ -294,6 +343,30 @@ declare const sleep: (timeout?: number) => Promise<void>;
  * @template T - The type of elements in the input array.
  */
 declare const deepFlat: <T = any>(arr?: T[]) => T[];
+
+/**
+ * Represents an object used for awaiting a value or a promise.
+ *
+ * @template T - The type of the value to be resolved.
+ *
+ * @interface
+ * @function
+ * @param value - The value or promise to resolve.
+ * @param reason - The reason for rejecting the promise.
+ */
+interface IAwaiter<T extends unknown> {
+    resolve(value: T | PromiseLike<T>): void;
+    reject(reason?: any): void;
+}
+/**
+ * Creates an awaiter object along with a promise.
+ *
+ * @template T - The type of the value to be resolved.
+ *
+ * @function
+ * @returns An array containing the promise and the awaiter object.
+ */
+declare const createAwaiter: <T extends unknown>() => [Promise<T>, IAwaiter<T>];
 
 type Function$2 = (...args: any[]) => any;
 /**
@@ -1124,4 +1197,4 @@ type TObserver<Data = void> = TObserver$1<Data>;
 type TObservable<Data = void> = TObservable$1<Data>;
 type TBehaviorSubject<Data = unknown> = TBehaviorSubject$1<Data>;
 
-export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, Observer, Operator, Source, Subject, type TBehaviorSubject, type TObservable, type TObserver, type TSubject, Task, cached, cancelable, compareArray, compareFulltext, compose, debounce, deepFlat, formatText, isObject, memoize, promiseState, promiseValue, queued, randomString, singlerun, singleshot, sleep, trycatch };
+export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, Observer, Operator, Source, Subject, type TBehaviorSubject, type TObservable, type TObserver, type TSubject, Task, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, execpool, formatText, isObject, memoize, queued, randomString, retry, singlerun, singleshot, sleep, trycatch };
