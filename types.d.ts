@@ -56,10 +56,10 @@ interface IParams {
 declare const formatText: (raw: string, template: string, { symbol, allowed, replace, }?: IParams) => string;
 
 /**
- * @interface IClearable
+ * @interface ISingleshotClearable
  * @description An interface representing an object that can be cleared.
  */
-interface IClearable$5 {
+interface ISingleshotClearable {
     clear: () => void;
 }
 /**
@@ -69,13 +69,13 @@ interface IClearable$5 {
  * @param run - The function to be executed once.
  * @returns - The executed function with additional "clear" method to reset the execution state.
  */
-declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & IClearable$5;
+declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & ISingleshotClearable;
 
 /**
  * Interface for classes that can be cleared.
  * @interface
  */
-interface IClearable$4 {
+interface ISinglerunClearable {
     clear: () => void;
 }
 /**
@@ -114,14 +114,14 @@ declare class Task {
  * @param run - The function to be executed.
  * @returns - The wrapped function with additional clear functionality.
  */
-declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & IClearable$4 & ITaskStatus;
+declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & ISinglerunClearable & ITaskStatus;
 
 /**
  * Represents a wrapped function that returns a promise.
  * @template T - The type of the result of the wrapped function.
  * @template P - The types of the parameters of the wrapped function.
  */
-interface IWrappedFn$3<T extends any = any, P extends any[] = any> {
+interface IWrappedCancelableFn<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
     cancel(): void;
 }
@@ -140,12 +140,12 @@ declare const CANCELED_SYMBOL: unique symbol;
  * @template T - The type of the promise's resolved value.
  * @template P - The type of the promise function's arguments.
  */
-declare const cancelable: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedFn$3<T, P>;
+declare const cancelable: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedCancelableFn<T, P>;
 
 /**
  * Interface representing an object that can be cleared and flushed.
  */
-interface IClearable$3 {
+interface IDebounceClearable {
     clear: () => void;
     flush: () => void;
     pending: () => boolean;
@@ -158,14 +158,14 @@ interface IClearable$3 {
  * @param [delay=1000] - The delay in milliseconds before executing the debounced function.
  * @returns - The debounced function with additional methods for clearing and flushing.
  */
-declare const debounce: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IClearable$3;
+declare const debounce: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IDebounceClearable;
 
 /**
  * Represents a wrapped function that returns a Promise.
  * @template T - The type of the value returned by the wrapped function.
  * @template P - The types of the parameters of the wrapped function.
  */
-interface IWrappedFn$2<T extends any = any, P extends any[] = any> {
+interface IWrappedQueuedFn<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
     clear(): void;
     cancel(): void;
@@ -178,7 +178,7 @@ interface IWrappedFn$2<T extends any = any, P extends any[] = any> {
  * @param promise - The promise function to be wrapped.
  * @returns - The wrapped function.
  */
-declare const queued: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedFn$2<T, P>;
+declare const queued: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedQueuedFn<T, P>;
 
 /**
  * Represents the configuration options for the execution pool.
@@ -187,7 +187,7 @@ declare const queued: <T extends unknown = any, P extends any[] = any[]>(promise
  * @property maxExec - The maximum number of executions allowed concurrently.
  * @property delay - The delay in milliseconds between executions.
  */
-interface IConfig$2 {
+interface IConfig$1 {
     maxExec: number;
     delay: number;
 }
@@ -203,7 +203,7 @@ interface IConfig$2 {
  * @returns A promise that resolves with the result of the wrapped function.
  * @function clear - Clears all pending executions in the execution pool.
  */
-interface IWrappedFn$1<T extends any = any, P extends any[] = any> {
+interface IWrappedExecpoolFn<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T>;
     clear(): void;
 }
@@ -218,14 +218,14 @@ interface IWrappedFn$1<T extends any = any, P extends any[] = any> {
  * @param options - Optional configuration options for the execution pool.
  * @returns A wrapped function that executes asynchronously within the execution pool.
  */
-declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, { maxExec, delay, }?: Partial<IConfig$2>) => IWrappedFn$1<T, P>;
+declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, { maxExec, delay, }?: Partial<IConfig$1>) => IWrappedExecpoolFn<T, P>;
 
 /**
  * Represents a wrapped function that returns a promise.
  * @template T - The type of the promise's resolved value.
  * @template P - The type of the function's arguments.
  */
-interface IWrappedFn<T extends any = any, P extends any[] = any> {
+interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
     cancel(): void;
     clear(): void;
@@ -237,14 +237,14 @@ interface IWrappedFn<T extends any = any, P extends any[] = any> {
  * @param count - The maximum number of retries (default is 5).
  * @returns - The wrapped function that can be canceled.
  */
-declare const retry: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count?: number) => IWrappedFn<T, P>;
+declare const retry: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count?: number) => IWrappedRetryFn<T, P>;
 
 /**
  * Interface for objects that can be cleared.
  *
  * @interface
  */
-interface IClearable$2 {
+interface IClearableCached {
     clear: () => void;
 }
 /**
@@ -255,14 +255,22 @@ interface IClearable$2 {
  * @param run - The function to be cached.
  * @returns - The cached function with additional clear method.
  */
-declare const cached: <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T) => T & IClearable$2;
+declare const cached: <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T) => T & IClearableCached;
 
 /**
  * Interface representing a clearable object.
  * @template K - The type of the key.
  */
-interface IClearable$1<K = string> {
+interface IClearableMemoize<K = string> {
     clear: (key?: K) => void;
+}
+/**
+ * Represents a reference to a value of type T.
+ *
+ * @template T - The type of the value referenced by this reference.
+ */
+interface IRefMemoize<T = any> {
+    current: T;
 }
 /**
  * Represents a generic control interface with key-value pair operations.
@@ -270,7 +278,7 @@ interface IClearable$1<K = string> {
  * @template V The type of values.
  * @interface
  */
-interface IControl<K, V> {
+interface IControlMemoize<K, V> {
     /**
      * Adds a key-value pair to the control.
      * @param key The key to add.
@@ -294,18 +302,18 @@ interface IControl<K, V> {
  * @param run - The original function to be memoized
  * @returns - A memoized version of the original function with the ability to clear the cache
  */
-declare const memoize: <T extends (...args: A) => any, A extends any[], K = string>(key: (args: A) => K, run: T) => T & IClearable$1<K> & IControl<K, ReturnType<T>>;
+declare const memoize: <T extends (...args: A) => any, A extends any[], K = string>(key: (args: A) => K, run: T) => T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>>;
 
-interface IError extends Error {
+interface IErrorTrycatch extends Error {
 }
 /**
  * Represents a configuration interface.
  *
  * @interface
  */
-interface IConfig$1 {
+interface IControllTrycatch {
     allowedErrors?: {
-        new (): IError;
+        new (): IErrorTrycatch;
     }[];
     fallback?: (error: Error) => void;
     defaultValue: null | false;
@@ -325,14 +333,14 @@ interface IConfig$1 {
  *
  * @returns - The wrapped function that handles errors and returns the result or the default value
  */
-declare const trycatch: <T extends (...args: A) => any, A extends any[], V extends unknown>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IConfig$1>) => (...args: A) => ReturnType<T> | null;
+declare const trycatch: <T extends (...args: A) => any, A extends any[], V extends unknown>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IControllTrycatch>) => (...args: A) => ReturnType<T> | null;
 
 /**
  * Represents a clearable object that can be garbage collected.
  *
  * @template K - The type of key used for clearing.
  */
-interface IClearable<K = string> extends IClearable$1<K> {
+interface IClearableTtl<K = string> extends IClearableMemoize<K> {
     gc: () => void;
 }
 /**
@@ -350,7 +358,22 @@ interface IClearable<K = string> extends IClearable$1<K> {
 declare const ttl: <T extends (...args: A) => any, A extends any[], K = string>(run: T, { key, timeout, }?: {
     key?: (args: A) => K;
     timeout?: number;
-}) => T & IClearable<K> & IControl<K, ReturnType<T>>;
+}) => T & IClearableTtl<K> & IControlMemoize<K, ReturnType<T>>;
+
+/**
+ * Represents an interface for objects that can be cleared.
+ */
+interface IClearableThrottle {
+    clear: () => void;
+}
+/**
+ * Throttle function execution to a specific delay.
+ * @template T - Function type
+ * @param run - Function to be throttled
+ * @param delay - Delay in milliseconds (default: 1000)
+ * @returns - Throttled function with clear method
+ */
+declare const throttle: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IClearableThrottle;
 
 /**
  * Delays the execution for the specified amount of time.
@@ -1326,4 +1349,4 @@ type TObserver<Data = void> = TObserver$1<Data>;
 type TObservable<Data = void> = TObservable$1<Data>;
 type TBehaviorSubject<Data = unknown> = TBehaviorSubject$1<Data>;
 
-export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, type IRowData, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TObservable, type TObserver, type TSubject, Task, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, execpool, filterDocuments, formatText, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, mapDocuments, memoize, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, sleep, trycatch, ttl };
+export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, type IClearableCached, type IClearableMemoize, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TObservable, type TObserver, type TSubject, Task, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, execpool, filterDocuments, formatText, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, mapDocuments, memoize, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, sleep, throttle, trycatch, ttl };

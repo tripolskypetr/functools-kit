@@ -1,4 +1,4 @@
-import memoize, { IClearable as IClearableInternal, IControl, IRef, GET_VALUE_MAP } from './memoize';
+import memoize, { IClearableMemoize as IClearableTtlInternal, IControlMemoize as IControl, IRefMemoize as IRef, GET_VALUE_MAP } from './memoize';
 
 /**
  * Represents the default timeout value in milliseconds.
@@ -18,7 +18,7 @@ const NEVER_VALUE = Symbol('never');
  *
  * @template K - The type of key used for clearing.
  */
-export interface IClearable<K = string> extends IClearableInternal<K> {
+export interface IClearableTtl<K = string> extends IClearableTtlInternal<K> {
     gc: () => void;
 }
 
@@ -40,7 +40,7 @@ export const ttl = <T extends (...args: A) => any, A extends any[], K = string>(
 }: {
     key?: (args: A) => K;
     timeout?: number;
-} = {}): T & IClearable<K> & IControl<K, ReturnType<T>> => {
+} = {}): T & IClearableTtl<K> & IControl<K, ReturnType<T>> => {
 
     /**
      * Creates a memoized function that caches the result of the
@@ -107,7 +107,7 @@ export const ttl = <T extends (...args: A) => any, A extends any[], K = string>(
 
     executeFn.remove = wrappedFn.remove;
 
-    return executeFn as T & IClearable<K> & IControl<K, ReturnType<T>>;
+    return executeFn as T & IClearableTtl<K> & IControl<K, ReturnType<T>>;
 };
 
 export default ttl;

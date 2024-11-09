@@ -7,7 +7,7 @@ import compose, { Function } from "../compose";
  * @template T - The type of the value returned by the wrapped function.
  * @template P - The types of the parameters of the wrapped function.
  */
-export interface IWrappedFn<T extends any = any, P extends any[] = any> {
+export interface IWrappedQueuedFn<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
     clear(): void;
     cancel(): void;
@@ -21,7 +21,7 @@ export interface IWrappedFn<T extends any = any, P extends any[] = any> {
  * @param promise - The promise function to be wrapped.
  * @returns - The wrapped function.
  */
-export const queued = <T extends any = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>): IWrappedFn<T, P> => {
+export const queued = <T extends any = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>): IWrappedQueuedFn<T, P> => {
 
     let lastPromise: Promise<any> = Promise.resolve();
     let cancelFn: Function | undefined = undefined;

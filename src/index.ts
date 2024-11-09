@@ -6,17 +6,18 @@ export { isObject } from './utils/isObject';
 
 export { formatText } from './utils/formatText';
 
-export { singleshot } from './utils/hof/singleshot';
-export { singlerun, Task } from './utils/hof/singlerun';
-export { cancelable, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL } from './utils/hof/cancelable';
-export { debounce } from './utils/hof/debounce';
-export { queued } from './utils/hof/queued';
-export { execpool } from './utils/hof/execpool';
-export { retry } from './utils/hof/retry';
-export { cached } from './utils/hof/cached';
-export { memoize } from './utils/hof/memoize';
-export { trycatch } from './utils/hof/trycatch';
-export { ttl } from './utils/hof/ttl';
+export { singleshot, ISingleshotClearable } from './utils/hof/singleshot';
+export { singlerun, Task, ISinglerunClearable } from './utils/hof/singlerun';
+export { cancelable, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, IWrappedCancelableFn } from './utils/hof/cancelable';
+export { debounce, IDebounceClearable } from './utils/hof/debounce';
+export { queued, IWrappedQueuedFn } from './utils/hof/queued';
+export { execpool, IWrappedExecpoolFn } from './utils/hof/execpool';
+export { retry, IWrappedRetryFn } from './utils/hof/retry';
+export { cached, IClearableCached } from './utils/hof/cached';
+export { memoize, IClearableMemoize, IControlMemoize, IRefMemoize } from './utils/hof/memoize';
+export { trycatch, IControllTrycatch, IErrorTrycatch } from './utils/hof/trycatch';
+export { ttl, IClearableTtl } from './utils/hof/ttl';
+export { throttle, IClearableThrottle } from './utils/hof/throttle';
 
 export { sleep } from './utils/sleep';
 export { deepFlat } from './utils/deepFlat';

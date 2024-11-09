@@ -5,7 +5,7 @@ import queued, { CANCELED_SYMBOL } from "./queued";
  * @template T - The type of the promise's resolved value.
  * @template P - The type of the function's arguments.
  */
-export interface IWrappedFn<T extends any = any, P extends any[] = any> {
+export interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
     cancel(): void;
     clear(): void;
@@ -18,7 +18,7 @@ export interface IWrappedFn<T extends any = any, P extends any[] = any> {
  * @param count - The maximum number of retries (default is 5).
  * @returns - The wrapped function that can be canceled.
  */
-export const retry = <T extends any = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count = 5): IWrappedFn<T, P> => {
+export const retry = <T extends any = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count = 5): IWrappedRetryFn<T, P> => {
     const wrappedFn = queued(async (...args: any) => {
         let total = count;        
         /**
@@ -40,7 +40,7 @@ export const retry = <T extends any = any, P extends any[] = any[]>(run: (...arg
         };
         return await call();
     });
-    return wrappedFn as unknown as IWrappedFn<T, P>;
+    return wrappedFn as unknown as IWrappedRetryFn<T, P>;
 };
 
 export default retry;

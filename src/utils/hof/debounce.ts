@@ -3,7 +3,7 @@ type Function = () => void;
 /**
  * Interface representing an object that can be cleared and flushed.
  */
-export interface IClearable {
+export interface IDebounceClearable {
     clear: () => void;
     flush: () => void;
     pending: () => boolean;
@@ -23,7 +23,7 @@ const CANCEL_ANIMATION_FRAME = (id: ReturnType<typeof CANCEL_ANIMATION_FRAME_FN>
  * @param [delay=1000] - The delay in milliseconds before executing the debounced function.
  * @returns - The debounced function with additional methods for clearing and flushing.
  */
-export const debounce = <T extends (...args: any[]) => any>(run: T, delay = 1_000): T & IClearable => {
+export const debounce = <T extends (...args: any[]) => any>(run: T, delay = 1_000): T & IDebounceClearable => {
     let timeout: any;
     let lastRun: Function | null = null;
 
@@ -76,7 +76,7 @@ export const debounce = <T extends (...args: any[]) => any>(run: T, delay = 1_00
       return !!lastRun;
     };
 
-    return wrappedFn as T & IClearable;
+    return wrappedFn as T & IDebounceClearable;
 };
 
 export default debounce;

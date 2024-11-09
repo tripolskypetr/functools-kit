@@ -3,7 +3,7 @@
  *
  * @interface
  */
-interface IClearable {
+export interface IClearableCached {
     clear: () => void;
 }
 
@@ -15,7 +15,7 @@ interface IClearable {
  * @param run - The function to be cached.
  * @returns - The cached function with additional clear method.
  */
-export const cached = <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T): T & IClearable => {
+export const cached = <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T): T & IClearableCached => {
 
     let lastArgs: any = null;
     let initial = true;
@@ -50,7 +50,7 @@ export const cached = <T extends (...args: A) => any, A extends any[]>(changed: 
 
     executeFn.clear = clear;
 
-    return executeFn as T & IClearable;
+    return executeFn as T & IClearableCached;
 };
 
 export default cached;

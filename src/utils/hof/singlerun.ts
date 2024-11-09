@@ -2,7 +2,7 @@
  * Interface for classes that can be cleared.
  * @interface
  */
-export interface IClearable {
+export interface ISinglerunClearable {
     clear: () => void;
 }
 
@@ -48,7 +48,7 @@ export class Task {
  * @param run - The function to be executed.
  * @returns - The wrapped function with additional clear functionality.
  */
-export const singlerun = <T extends (...args: any[]) => any>(run: T): T & IClearable & ITaskStatus => {
+export const singlerun = <T extends (...args: any[]) => any>(run: T): T & ISinglerunClearable & ITaskStatus => {
     let result: Task | undefined = undefined;
     /**
      * Executes the given `run` function with the provided arguments and returns the result.
@@ -80,7 +80,7 @@ export const singlerun = <T extends (...args: any[]) => any>(run: T): T & IClear
     fn.getStatus = () => {
         return result?.status || "ready";
     };
-    return fn as T & IClearable & ITaskStatus;
+    return fn as T & ISinglerunClearable & ITaskStatus;
 };
 
 export default singlerun;

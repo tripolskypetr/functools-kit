@@ -3,7 +3,7 @@
  * @template T - The type of the result of the wrapped function.
  * @template P - The types of the parameters of the wrapped function.
  */
-export interface IWrappedFn<T extends any = any, P extends any[] = any> {
+export interface IWrappedCancelableFn<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
     cancel(): void;
 };
@@ -24,7 +24,7 @@ export const CANCELED_SYMBOL = Symbol('cancelable-canceled');
  * @template T - The type of the promise's resolved value.
  * @template P - The type of the promise function's arguments.
  */
-export const cancelable = <T extends any = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>): IWrappedFn<T, P> => {
+export const cancelable = <T extends any = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>): IWrappedCancelableFn<T, P> => {
 
     let cancelRef: Function | undefined;
 

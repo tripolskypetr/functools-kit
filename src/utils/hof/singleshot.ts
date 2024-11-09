@@ -1,9 +1,9 @@
 
 /**
- * @interface IClearable
+ * @interface ISingleshotClearable
  * @description An interface representing an object that can be cleared.
  */
-export interface IClearable {
+export interface ISingleshotClearable {
     clear: () => void;
 }
 
@@ -14,7 +14,7 @@ export interface IClearable {
  * @param run - The function to be executed once.
  * @returns - The executed function with additional "clear" method to reset the execution state.
  */
-export const singleshot = <T extends (...args: any[]) => any>(run: T): T & IClearable => {
+export const singleshot = <T extends (...args: any[]) => any>(run: T): T & ISingleshotClearable => {
     let hasRunned = false;
     let result: ReturnType<T> = null as never;
     /**
@@ -40,7 +40,7 @@ export const singleshot = <T extends (...args: any[]) => any>(run: T): T & IClea
     fn.clear = () => {
         hasRunned = false;
     };
-    return fn as T & IClearable;
+    return fn as T & ISingleshotClearable;
 };
 
 export default singleshot;

@@ -1,12 +1,12 @@
-interface IError extends Error {}
+export interface IErrorTrycatch extends Error {}
 
 /**
  * Represents a configuration interface.
  *
  * @interface
  */
-interface IConfig {
-    allowedErrors?: {new(): IError}[];
+export interface IControllTrycatch {
+    allowedErrors?: {new(): IErrorTrycatch}[];
     fallback?: (error: Error) => void
     defaultValue: null | false;
 }
@@ -21,7 +21,7 @@ interface IConfig {
  * @returns - A promise that resolves to the resolved value of the input promise, or the defaultValue if an error occurs.
  *
  */
-const awaiter = async <V extends any>(value: Promise<V>, { fallback, defaultValue }: IConfig) => {
+const awaiter = async <V extends any>(value: Promise<V>, { fallback, defaultValue }: IControllTrycatch) => {
     try {
         return await value;
     } catch (error) {
@@ -49,7 +49,7 @@ export const trycatch = <T extends (...args: A) => any, A extends any[], V exten
     allowedErrors,
     fallback,
     defaultValue = null,
-}: Partial<IConfig> = {}): (...args: A) => ReturnType<T> | null => {
+}: Partial<IControllTrycatch> = {}): (...args: A) => ReturnType<T> | null => {
     return (...args) => {
         try {
             const result = run(...args);

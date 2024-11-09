@@ -42,7 +42,7 @@ interface IConfig {
  * @returns A promise that resolves with the result of the wrapped function.
  * @function clear - Clears all pending executions in the execution pool.
  */
-export interface IWrappedFn<T extends any = any, P extends any[] = any> {
+export interface IWrappedExecpoolFn<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T>;
     clear(): void;
 }
@@ -61,7 +61,7 @@ export interface IWrappedFn<T extends any = any, P extends any[] = any> {
 export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, {
     maxExec = 3,
     delay = 10,
-}: Partial<IConfig> = {}): IWrappedFn<T, P> => {
+}: Partial<IConfig> = {}): IWrappedExecpoolFn<T, P> => {
 
     const execSet = new Set<Promise<T>>();
     const execStack: Run<T, P>[] = [];
@@ -108,7 +108,7 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
      * @param args - The arguments to pass to the wrapped function.
      * @returns A promise that resolves with the result of the wrapped function.
      */
-    const wrappedFn: IWrappedFn<T, P> = async (...args: P): Promise<T> => {
+    const wrappedFn: IWrappedExecpoolFn<T, P> = async (...args: P): Promise<T> => {
         const [result, awaiter] = createAwaiter<T>();
         if (execSet.size < maxExec) {
             execute(awaiter, ...args);

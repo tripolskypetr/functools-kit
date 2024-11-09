@@ -1,7 +1,7 @@
 /**
  * Represents an interface for objects that can be cleared.
  */
-export interface IClearable {
+export interface IClearableThrottle {
     clear: () => void;
 }
 
@@ -12,7 +12,7 @@ export interface IClearable {
  * @param delay - Delay in milliseconds (default: 1000)
  * @returns - Throttled function with clear method
  */
-export const throttle = <T extends (...args: any[]) => any>(run: T, delay = 1_000): T & IClearable => {
+export const throttle = <T extends (...args: any[]) => any>(run: T, delay = 1_000): T & IClearableThrottle => {
 	let timeoutID: any;
 	let cancelled = false;
 	let lastExec = 0;
@@ -60,7 +60,7 @@ export const throttle = <T extends (...args: any[]) => any>(run: T, delay = 1_00
 	 * @function clear
 	 */
 	wrappedFn.clear = clearExistingTimeout;
-    return wrappedFn as T & IClearable;
+    return wrappedFn as T & IClearableThrottle;
 };
 
 export default throttle;
