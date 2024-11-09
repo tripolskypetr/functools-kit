@@ -59,7 +59,7 @@ declare const formatText: (raw: string, template: string, { symbol, allowed, rep
  * @interface IClearable
  * @description An interface representing an object that can be cleared.
  */
-interface IClearable$4 {
+interface IClearable$5 {
     clear: () => void;
 }
 /**
@@ -69,13 +69,13 @@ interface IClearable$4 {
  * @param run - The function to be executed once.
  * @returns - The executed function with additional "clear" method to reset the execution state.
  */
-declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & IClearable$4;
+declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & IClearable$5;
 
 /**
  * Interface for classes that can be cleared.
  * @interface
  */
-interface IClearable$3 {
+interface IClearable$4 {
     clear: () => void;
 }
 /**
@@ -114,7 +114,7 @@ declare class Task {
  * @param run - The function to be executed.
  * @returns - The wrapped function with additional clear functionality.
  */
-declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & IClearable$3 & ITaskStatus;
+declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & IClearable$4 & ITaskStatus;
 
 /**
  * Represents a wrapped function that returns a promise.
@@ -145,7 +145,7 @@ declare const cancelable: <T extends unknown = any, P extends any[] = any[]>(pro
 /**
  * Interface representing an object that can be cleared and flushed.
  */
-interface IClearable$2 {
+interface IClearable$3 {
     clear: () => void;
     flush: () => void;
     pending: () => boolean;
@@ -158,7 +158,7 @@ interface IClearable$2 {
  * @param [delay=1000] - The delay in milliseconds before executing the debounced function.
  * @returns - The debounced function with additional methods for clearing and flushing.
  */
-declare const debounce: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IClearable$2;
+declare const debounce: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IClearable$3;
 
 /**
  * Represents a wrapped function that returns a Promise.
@@ -187,7 +187,7 @@ declare const queued: <T extends unknown = any, P extends any[] = any[]>(promise
  * @property maxExec - The maximum number of executions allowed concurrently.
  * @property delay - The delay in milliseconds between executions.
  */
-interface IConfig$1 {
+interface IConfig$2 {
     maxExec: number;
     delay: number;
 }
@@ -218,7 +218,7 @@ interface IWrappedFn$1<T extends any = any, P extends any[] = any> {
  * @param options - Optional configuration options for the execution pool.
  * @returns A wrapped function that executes asynchronously within the execution pool.
  */
-declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, { maxExec, delay, }?: Partial<IConfig$1>) => IWrappedFn$1<T, P>;
+declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, { maxExec, delay, }?: Partial<IConfig$2>) => IWrappedFn$1<T, P>;
 
 /**
  * Represents a wrapped function that returns a promise.
@@ -244,7 +244,7 @@ declare const retry: <T extends unknown = any, P extends any[] = any[]>(run: (..
  *
  * @interface
  */
-interface IClearable$1 {
+interface IClearable$2 {
     clear: () => void;
 }
 /**
@@ -255,13 +255,13 @@ interface IClearable$1 {
  * @param run - The function to be cached.
  * @returns - The cached function with additional clear method.
  */
-declare const cached: <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T) => T & IClearable$1;
+declare const cached: <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T) => T & IClearable$2;
 
 /**
  * Interface representing a clearable object.
  * @template K - The type of the key.
  */
-interface IClearable<K = string> {
+interface IClearable$1<K = string> {
     clear: (key?: K) => void;
 }
 /**
@@ -294,7 +294,7 @@ interface IControl<K, V> {
  * @param run - The original function to be memoized
  * @returns - A memoized version of the original function with the ability to clear the cache
  */
-declare const memoize: <T extends (...args: A) => any, A extends any[], K = string>(key: (args: A) => K, run: T) => T & IClearable<K> & IControl<K, ReturnType<T>>;
+declare const memoize: <T extends (...args: A) => any, A extends any[], K = string>(key: (args: A) => K, run: T) => T & IClearable$1<K> & IControl<K, ReturnType<T>>;
 
 interface IError extends Error {
 }
@@ -303,7 +303,7 @@ interface IError extends Error {
  *
  * @interface
  */
-interface IConfig {
+interface IConfig$1 {
     allowedErrors?: {
         new (): IError;
     }[];
@@ -325,7 +325,32 @@ interface IConfig {
  *
  * @returns - The wrapped function that handles errors and returns the result or the default value
  */
-declare const trycatch: <T extends (...args: A) => any, A extends any[], V extends unknown>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IConfig>) => (...args: A) => ReturnType<T> | null;
+declare const trycatch: <T extends (...args: A) => any, A extends any[], V extends unknown>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IConfig$1>) => (...args: A) => ReturnType<T> | null;
+
+/**
+ * Represents a clearable object that can be garbage collected.
+ *
+ * @template K - The type of key used for clearing.
+ */
+interface IClearable<K = string> extends IClearable$1<K> {
+    gc: () => void;
+}
+/**
+ * Wrap a function with time-to-live (TTL) caching.
+ *
+ * @template T - The function type.
+ * @template A - The argument types of the function.
+ * @template K - The key type for caching.
+ * @param run - The function to wrap.
+ * @param options - The configuration options.
+ * @param [options.key] - The key generator function that generates a key based on function arguments.
+ * @param [options.timeout] - The TTL duration in milliseconds.
+ * @returns - The wrapped function with caching capability.
+ */
+declare const ttl: <T extends (...args: A) => any, A extends any[], K = string>(run: T, { key, timeout, }?: {
+    key?: (args: A) => K;
+    timeout?: number;
+}) => T & IClearable<K> & IControl<K, ReturnType<T>>;
 
 /**
  * Delays the execution for the specified amount of time.
@@ -1192,9 +1217,113 @@ declare class Source {
     static fromBehaviorSubject: <Data = any>(subject: TBehaviorSubject$1<Data>) => Observer<Data>;
 }
 
+/**
+ * Represents a data row in a table.
+ * @interface
+ */
+interface IRowData {
+    id: RowId;
+}
+/**
+ * Represents a unique identifier for a row in a data table.
+ */
+type RowId = string | number;
+
+/**
+ * Resolves the documents from an async generator and paginates them.
+ *
+ * @param iterator - The async generator to resolve documents from.
+ * @returns - A promise that resolves to the flattened array of documents.
+ */
+declare const paginateDocuments: <T extends unknown>(iterator: AsyncGenerator<T | T[], void, unknown>, limit: number, offset: number) => Promise<T[]>;
+
+/**
+ * Resolves the documents from an async generator and distincts them.
+ *
+ * @param iterator - The async generator to resolve documents from.
+ * @returns - A promise that resolves to the flattened array of documents.
+ */
+declare function distinctDocuments<T extends IRowData>(iterator: AsyncGenerator<T | T[], void, unknown>): AsyncGenerator<T, void, unknown>;
+
+/**
+ * Resolves the documents from an async generator and returns them as a flattened array.
+ *
+ * @param iterator - The async generator to resolve documents from.
+ * @returns - A promise that resolves to the flattened array of documents.
+ */
+declare const resolveDocuments: <T extends unknown>(iterator: AsyncGenerator<T | T[], void, unknown>) => Promise<T[]>;
+
+/**
+ * Filters the documents from an async generator and yield them by the condition
+ *
+ * @param iterator - The async generator to resolve documents from.
+ * @returns - A promise that resolves to the flattened array of documents.
+ */
+declare function filterDocuments<T extends unknown>(iterator: AsyncGenerator<T | T[], void, unknown>, predicate: (value: T) => boolean | Promise<boolean>): AsyncGenerator<Awaited<T>, void, unknown>;
+
+/**
+ * A function that picks a subset of documents from an array of documents, given a limit and offset.
+ *
+ * @template T - The type of the documents in the array.
+ * @param limit - The maximum number of documents to pick.
+ * @param offset - The number of documents to skip before picking.
+ * @returns - A function that takes an array of documents and returns an object with `rows` and `done` properties.
+ *                       The `rows` property contains the picked documents, and `done` property indicates if the picking is finished.
+ */
+declare const pickDocuments: <T extends unknown>(limit: number, offset: number) => (rows?: T[]) => {
+    rows: T[];
+    done: boolean;
+};
+
+/**
+ * Maps the documents from an async generator and yield them
+ *
+ * @param iterator - The async generator to resolve documents from.
+ * @returns - A promise that resolves to the flattened array of documents.
+ */
+declare function mapDocuments<T extends unknown, U = T>(iterator: AsyncGenerator<T | T[], void, unknown>, callbackfn: (value: T) => U | Promise<U>): AsyncGenerator<Awaited<U>, void, unknown>;
+
+/**
+ * Represents a configuration interface for data retrieval.
+ * @template Data - The type of row data.
+ */
+interface IConfig<Data extends IRowData = IRowData> {
+    totalDocuments?: number;
+    limit?: number;
+    delay?: number;
+    createRequest: (data: {
+        limit: number;
+        offset: number;
+        page: number;
+        lastId: RowId | null;
+    } & Omit<IConfig<Data>, 'createRequest'>) => (Data[] | Promise<Data[]>);
+}
+/**
+ * Asynchronous generator function that iterates over documents.
+ *
+ * @template Data - The type of the row data in the documents.
+ *
+ * @param config - The configuration object.
+ * @param [config.totalDocuments=TOTAL_DOCUMENTS] - The total number of documents to iterate over.
+ * @param [config.limit=REQUEST_LIMIT] - The number of documents to fetch in each request.
+ * @param [config.delay=REQUEST_DELAY] - The delay between each request.
+ * @param [config.createRequest=() => []] - The function used to create the request.
+ *
+ * @returns An asynchronous generator that yields an array of documents.
+ *
+ * @throws If the response length is greater than the specified limit.
+ */
+declare const iterateDocuments: <Data extends IRowData = IRowData>({ totalDocuments, limit, delay, createRequest, }: IConfig<Data>) => AsyncGenerator<Data[], void, unknown>;
+
+declare function iteratePromise<T extends IRowData = IRowData>(fn: () => Promise<T[]>): AsyncGenerator<T, void, unknown>;
+
+declare const iterateUnion: <T extends IRowData = IRowData>(iterators: AsyncGenerator<T | T[], void, unknown>[]) => (limit: number, offset: number) => AsyncGenerator<T, void, unknown>;
+
+declare function iterateList<T extends IRowData = IRowData>(rows: T[], map?: (row: T) => Promise<Awaited<T>>): AsyncGenerator<Awaited<T>, void, unknown>;
+
 type TSubject<Data = void> = TSubject$1<Data>;
 type TObserver<Data = void> = TObserver$1<Data>;
 type TObservable<Data = void> = TObservable$1<Data>;
 type TBehaviorSubject<Data = unknown> = TBehaviorSubject$1<Data>;
 
-export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, Observer, Operator, Source, Subject, type TBehaviorSubject, type TObservable, type TObserver, type TSubject, Task, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, execpool, formatText, isObject, memoize, queued, randomString, retry, singlerun, singleshot, sleep, trycatch };
+export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, type IRowData, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TObservable, type TObserver, type TSubject, Task, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, execpool, filterDocuments, formatText, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, mapDocuments, memoize, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, sleep, trycatch, ttl };
