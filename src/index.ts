@@ -75,3 +75,4 @@ export { last } from './utils/math/last';
 export { truely } from './utils/math/truely';
 
 export { compose } from './utils/compose';
+export { errorData } from './utils/errorData';
