@@ -6,6 +6,9 @@ export { isObject } from './utils/isObject';
 
 export { formatText } from './utils/formatText';
 
+export { timeout, TimeoutError } from './utils/hof/timeout';
+export { waitForNext } from './utils/hof/waitForNext';
+
 export { singleshot, ISingleshotClearable } from './utils/hof/singleshot';
 export { singlerun, Task, ISinglerunClearable } from './utils/hof/singlerun';
 export { cancelable, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, IWrappedCancelableFn } from './utils/hof/cancelable';
@@ -18,6 +21,11 @@ export { memoize, IClearableMemoize, IControlMemoize, IRefMemoize } from './util
 export { trycatch, IControllTrycatch, IErrorTrycatch } from './utils/hof/trycatch';
 export { ttl, IClearableTtl } from './utils/hof/ttl';
 export { throttle, IClearableThrottle } from './utils/hof/throttle';
+
+export { obsolete } from './utils/hof/obsolete';
+export { singletick, IClearableSingletick } from './utils/hof/singletick';
+export { afterinit, IWrappedAfterInitFn } from './utils/hof/afterinit';
+export { lock, IWrappedLockFn } from './utils/hof/lock';
 
 export { sleep } from './utils/sleep';
 export { deepFlat } from './utils/deepFlat';
@@ -54,5 +62,16 @@ export { iterateDocuments } from './api/iterateDocuments';
 export { iteratePromise } from './api/iteratePromise';
 export { iterateUnion } from './api/iterateUnion';
 export { iterateList } from './api/iterateList';
+
+export { has } from './utils/math/has';
+export { and } from './utils/math/and';
+export { or } from './utils/math/or';
+export { not } from './utils/math/not';
+export { match } from './utils/math/match';
+
+export { first } from './utils/math/first';
+export { join } from './utils/math/join';
+export { last } from './utils/math/last';
+export { truely } from './utils/math/truely';
 
 export { compose } from './utils/compose';

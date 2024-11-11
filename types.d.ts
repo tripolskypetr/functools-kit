@@ -55,366 +55,9 @@ interface IParams {
  */
 declare const formatText: (raw: string, template: string, { symbol, allowed, replace, }?: IParams) => string;
 
-/**
- * @interface ISingleshotClearable
- * @description An interface representing an object that can be cleared.
- */
-interface ISingleshotClearable {
-    clear: () => void;
+declare class TimeoutError extends Error {
 }
-/**
- * Creates a function that is only executed once, and then memoizes and returns the result.
- *
- * @template T - The type of the function to be executed once.
- * @param run - The function to be executed once.
- * @returns - The executed function with additional "clear" method to reset the execution state.
- */
-declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & ISingleshotClearable;
-
-/**
- * Interface for classes that can be cleared.
- * @interface
- */
-interface ISinglerunClearable {
-    clear: () => void;
-}
-/**
- * Interface for reading task status
- * @interface
- */
-interface ITaskStatus {
-    getStatus: () => "pending" | "fulfilled" | "rejected" | "ready";
-}
-/**
- * A class representing a task.
- *
- * @class
- */
-declare class Task {
-    readonly target: Promise<any>;
-    private _status;
-    /**
-     * Retrieves the current status value.
-     *
-     * @return The value of the status.
-     */
-    get status(): "pending" | "fulfilled" | "rejected";
-    /**
-     * Constructor for creating an instance of the class.
-     *
-     * @param target - The target promise to be handled.
-     *
-     * @return - This method does not return any value.
-     */
-    constructor(target: Promise<any>);
-}
-/**
- * Represents a higher-order function that runs a task only once and provides a way to clear the result.
- * @template T - The function type.
- * @param run - The function to be executed.
- * @returns - The wrapped function with additional clear functionality.
- */
-declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & ISinglerunClearable & ITaskStatus;
-
-/**
- * Represents a wrapped function that returns a promise.
- * @template T - The type of the result of the wrapped function.
- * @template P - The types of the parameters of the wrapped function.
- */
-interface IWrappedCancelableFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
-    cancel(): void;
-}
-/**
- * Symbol representing cancellation status.
- *
- * @type {Symbol}
- * @name CANCELED_SYMBOL
- */
-declare const CANCELED_SYMBOL: unique symbol;
-/**
- * Wraps a promise function and provides cancellation functionality.
- *
- * @param promise - The promise function to wrap.
- * @returns The wrapped function with cancellation capability.
- * @template T - The type of the promise's resolved value.
- * @template P - The type of the promise function's arguments.
- */
-declare const cancelable: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedCancelableFn<T, P>;
-
-/**
- * Interface representing an object that can be cleared and flushed.
- */
-interface IDebounceClearable {
-    clear: () => void;
-    flush: () => void;
-    pending: () => boolean;
-}
-/**
- * Creates a debounced version of a function.
- *
- * @template T - The type of the original function.
- * @param run - The function to debounce.
- * @param [delay=1000] - The delay in milliseconds before executing the debounced function.
- * @returns - The debounced function with additional methods for clearing and flushing.
- */
-declare const debounce: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IDebounceClearable;
-
-/**
- * Represents a wrapped function that returns a Promise.
- * @template T - The type of the value returned by the wrapped function.
- * @template P - The types of the parameters of the wrapped function.
- */
-interface IWrappedQueuedFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
-    clear(): void;
-    cancel(): void;
-}
-/**
- * Creates a wrapper function for a Promise that allows for cancellation and clearing of queued Promises.
- *
- * @template T - The resolved value of the Promise.
- * @template P - The types of the arguments passed to the promise function.
- * @param promise - The promise function to be wrapped.
- * @returns - The wrapped function.
- */
-declare const queued: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedQueuedFn<T, P>;
-
-/**
- * Represents the configuration options for the execution pool.
- *
- * @interface
- * @property maxExec - The maximum number of executions allowed concurrently.
- * @property delay - The delay in milliseconds between executions.
- */
-interface IConfig$1 {
-    maxExec: number;
-    delay: number;
-}
-/**
- * Represents a wrapped function that returns a promise.
- *
- * @template T - The type of the result of the wrapped function.
- * @template P - The types of the parameters of the wrapped function.
- *
- * @interface
- * @function
- * @param args - The arguments to pass to the wrapped function.
- * @returns A promise that resolves with the result of the wrapped function.
- * @function clear - Clears all pending executions in the execution pool.
- */
-interface IWrappedExecpoolFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T>;
-    clear(): void;
-}
-/**
- * Creates an execution pool for asynchronous functions with a limited concurrency.
- *
- * @template T - The type of the result of the wrapped function.
- * @template P - The types of the parameters of the wrapped function.
- *
- * @function
- * @param run - The function to be executed in the pool.
- * @param options - Optional configuration options for the execution pool.
- * @returns A wrapped function that executes asynchronously within the execution pool.
- */
-declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, { maxExec, delay, }?: Partial<IConfig$1>) => IWrappedExecpoolFn<T, P>;
-
-/**
- * Represents a wrapped function that returns a promise.
- * @template T - The type of the promise's resolved value.
- * @template P - The type of the function's arguments.
- */
-interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
-    cancel(): void;
-    clear(): void;
-}
-/**
- * Retries a function multiple times until it succeeds or reaches the maximum number of retries.
- *
- * @param run - The function to run.
- * @param count - The maximum number of retries (default is 5).
- * @returns - The wrapped function that can be canceled.
- */
-declare const retry: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count?: number) => IWrappedRetryFn<T, P>;
-
-/**
- * Interface for objects that can be cleared.
- *
- * @interface
- */
-interface IClearableCached {
-    clear: () => void;
-}
-/**
- * Caches the result of a function based on the change of arguments.
- * @template T - The type of the function to be cached.
- * @template A - The type of the arguments of the function.
- * @param changed - Function to determine if the arguments have changed.
- * @param run - The function to be cached.
- * @returns - The cached function with additional clear method.
- */
-declare const cached: <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T) => T & IClearableCached;
-
-/**
- * Interface representing a clearable object.
- * @template K - The type of the key.
- */
-interface IClearableMemoize<K = string> {
-    clear: (key?: K) => void;
-}
-/**
- * Represents a reference to a value of type T.
- *
- * @template T - The type of the value referenced by this reference.
- */
-interface IRefMemoize<T = any> {
-    current: T;
-}
-/**
- * Represents a generic control interface with key-value pair operations.
- * @template K The type of keys.
- * @template V The type of values.
- * @interface
- */
-interface IControlMemoize<K, V> {
-    /**
-     * Adds a key-value pair to the control.
-     * @param key The key to add.
-     * @param value The value to associate with the key.
-     */
-    add: (key: K, value: V) => void;
-    /**
-     * Removes a key and its associated value from the control.
-     * @param key The key to remove.
-     * @returns true if ok
-     */
-    remove: (key: K) => boolean;
-}
-/**
- * A memoization function that caches the result of a function based on its arguments.
- *
- * @template T - The function type that will be memoized
- * @template A - The argument types of the function
- * @template K - The key type used to store the memoized results
- * @param key - A function that generates a unique key based on the arguments of the original function
- * @param run - The original function to be memoized
- * @returns - A memoized version of the original function with the ability to clear the cache
- */
-declare const memoize: <T extends (...args: A) => any, A extends any[], K = string>(key: (args: A) => K, run: T) => T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>>;
-
-interface IErrorTrycatch extends Error {
-}
-/**
- * Represents a configuration interface.
- *
- * @interface
- */
-interface IControllTrycatch {
-    allowedErrors?: {
-        new (): IErrorTrycatch;
-    }[];
-    fallback?: (error: Error) => void;
-    defaultValue: null | false;
-}
-/**
- * A higher-order function that wraps the provided function with a try-catch block. It catches any errors that occur during the execution of the function and handles them according to
- * the specified configuration.
- *
- * @template T - The type of the function being wrapped
- * @template A - An array of arguments that the function accepts
- * @template V - The type of the value returned by the function
- *
- * @param run - The function to be wrapped
- * @param config - The configuration object
- * @param config.fallback - The fallback function to be called with the caught error (optional)
- * @param config.defaultValue - The default value to be returned if an error occurs (optional, default: null)
- *
- * @returns - The wrapped function that handles errors and returns the result or the default value
- */
-declare const trycatch: <T extends (...args: A) => any, A extends any[], V extends unknown>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IControllTrycatch>) => (...args: A) => ReturnType<T> | null;
-
-/**
- * Represents a clearable object that can be garbage collected.
- *
- * @template K - The type of key used for clearing.
- */
-interface IClearableTtl<K = string> extends IClearableMemoize<K> {
-    gc: () => void;
-}
-/**
- * Wrap a function with time-to-live (TTL) caching.
- *
- * @template T - The function type.
- * @template A - The argument types of the function.
- * @template K - The key type for caching.
- * @param run - The function to wrap.
- * @param options - The configuration options.
- * @param [options.key] - The key generator function that generates a key based on function arguments.
- * @param [options.timeout] - The TTL duration in milliseconds.
- * @returns - The wrapped function with caching capability.
- */
-declare const ttl: <T extends (...args: A) => any, A extends any[], K = string>(run: T, { key, timeout, }?: {
-    key?: (args: A) => K;
-    timeout?: number;
-}) => T & IClearableTtl<K> & IControlMemoize<K, ReturnType<T>>;
-
-/**
- * Represents an interface for objects that can be cleared.
- */
-interface IClearableThrottle {
-    clear: () => void;
-}
-/**
- * Throttle function execution to a specific delay.
- * @template T - Function type
- * @param run - Function to be throttled
- * @param delay - Delay in milliseconds (default: 1000)
- * @returns - Throttled function with clear method
- */
-declare const throttle: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IClearableThrottle;
-
-/**
- * Delays the execution for the specified amount of time.
- *
- * @param [timeout=1000] - The duration to wait in milliseconds.
- * @returns A promise that resolves once the timeout has elapsed.
- */
-declare const sleep: (timeout?: number) => Promise<void>;
-
-/**
- * A utility function to deep flatten an array of objects.
- *
- * @param arr - The input array to be deep flattened.
- * @returns - The deep flattened array.
- * @template T - The type of elements in the input array.
- */
-declare const deepFlat: <T = any>(arr?: T[]) => T[];
-
-/**
- * Represents an object used for awaiting a value or a promise.
- *
- * @template T - The type of the value to be resolved.
- *
- * @interface
- * @function
- * @param value - The value or promise to resolve.
- * @param reason - The reason for rejecting the promise.
- */
-interface IAwaiter<T extends unknown> {
-    resolve(value: T | PromiseLike<T>): void;
-    reject(reason?: any): void;
-}
-/**
- * Creates an awaiter object along with a promise.
- *
- * @template T - The type of the value to be resolved.
- *
- * @function
- * @returns An array containing the promise and the awaiter object.
- */
-declare const createAwaiter: <T extends unknown>() => [Promise<T>, IAwaiter<T>];
+declare const timeout: <T extends (...args: any[]) => any>(run: T, delay?: number) => Promise<Awaited<T>>;
 
 type Function$2 = (...args: any[]) => any;
 /**
@@ -990,6 +633,427 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
     };
 }
 
+declare const waitForNext: <T = any>(subject: TSubject$1<T>, condition: (t: T) => boolean, delay?: number) => Promise<T>;
+
+/**
+ * @interface ISingleshotClearable
+ * @description An interface representing an object that can be cleared.
+ */
+interface ISingleshotClearable {
+    clear: () => void;
+}
+/**
+ * Creates a function that is only executed once, and then memoizes and returns the result.
+ *
+ * @template T - The type of the function to be executed once.
+ * @param run - The function to be executed once.
+ * @returns - The executed function with additional "clear" method to reset the execution state.
+ */
+declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & ISingleshotClearable;
+
+/**
+ * Interface for classes that can be cleared.
+ * @interface
+ */
+interface ISinglerunClearable {
+    clear: () => void;
+}
+/**
+ * Interface for reading task status
+ * @interface
+ */
+interface ITaskStatus {
+    getStatus: () => "pending" | "fulfilled" | "rejected" | "ready";
+}
+/**
+ * A class representing a task.
+ *
+ * @class
+ */
+declare class Task {
+    readonly target: Promise<any>;
+    private _status;
+    /**
+     * Retrieves the current status value.
+     *
+     * @return The value of the status.
+     */
+    get status(): "pending" | "fulfilled" | "rejected";
+    /**
+     * Constructor for creating an instance of the class.
+     *
+     * @param target - The target promise to be handled.
+     *
+     * @return - This method does not return any value.
+     */
+    constructor(target: Promise<any>);
+}
+/**
+ * Represents a higher-order function that runs a task only once and provides a way to clear the result.
+ * @template T - The function type.
+ * @param run - The function to be executed.
+ * @returns - The wrapped function with additional clear functionality.
+ */
+declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & ISinglerunClearable & ITaskStatus;
+
+/**
+ * Represents a wrapped function that returns a promise.
+ * @template T - The type of the result of the wrapped function.
+ * @template P - The types of the parameters of the wrapped function.
+ */
+interface IWrappedCancelableFn<T extends any = any, P extends any[] = any> {
+    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    cancel(): void;
+}
+/**
+ * Symbol representing cancellation status.
+ *
+ * @type {Symbol}
+ * @name CANCELED_SYMBOL
+ */
+declare const CANCELED_SYMBOL: unique symbol;
+/**
+ * Wraps a promise function and provides cancellation functionality.
+ *
+ * @param promise - The promise function to wrap.
+ * @returns The wrapped function with cancellation capability.
+ * @template T - The type of the promise's resolved value.
+ * @template P - The type of the promise function's arguments.
+ */
+declare const cancelable: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedCancelableFn<T, P>;
+
+/**
+ * Interface representing an object that can be cleared and flushed.
+ */
+interface IDebounceClearable {
+    clear: () => void;
+    flush: () => void;
+    pending: () => boolean;
+}
+/**
+ * Creates a debounced version of a function.
+ *
+ * @template T - The type of the original function.
+ * @param run - The function to debounce.
+ * @param [delay=1000] - The delay in milliseconds before executing the debounced function.
+ * @returns - The debounced function with additional methods for clearing and flushing.
+ */
+declare const debounce: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IDebounceClearable;
+
+/**
+ * Represents a wrapped function that returns a Promise.
+ * @template T - The type of the value returned by the wrapped function.
+ * @template P - The types of the parameters of the wrapped function.
+ */
+interface IWrappedQueuedFn<T extends any = any, P extends any[] = any> {
+    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    clear(): void;
+    cancel(): void;
+}
+/**
+ * Creates a wrapper function for a Promise that allows for cancellation and clearing of queued Promises.
+ *
+ * @template T - The resolved value of the Promise.
+ * @template P - The types of the arguments passed to the promise function.
+ * @param promise - The promise function to be wrapped.
+ * @returns - The wrapped function.
+ */
+declare const queued: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedQueuedFn<T, P>;
+
+/**
+ * Represents the configuration options for the execution pool.
+ *
+ * @interface
+ * @property maxExec - The maximum number of executions allowed concurrently.
+ * @property delay - The delay in milliseconds between executions.
+ */
+interface IConfig$1 {
+    maxExec: number;
+    delay: number;
+}
+/**
+ * Represents a wrapped function that returns a promise.
+ *
+ * @template T - The type of the result of the wrapped function.
+ * @template P - The types of the parameters of the wrapped function.
+ *
+ * @interface
+ * @function
+ * @param args - The arguments to pass to the wrapped function.
+ * @returns A promise that resolves with the result of the wrapped function.
+ * @function clear - Clears all pending executions in the execution pool.
+ */
+interface IWrappedExecpoolFn<T extends any = any, P extends any[] = any> {
+    (...args: P): Promise<T>;
+    clear(): void;
+}
+/**
+ * Creates an execution pool for asynchronous functions with a limited concurrency.
+ *
+ * @template T - The type of the result of the wrapped function.
+ * @template P - The types of the parameters of the wrapped function.
+ *
+ * @function
+ * @param run - The function to be executed in the pool.
+ * @param options - Optional configuration options for the execution pool.
+ * @returns A wrapped function that executes asynchronously within the execution pool.
+ */
+declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, { maxExec, delay, }?: Partial<IConfig$1>) => IWrappedExecpoolFn<T, P>;
+
+/**
+ * Represents a wrapped function that returns a promise.
+ * @template T - The type of the promise's resolved value.
+ * @template P - The type of the function's arguments.
+ */
+interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
+    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    cancel(): void;
+    clear(): void;
+}
+/**
+ * Retries a function multiple times until it succeeds or reaches the maximum number of retries.
+ *
+ * @param run - The function to run.
+ * @param count - The maximum number of retries (default is 5).
+ * @returns - The wrapped function that can be canceled.
+ */
+declare const retry: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count?: number) => IWrappedRetryFn<T, P>;
+
+/**
+ * Interface for objects that can be cleared.
+ *
+ * @interface
+ */
+interface IClearableCached {
+    clear: () => void;
+}
+/**
+ * Caches the result of a function based on the change of arguments.
+ * @template T - The type of the function to be cached.
+ * @template A - The type of the arguments of the function.
+ * @param changed - Function to determine if the arguments have changed.
+ * @param run - The function to be cached.
+ * @returns - The cached function with additional clear method.
+ */
+declare const cached: <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T) => T & IClearableCached;
+
+/**
+ * Interface representing a clearable object.
+ * @template K - The type of the key.
+ */
+interface IClearableMemoize<K = string> {
+    clear: (key?: K) => void;
+}
+/**
+ * Represents a reference to a value of type T.
+ *
+ * @template T - The type of the value referenced by this reference.
+ */
+interface IRefMemoize<T = any> {
+    current: T;
+}
+/**
+ * Represents a generic control interface with key-value pair operations.
+ * @template K The type of keys.
+ * @template V The type of values.
+ * @interface
+ */
+interface IControlMemoize<K, V> {
+    /**
+     * Adds a key-value pair to the control.
+     * @param key The key to add.
+     * @param value The value to associate with the key.
+     */
+    add: (key: K, value: V) => void;
+    /**
+     * Removes a key and its associated value from the control.
+     * @param key The key to remove.
+     * @returns true if ok
+     */
+    remove: (key: K) => boolean;
+}
+/**
+ * A memoization function that caches the result of a function based on its arguments.
+ *
+ * @template T - The function type that will be memoized
+ * @template A - The argument types of the function
+ * @template K - The key type used to store the memoized results
+ * @param key - A function that generates a unique key based on the arguments of the original function
+ * @param run - The original function to be memoized
+ * @returns - A memoized version of the original function with the ability to clear the cache
+ */
+declare const memoize: <T extends (...args: A) => any, A extends any[], K = string>(key: (args: A) => K, run: T) => T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>>;
+
+interface IErrorTrycatch extends Error {
+}
+/**
+ * Represents a configuration interface.
+ *
+ * @interface
+ */
+interface IControllTrycatch {
+    allowedErrors?: {
+        new (): IErrorTrycatch;
+    }[];
+    fallback?: (error: Error) => void;
+    defaultValue: null | false;
+}
+/**
+ * A higher-order function that wraps the provided function with a try-catch block. It catches any errors that occur during the execution of the function and handles them according to
+ * the specified configuration.
+ *
+ * @template T - The type of the function being wrapped
+ * @template A - An array of arguments that the function accepts
+ * @template V - The type of the value returned by the function
+ *
+ * @param run - The function to be wrapped
+ * @param config - The configuration object
+ * @param config.fallback - The fallback function to be called with the caught error (optional)
+ * @param config.defaultValue - The default value to be returned if an error occurs (optional, default: null)
+ *
+ * @returns - The wrapped function that handles errors and returns the result or the default value
+ */
+declare const trycatch: <T extends (...args: A) => any, A extends any[], V extends unknown>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IControllTrycatch>) => (...args: A) => ReturnType<T> | null;
+
+/**
+ * Represents a clearable object that can be garbage collected.
+ *
+ * @template K - The type of key used for clearing.
+ */
+interface IClearableTtl<K = string> extends IClearableMemoize<K> {
+    gc: () => void;
+}
+/**
+ * Wrap a function with time-to-live (TTL) caching.
+ *
+ * @template T - The function type.
+ * @template A - The argument types of the function.
+ * @template K - The key type for caching.
+ * @param run - The function to wrap.
+ * @param options - The configuration options.
+ * @param [options.key] - The key generator function that generates a key based on function arguments.
+ * @param [options.timeout] - The TTL duration in milliseconds.
+ * @returns - The wrapped function with caching capability.
+ */
+declare const ttl: <T extends (...args: A) => any, A extends any[], K = string>(run: T, { key, timeout, }?: {
+    key?: (args: A) => K;
+    timeout?: number;
+}) => T & IClearableTtl<K> & IControlMemoize<K, ReturnType<T>>;
+
+/**
+ * Represents an interface for objects that can be cleared.
+ */
+interface IClearableThrottle {
+    clear: () => void;
+}
+/**
+ * Throttle function execution to a specific delay.
+ * @template T - Function type
+ * @param run - Function to be throttled
+ * @param delay - Delay in milliseconds (default: 1000)
+ * @returns - Throttled function with clear method
+ */
+declare const throttle: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IClearableThrottle;
+
+declare const obsolete: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>) => (...args: P) => Promise<T>;
+
+/**
+ * Represents a clearable object.
+ * @interface
+ */
+interface IClearableSingletick {
+    clear: () => void;
+}
+/**
+ * Wraps a function with a single event loop ticking behavior.
+ *
+ * @param run - The function to be wrapped.
+ * @returns A wrapped function that executes with a single ticking behavior.
+ */
+declare const singletick: {
+    <T extends (...args: any[]) => any>(run: T): T & IClearableSingletick;
+    delay: number;
+};
+
+/**
+ * Represents a function wrapped in a promise that can be executed and cleared.
+ *
+ * @template T - The type of the promise result.
+ * @template P - The type of the function arguments.
+ */
+interface IWrappedAfterInitFn<T extends any = any, P extends any[] = any> {
+    (...args: P): Promise<T>;
+    clear(): void;
+}
+/**
+ * Creates a wrapped function that only executes the provided function after the initial call has completed.
+ * The wrapped function can be cleared to allow subsequent calls to execute the provided function again.
+ *
+ * @template T The type of the promise resolved by the provided function.
+ * @template P The type of the arguments passed to the provided function.
+ * @param run The function to be wrapped.
+ * @returns The wrapped function.
+ */
+declare const afterinit: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>) => IWrappedAfterInitFn<T, P>;
+
+/**
+ * Represents a wrapped function definition.
+ * @template T - The return type of the wrapped function.
+ * @template P - The parameter types of the wrapped function.
+ */
+interface IWrappedLockFn<T extends any = any, P extends any[] = any> extends IWrappedQueuedFn<T, P> {
+    beginLock(): void;
+    endLock(): Promise<void>;
+}
+/**
+ * Wraps a promise function with lock functionality.
+ *
+ * @param promise - The promise function to be wrapped.
+ * @returns The wrapped function with lock functionality.
+ */
+declare const lock: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedLockFn<T, P>;
+
+/**
+ * Delays the execution for the specified amount of time.
+ *
+ * @param [timeout=1000] - The duration to wait in milliseconds.
+ * @returns A promise that resolves once the timeout has elapsed.
+ */
+declare const sleep: (timeout?: number) => Promise<void>;
+
+/**
+ * A utility function to deep flatten an array of objects.
+ *
+ * @param arr - The input array to be deep flattened.
+ * @returns - The deep flattened array.
+ * @template T - The type of elements in the input array.
+ */
+declare const deepFlat: <T = any>(arr?: T[]) => T[];
+
+/**
+ * Represents an object used for awaiting a value or a promise.
+ *
+ * @template T - The type of the value to be resolved.
+ *
+ * @interface
+ * @function
+ * @param value - The value or promise to resolve.
+ * @param reason - The reason for rejecting the promise.
+ */
+interface IAwaiter<T extends unknown> {
+    resolve(value: T | PromiseLike<T>): void;
+    reject(reason?: any): void;
+}
+/**
+ * Creates an awaiter object along with a promise.
+ *
+ * @template T - The type of the value to be resolved.
+ *
+ * @function
+ * @returns An array containing the promise and the awaiter object.
+ */
+declare const createAwaiter: <T extends unknown>() => [Promise<T>, IAwaiter<T>];
+
 /**
  * Represents a behavior subject.
  * @template Data The type of data that the behavior subject holds.
@@ -1344,9 +1408,102 @@ declare const iterateUnion: <T extends IRowData = IRowData>(iterators: AsyncGene
 
 declare function iterateList<T extends IRowData = IRowData>(rows: T[], map?: (row: T) => Promise<Awaited<T>>): AsyncGenerator<Awaited<T>, void, unknown>;
 
+declare const has: <T = unknown>(arr: T | T[] | Set<T> | Map<T, unknown> | null | undefined, value: T) => boolean;
+
+type Value$3 = number | boolean;
+/**
+ * Performs a logical AND operation on multiple values.
+ *
+ * @template T - The type of the values
+ * @param args - The values to perform the logical AND operation on
+ * @returns - The result of the logical AND operation
+ */
+declare const and: <T = Promise<Value$3>>(...args: T[]) => T;
+
+type Value$2 = number | boolean;
+/**
+ * Returns a value of type T representing the logical OR operation on the given arguments.
+ *
+ * @param args - The arguments to be evaluated for the logical OR operation.
+ * @returns A value of type T representing the result of the logical OR operation.
+ * @throws If any of the arguments is a rejected promise.
+ * @typeparam T - The type of the arguments and the return value.
+ */
+declare const or: <T = Promise<Value$2>>(...args: T[]) => T;
+
+type Value$1 = number | boolean;
+/**
+ * Applies the logical negation operator to the given argument.
+ * If the argument is a Promise, it returns a new Promise that resolves to the negation of the resolved value of the argument Promise.
+ * If the argument is not a Promise, it returns the negation of the argument.
+ *
+ * @template T - The type of the argument and the return value.
+ * @param arg - The argument to apply the logical negation operator.
+ * @returns - The result of apply the logical negation operator to the argument.
+ */
+declare const not: <T = Promise<Value$1>>(arg: T) => T;
+
+type Value = number | boolean;
+/**
+ * Executes conditional branching based on the provided conditions and returns the appropriate value.
+ *
+ * @template A - Type of the condition value.
+ * @template T - Type of the run value.
+ * @template E - Type of the not value.
+ *
+ * @param params - The parameters object.
+ * @param params.condition - The condition value or a function that returns the condition value.
+ * @param params.run - The run value or a function that returns the run value.
+ * @param [params.not=false] - The not value or a function that returns the not value. Defaults to false.
+ *
+ * @returns - The result of executing the condition and returning the appropriate value.
+ */
+declare const match: <A = Promise<Value>, T = Promise<Value>, E = false>({ condition, run, not }: {
+    condition: A | (() => A);
+    run: T | (() => T);
+    not?: E | (() => E);
+}) => A | T | E;
+
+/**
+ * Returns the first element of an array.
+ *
+ * @template T - The type of array elements.
+ * @param arr - The input array.
+ * @returns - The first element of the array, or null if the array is null or empty.
+ */
+declare const first: <T = any>(arr: T[] | null | undefined) => T | null;
+
+/**
+ * Joins multiple arrays into a single array, removing duplicates and filtering out null values.
+ *
+ * @param arr - The arrays to join.
+ * @returns - The joined array.
+ *
+ * @template T - The type of values in the array.
+ */
+declare const join: <T = string>(...arr: (T | T[] | null)[] | (T | T[] | null)[][]) => T[];
+
+/**
+ * Returns the last element of an array or null if the array is empty or not an array.
+ *
+ * @param arr - The array from which to retrieve the last element.
+ * @returns - The last element of the array or null.
+ */
+declare const last: <T = any>(arr: T[] | null | undefined) => T | null;
+
+/**
+ * Filters an array and removes null values, casting the resulting array to a specific generic type if specified.
+ *
+ * @param arr - The input array containing values of type T or null.
+ * @returns - The filtered array with null values removed.
+ *
+ * @template T - The generic type of the array elements.
+ */
+declare const truely: <T = string>(arr: (T | null)[]) => T[];
+
 type TSubject<Data = void> = TSubject$1<Data>;
 type TObserver<Data = void> = TObserver$1<Data>;
 type TObservable<Data = void> = TObservable$1<Data>;
 type TBehaviorSubject<Data = unknown> = TBehaviorSubject$1<Data>;
 
-export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, type IClearableCached, type IClearableMemoize, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TObservable, type TObserver, type TSubject, Task, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, execpool, filterDocuments, formatText, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, mapDocuments, memoize, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, sleep, throttle, trycatch, ttl };
+export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TObservable, type TObserver, type TSubject, Task, TimeoutError, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, execpool, filterDocuments, first, formatText, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
