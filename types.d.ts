@@ -57,7 +57,7 @@ declare const formatText: (raw: string, template: string, { symbol, allowed, rep
 
 declare class TimeoutError extends Error {
 }
-declare const timeout: <T extends (...args: any[]) => any>(run: T, delay?: number) => Promise<Awaited<T>>;
+declare const timeout: <T extends (...args: any[]) => any>(run: T, delay?: number) => T;
 
 type Function$2 = (...args: any[]) => any;
 /**
