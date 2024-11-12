@@ -6,7 +6,7 @@ export { isObject } from './utils/isObject';
 
 export { formatText } from './utils/formatText';
 
-export { timeout, TimeoutError } from './utils/hof/timeout';
+export { timeout, TIMEOUT_SYMBOL } from './utils/hof/timeout';
 export { waitForNext } from './utils/hof/waitForNext';
 
 export { singleshot, ISingleshotClearable } from './utils/hof/singleshot';

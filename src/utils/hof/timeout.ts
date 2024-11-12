@@ -1,9 +1,6 @@
 import sleep from "../sleep";
 
-const TIMEOUT_SYMBOL = Symbol('timeout');
-
-export class TimeoutError extends Error {
-}
+export const TIMEOUT_SYMBOL = Symbol('timeout');
 
 export const timeout = <T extends (...args: any[]) => any>(
   run: T,
@@ -14,9 +11,6 @@ export const timeout = <T extends (...args: any[]) => any>(
       run(...args),
       sleep(delay).then(() => TIMEOUT_SYMBOL),
     ]);
-    if (result === TIMEOUT_SYMBOL) {
-      throw new TimeoutError("timeout exception");
-    }
     return result;
   };
 

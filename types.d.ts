@@ -55,8 +55,7 @@ interface IParams {
  */
 declare const formatText: (raw: string, template: string, { symbol, allowed, replace, }?: IParams) => string;
 
-declare class TimeoutError extends Error {
-}
+declare const TIMEOUT_SYMBOL: unique symbol;
 declare const timeout: <T extends (...args: any[]) => any>(run: T, delay?: number) => T;
 
 type Function$2 = (...args: any[]) => any;
@@ -633,7 +632,7 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
     };
 }
 
-declare const waitForNext: <T = any>(subject: TSubject$1<T>, condition: (t: T) => boolean, delay?: number) => Promise<T>;
+declare const waitForNext: <T = any>(subject: TSubject$1<T>, condition: (t: T) => boolean, delay?: number) => Promise<T | typeof TIMEOUT_SYMBOL>;
 
 /**
  * @interface ISingleshotClearable
@@ -1514,4 +1513,4 @@ type TObserver<Data = void> = TObserver$1<Data>;
 type TObservable<Data = void> = TObservable$1<Data>;
 type TBehaviorSubject<Data = unknown> = TBehaviorSubject$1<Data>;
 
-export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TObservable, type TObserver, type TSubject, Task, TimeoutError, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, filterDocuments, first, formatText, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
+export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, filterDocuments, first, formatText, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
