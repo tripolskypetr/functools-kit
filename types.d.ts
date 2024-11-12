@@ -56,7 +56,7 @@ interface IParams {
 declare const formatText: (raw: string, template: string, { symbol, allowed, replace, }?: IParams) => string;
 
 declare const TIMEOUT_SYMBOL: unique symbol;
-declare const timeout: <T extends (...args: any[]) => any>(run: T, delay?: number) => T;
+declare const timeout: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, delay?: number) => (...args: P) => Promise<symbol | T>;
 
 type Function$2 = (...args: any[]) => any;
 /**
