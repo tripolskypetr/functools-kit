@@ -1,6 +1,6 @@
 {
   "name": "functools-kit",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "A library with helpers for react-declarative app backend development",
   "author": {
     "name": "Petr Tripolsky",
@@ -25,11 +25,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/react-declarative/rn-declarative",
+    "url": "https://github.com/react-declarative/react-declarative",
     "documentation": "https://github.com/react-declarative/react-declarative/tree/master/docs"
   },
   "bugs": {
-    "url": "https://github.com/react-declarative/rn-declarative/issues"
+    "url": "https://github.com/react-declarative/react-declarative/issues"
   },
   "scripts": {
     "build": "rollup -c"
