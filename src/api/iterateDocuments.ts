@@ -10,10 +10,11 @@ const REQUEST_DELAY = 100;
  * Represents a configuration interface for data retrieval.
  * @template Data - The type of row data.
  */
-interface IConfig<Data extends IRowData = IRowData> {
+interface IConfig<Data = IRowData> {
   totalDocuments?: number;
   limit?: number;
   delay?: number;
+  getId?: (data: Data) => RowId; 
   createRequest: (data: {
     limit: number;
     offset: number;
@@ -37,10 +38,11 @@ interface IConfig<Data extends IRowData = IRowData> {
  *
  * @throws If the response length is greater than the specified limit.
  */
-export const iterateDocuments = async function* <Data extends IRowData = IRowData>({
+export const iterateDocuments = async function* <Data = IRowData>({
   totalDocuments = TOTAL_DOCUMENTS,
   limit = REQUEST_LIMIT,
   delay = REQUEST_DELAY,
+  getId = (data) => data["id"],
   createRequest = () => [],
 }: IConfig<Data>): AsyncGenerator<Data[], void, unknown> {
 
@@ -86,9 +88,9 @@ export const iterateDocuments = async function* <Data extends IRowData = IRowDat
       break;
     }
     if (response.length > limit) {
-      throw new Error('react-declarative iterateDocuments response.length > limit');
+      throw new Error('functool-kit iterateDocuments response.length > limit');
     }
-    lastId = response[response.length - 1].id || null;
+    lastId = getId(response[response.length - 1]) || null;
     counter += limit;
     /**
      * Represents the last query made by the user.

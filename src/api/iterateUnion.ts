@@ -1,13 +1,14 @@
 import IRowData, { RowId } from "../model/IRowData";
 
-export const iterateUnion = <T extends IRowData = IRowData>(iterators: AsyncGenerator<T | T[], void, unknown>[]) =>
+export const iterateUnion = <Data = IRowData>(iterators: AsyncGenerator<Data | Data[], void, unknown>[], getId = (data: Data) => data["id"]) =>
     async function* (limit: number, offset: number) {
         const duplicateSet = new Set<RowId>();
         for (const iterator of iterators) {
             for await (const chunk of iterator) {
                 const rows = [chunk].flatMap(v => v);
                 for (const row of rows) {
-                    if (duplicateSet.has(row.id)) {
+                    const id = getId(row);
+                    if (duplicateSet.has(id)) {
                         continue;
                     }
                     if (offset > 0) {
@@ -15,7 +16,7 @@ export const iterateUnion = <T extends IRowData = IRowData>(iterators: AsyncGene
                         continue;
                     }
                     if (limit > 0) {
-                        duplicateSet.add(row.id);
+                        duplicateSet.add(id);
                         yield row;
                         limit -= 1;
                         continue;

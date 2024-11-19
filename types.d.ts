@@ -1329,7 +1329,7 @@ declare const paginateDocuments: <T extends unknown>(iterator: AsyncGenerator<T 
  * @param iterator - The async generator to resolve documents from.
  * @returns - A promise that resolves to the flattened array of documents.
  */
-declare function distinctDocuments<T extends IRowData>(iterator: AsyncGenerator<T | T[], void, unknown>): AsyncGenerator<T, void, unknown>;
+declare function distinctDocuments<Data = IRowData>(iterator: AsyncGenerator<Data | Data[], void, unknown>, getId?: (data: Data) => any): AsyncGenerator<Awaited<Data>, void, unknown>;
 
 /**
  * Resolves the documents from an async generator and returns them as a flattened array.
@@ -1373,10 +1373,11 @@ declare function mapDocuments<T extends unknown, U = T>(iterator: AsyncGenerator
  * Represents a configuration interface for data retrieval.
  * @template Data - The type of row data.
  */
-interface IConfig<Data extends IRowData = IRowData> {
+interface IConfig<Data = IRowData> {
     totalDocuments?: number;
     limit?: number;
     delay?: number;
+    getId?: (data: Data) => RowId;
     createRequest: (data: {
         limit: number;
         offset: number;
@@ -1399,13 +1400,13 @@ interface IConfig<Data extends IRowData = IRowData> {
  *
  * @throws If the response length is greater than the specified limit.
  */
-declare const iterateDocuments: <Data extends IRowData = IRowData>({ totalDocuments, limit, delay, createRequest, }: IConfig<Data>) => AsyncGenerator<Data[], void, unknown>;
+declare const iterateDocuments: <Data = IRowData>({ totalDocuments, limit, delay, getId, createRequest, }: IConfig<Data>) => AsyncGenerator<Data[], void, unknown>;
 
-declare function iteratePromise<T extends IRowData = IRowData>(fn: () => Promise<T[]>): AsyncGenerator<T, void, unknown>;
+declare function iteratePromise<Data = IRowData>(fn: () => Promise<Data[]>): AsyncGenerator<Awaited<Data>, void, unknown>;
 
-declare const iterateUnion: <T extends IRowData = IRowData>(iterators: AsyncGenerator<T | T[], void, unknown>[]) => (limit: number, offset: number) => AsyncGenerator<T, void, unknown>;
+declare const iterateUnion: <Data = IRowData>(iterators: AsyncGenerator<Data | Data[], void, unknown>[], getId?: (data: Data) => any) => (limit: number, offset: number) => AsyncGenerator<Awaited<Data>, void, unknown>;
 
-declare function iterateList<T extends IRowData = IRowData>(rows: T[], map?: (row: T) => Promise<Awaited<T>>): AsyncGenerator<Awaited<T>, void, unknown>;
+declare function iterateList<T = IRowData>(rows: T[], map?: (row: T) => Promise<Awaited<T>>): AsyncGenerator<Awaited<T>, void, unknown>;
 
 declare const has: <T = unknown>(arr: T | T[] | Set<T> | Map<T, unknown> | null | undefined, value: T) => boolean;
 
