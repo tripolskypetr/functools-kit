@@ -1,6 +1,6 @@
 {
   "name": "functools-kit",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "A library with helpers for react-declarative app backend development",
   "author": {
     "name": "Petr Tripolsky",
@@ -49,7 +49,6 @@
     "@types/node": "22.9.0",
     "rollup": "3.29.4",
     "rollup-plugin-dts": "6.1.1",
-    "rollup-plugin-inject-process-env": "1.3.1",
     "rollup-plugin-peer-deps-external": "2.2.4",
     "tslib": "2.7.0"
   },
