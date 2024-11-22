@@ -49,6 +49,28 @@ export type TObserver<Data = void> = TObserverInternal<Data>;
 export type TObservable<Data = void> = TObservableInternal<Data>;
 export type TBehaviorSubject<Data = unknown> = TBehaviorSubjectInternal<Data>;
 
+import TOffsetPaginatorInternal from './model/TOffsetPaginator';
+import TCursorPaginatorInternal from './model/TCursorPaginator';
+import TPaginatorInternal from './model/TPaginator';
+
+export type TOffsetPaginator<
+    FilterData extends {} = any,
+    RowData extends IRowData = any,
+    Payload = any
+> = TOffsetPaginatorInternal<FilterData, RowData, Payload>;
+
+export type TCursorPaginator<
+    FilterData extends {} = any,
+    RowData extends IRowData = any,
+    Payload = any
+> = TCursorPaginatorInternal<FilterData, RowData, Payload>;
+
+export type TPaginator<
+    FilterData extends {} = any,
+    RowData extends IRowData = any,
+    Payload = any
+> = TPaginatorInternal<FilterData, RowData, Payload>;
+
 export type { IRowData, RowId };
 
 export { paginateDocuments } from './api/paginateDocuments';
