@@ -766,7 +766,7 @@ declare const queued: <T extends unknown = any, P extends any[] = any[]>(promise
  * @property maxExec - The maximum number of executions allowed concurrently.
  * @property delay - The delay in milliseconds between executions.
  */
-interface IConfig$1 {
+interface IConfig$2 {
     maxExec: number;
     delay: number;
 }
@@ -797,7 +797,7 @@ interface IWrappedExecpoolFn<T extends any = any, P extends any[] = any> {
  * @param options - Optional configuration options for the execution pool.
  * @returns A wrapped function that executes asynchronously within the execution pool.
  */
-declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, { maxExec, delay, }?: Partial<IConfig$1>) => IWrappedExecpoolFn<T, P>;
+declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, { maxExec, delay, }?: Partial<IConfig$2>) => IWrappedExecpoolFn<T, P>;
 
 /**
  * Represents a wrapped function that returns a promise.
@@ -883,6 +883,7 @@ interface IControlMemoize<K, V> {
  */
 declare const memoize: <T extends (...args: A) => any, A extends any[], K = string>(key: (args: A) => K, run: T) => T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>>;
 
+declare const CATCH_SYMBOL: unique symbol;
 interface IErrorTrycatch extends Error {
 }
 /**
@@ -890,12 +891,12 @@ interface IErrorTrycatch extends Error {
  *
  * @interface
  */
-interface IControllTrycatch {
+interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL> {
     allowedErrors?: {
         new (): IErrorTrycatch;
     }[];
     fallback?: (error: Error) => void;
-    defaultValue: null | false;
+    defaultValue: DefaultValue;
 }
 /**
  * A higher-order function that wraps the provided function with a try-catch block. It catches any errors that occur during the execution of the function and handles them according to
@@ -904,15 +905,16 @@ interface IControllTrycatch {
  * @template T - The type of the function being wrapped
  * @template A - An array of arguments that the function accepts
  * @template V - The type of the value returned by the function
+ * @template D - The type of the default value to return in case of error
  *
  * @param run - The function to be wrapped
  * @param config - The configuration object
  * @param config.fallback - The fallback function to be called with the caught error (optional)
- * @param config.defaultValue - The default value to be returned if an error occurs (optional, default: null)
+ * @param config.defaultValue - The default value to be returned if an error occurs
  *
  * @returns - The wrapped function that handles errors and returns the result or the default value
  */
-declare const trycatch: <T extends (...args: A) => any, A extends any[], V extends unknown>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IControllTrycatch>) => (...args: A) => ReturnType<T> | null;
+declare const trycatch: <T extends (...args: A) => any, A extends any[], V, D = typeof CATCH_SYMBOL>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IControllTrycatch<D>>) => (...args: A) => ReturnType<T> | D;
 
 /**
  * Represents a clearable object that can be garbage collected.
@@ -1457,7 +1459,7 @@ declare function mapDocuments<T extends unknown, U = T>(iterator: AsyncGenerator
  * Represents a configuration interface for data retrieval.
  * @template Data - The type of row data.
  */
-interface IConfig<Data = IRowData> {
+interface IConfig$1<Data = IRowData> {
     totalDocuments?: number;
     limit?: number;
     delay?: number;
@@ -1467,7 +1469,7 @@ interface IConfig<Data = IRowData> {
         offset: number;
         page: number;
         lastId: RowId | null;
-    } & Omit<IConfig<Data>, 'createRequest'>) => (Data[] | Promise<Data[]>);
+    } & Omit<IConfig$1<Data>, 'createRequest'>) => (Data[] | Promise<Data[]>);
 }
 /**
  * Asynchronous generator function that iterates over documents.
@@ -1484,7 +1486,7 @@ interface IConfig<Data = IRowData> {
  *
  * @throws If the response length is greater than the specified limit.
  */
-declare const iterateDocuments: <Data = IRowData>({ totalDocuments, limit, delay, getId, createRequest, }: IConfig<Data>) => AsyncGenerator<Data[], void, unknown>;
+declare const iterateDocuments: <Data = IRowData>({ totalDocuments, limit, delay, getId, createRequest, }: IConfig$1<Data>) => AsyncGenerator<Data[], void, unknown>;
 
 declare function iteratePromise<Data = IRowData>(fn: () => Promise<Data[]>): AsyncGenerator<Awaited<Data>, void, unknown>;
 
@@ -1593,6 +1595,42 @@ declare const truely: <T = string>(arr: (T | null)[]) => T[];
  */
 declare const errorData: (error: Error) => {};
 
+type RequestInfo = string | URL | Request;
+interface Request {
+    method?: string;
+    url: string;
+    headers?: Headers;
+    body?: any;
+    signal?: AbortSignal;
+}
+interface IConfig {
+    useSymbolException?: boolean;
+}
+/**
+ * Represents an error that occurs during a fetch request.
+ *
+ * @class
+ * @extends Error
+ */
+declare class FetchError extends Error {
+    readonly originalError: any;
+    readonly request: RequestInfo;
+    readonly response: Response | undefined;
+    constructor(originalError: any, request: RequestInfo, response: Response | undefined);
+}
+/**
+ * Makes an asynchronous HTTP request using the Fetch API.
+ *
+ * @param input - The resource URL or an instance of the URL class.
+ * @param [init] - The request options.
+ * @returns - The response data as a Promise.
+ * @throws - If an error occurs during the request.
+ */
+declare const fetchApi: {
+    <T = any>(input: RequestInfo | URL, init?: RequestInit): Promise<T>;
+    config(config: Partial<IConfig>): void;
+};
+
 type TSubject<Data = void> = TSubject$1<Data>;
 type TObserver<Data = void> = TObserver$1<Data>;
 type TObservable<Data = void> = TObservable$1<Data>;
@@ -1602,4 +1640,4 @@ type TOffsetPaginator<FilterData extends {} = any, RowData extends IRowData = an
 type TCursorPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TCursorPaginator$1<FilterData, RowData, Payload>;
 type TPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TPaginator$1<FilterData, RowData, Payload>;
 
-export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, EventEmitter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, filterDocuments, first, formatText, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
+export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };

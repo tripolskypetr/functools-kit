@@ -1,3 +1,5 @@
+export const CATCH_SYMBOL = Symbol("default");
+
 export interface IErrorTrycatch extends Error {}
 
 /**
@@ -5,10 +7,10 @@ export interface IErrorTrycatch extends Error {}
  *
  * @interface
  */
-export interface IControllTrycatch {
-    allowedErrors?: {new(): IErrorTrycatch}[];
-    fallback?: (error: Error) => void
-    defaultValue: null | false;
+export interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL> {
+    allowedErrors?: { new (): IErrorTrycatch }[];
+    fallback?: (error: Error) => void;
+    defaultValue: DefaultValue;
 }
 
 /**
@@ -21,7 +23,10 @@ export interface IControllTrycatch {
  * @returns - A promise that resolves to the resolved value of the input promise, or the defaultValue if an error occurs.
  *
  */
-const awaiter = async <V extends any>(value: Promise<V>, { fallback, defaultValue }: IControllTrycatch) => {
+const awaiter = async <V, D>(
+    value: Promise<V>,
+    { fallback, defaultValue }: IControllTrycatch<D>
+): Promise<V | D> => {
     try {
         return await value;
     } catch (error) {
@@ -37,24 +42,33 @@ const awaiter = async <V extends any>(value: Promise<V>, { fallback, defaultValu
  * @template T - The type of the function being wrapped
  * @template A - An array of arguments that the function accepts
  * @template V - The type of the value returned by the function
+ * @template D - The type of the default value to return in case of error
  *
  * @param run - The function to be wrapped
  * @param config - The configuration object
  * @param config.fallback - The fallback function to be called with the caught error (optional)
- * @param config.defaultValue - The default value to be returned if an error occurs (optional, default: null)
+ * @param config.defaultValue - The default value to be returned if an error occurs
  *
  * @returns - The wrapped function that handles errors and returns the result or the default value
  */
-export const trycatch = <T extends (...args: A) => any, A extends any[], V extends any>(run: T, {
-    allowedErrors,
-    fallback,
-    defaultValue = null,
-}: Partial<IControllTrycatch> = {}): (...args: A) => ReturnType<T> | null => {
+export const trycatch = <
+    T extends (...args: A) => any,
+    A extends any[],
+    V,
+    D = typeof CATCH_SYMBOL
+>(
+    run: T,
+    {
+        allowedErrors,
+        fallback,
+        defaultValue = CATCH_SYMBOL as D,
+    }: Partial<IControllTrycatch<D>> = {}
+): (...args: A) => ReturnType<T> | D => {
     return (...args) => {
         try {
             const result = run(...args);
             if (result instanceof Promise) {
-                return awaiter<V>(result, { fallback, defaultValue });
+                return awaiter<V, D>(result, { fallback, defaultValue });
             }
             return result;
         } catch (error) {
@@ -70,6 +84,6 @@ export const trycatch = <T extends (...args: A) => any, A extends any[], V exten
             return defaultValue;
         }
     };
-}
+};
 
 export default trycatch;

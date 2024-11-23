@@ -18,7 +18,7 @@ export { execpool, IWrappedExecpoolFn } from './utils/hof/execpool';
 export { retry, IWrappedRetryFn } from './utils/hof/retry';
 export { cached, IClearableCached } from './utils/hof/cached';
 export { memoize, IClearableMemoize, IControlMemoize, IRefMemoize } from './utils/hof/memoize';
-export { trycatch, IControllTrycatch, IErrorTrycatch } from './utils/hof/trycatch';
+export { trycatch, IControllTrycatch, IErrorTrycatch, CATCH_SYMBOL } from './utils/hof/trycatch';
 export { ttl, IClearableTtl } from './utils/hof/ttl';
 export { throttle, IClearableThrottle } from './utils/hof/throttle';
 
@@ -98,3 +98,5 @@ export { truely } from './utils/math/truely';
 
 export { compose } from './utils/compose';
 export { errorData } from './utils/errorData';
+
+export { fetchApi, FetchError } from './api/fetchApi';
