@@ -1631,6 +1631,56 @@ declare const fetchApi: {
     config(config: Partial<IConfig>): void;
 };
 
+type TRequest<Data extends object = {}, Payload extends object | undefined = undefined> = Payload extends undefined ? {
+    serviceName: string;
+    clientId: string;
+    userId: string;
+    token: string;
+    data: Data;
+    payload?: Payload;
+} : {
+    serviceName: string;
+    clientId: string;
+    userId: string;
+    token: string;
+    data: Data;
+    payload: Payload;
+};
+
+type TResponse<Data extends object = {}, Payload extends object | undefined = undefined> = Payload extends undefined ? {
+    status: "ok";
+    serviceName: string;
+    clientId: string;
+    userId: string;
+    token: string;
+    data: Data;
+    payload?: Payload;
+} | {
+    status: "error";
+    serviceName: string;
+    clientId: string;
+    userId: string;
+    token: string;
+    error: string;
+    payload?: Payload;
+} : {
+    status: "ok";
+    serviceName: string;
+    clientId: string;
+    userId: string;
+    token: string;
+    data: Data;
+    payload: Payload;
+} | {
+    status: "error";
+    serviceName: string;
+    clientId: string;
+    userId: string;
+    token: string;
+    error: string;
+    payload: Payload;
+};
+
 type TSubject<Data = void> = TSubject$1<Data>;
 type TObserver<Data = void> = TObserver$1<Data>;
 type TObservable<Data = void> = TObservable$1<Data>;
@@ -1640,4 +1690,4 @@ type TOffsetPaginator<FilterData extends {} = any, RowData extends IRowData = an
 type TCursorPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TCursorPaginator$1<FilterData, RowData, Payload>;
 type TPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TPaginator$1<FilterData, RowData, Payload>;
 
-export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
+export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };

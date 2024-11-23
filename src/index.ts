@@ -100,3 +100,6 @@ export { compose } from './utils/compose';
 export { errorData } from './utils/errorData';
 
 export { fetchApi, FetchError } from './api/fetchApi';
+
+export type { TRequest } from './model/TRequest';
+export type { TResponse } from './model/TResponse';
