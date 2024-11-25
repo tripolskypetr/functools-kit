@@ -1635,6 +1635,7 @@ type TRequest<Data extends object = {}, Payload extends object | undefined = und
     serviceName: string;
     clientId: string;
     userId: string;
+    requestId: string;
     token: string;
     data: Data;
     payload?: Payload;
@@ -1642,6 +1643,7 @@ type TRequest<Data extends object = {}, Payload extends object | undefined = und
     serviceName: string;
     clientId: string;
     userId: string;
+    requestId: string;
     token: string;
     data: Data;
     payload: Payload;
@@ -1652,6 +1654,7 @@ type TResponse<Data extends object = {}, Payload extends object | undefined = un
     serviceName: string;
     clientId: string;
     userId: string;
+    requestId: string;
     token: string;
     data: Data;
     payload?: Payload;
@@ -1660,6 +1663,7 @@ type TResponse<Data extends object = {}, Payload extends object | undefined = un
     serviceName: string;
     clientId: string;
     userId: string;
+    requestId: string;
     token: string;
     error: string;
     payload?: Payload;
@@ -1668,6 +1672,7 @@ type TResponse<Data extends object = {}, Payload extends object | undefined = un
     serviceName: string;
     clientId: string;
     userId: string;
+    requestId: string;
     token: string;
     data: Data;
     payload: Payload;
@@ -1676,6 +1681,7 @@ type TResponse<Data extends object = {}, Payload extends object | undefined = un
     serviceName: string;
     clientId: string;
     userId: string;
+    requestId: string;
     token: string;
     error: string;
     payload: Payload;
