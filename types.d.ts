@@ -1657,7 +1657,7 @@ type TRequest<Data extends object = {}, Payload extends object | undefined = und
     payload: Payload;
 };
 
-type TResponse<Data extends object = {}, Payload extends object | undefined = undefined> = Payload extends undefined ? {
+type TResponse<Data extends object | null = {}, Payload extends object | undefined = undefined> = Payload extends undefined ? {
     status: "ok";
     serviceName: string;
     clientId: string;

@@ -1,4 +1,4 @@
-export type TResponse<Data extends object = {}, Payload extends object | undefined = undefined> =
+export type TResponse<Data extends object | null = {}, Payload extends object | undefined = undefined> =
     Payload extends undefined
         ? {
             status: "ok";
