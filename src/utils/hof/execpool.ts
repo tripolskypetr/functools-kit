@@ -75,7 +75,7 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
      */
     const execute = (awaiter: IAwaiter<T>, ...args: P) => {
         const exec = run(...args);
-        execSet.add(exec);
+        execSet.add(exec.catch((error) => console.error("functools-kit execpool exec catch", {error, args}));
         exec.finally(() => {
             execSet.delete(exec);
         });
