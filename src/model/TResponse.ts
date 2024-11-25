@@ -6,7 +6,6 @@ export type TResponse<Data extends object | null = {}, Payload extends object | 
             clientId: string;
             userId: string;
             requestId: string;
-            token: string;
             data: Data;
             payload?: Payload;
           }
@@ -16,7 +15,6 @@ export type TResponse<Data extends object | null = {}, Payload extends object | 
             clientId: string;
             userId: string;
             requestId: string;
-            token: string;
             error: string;
             payload?: Payload;
           }
@@ -26,7 +24,6 @@ export type TResponse<Data extends object | null = {}, Payload extends object | 
             clientId: string;
             userId: string;
             requestId: string;
-            token: string;
             data: Data;
             payload: Payload;
           }
@@ -36,7 +33,6 @@ export type TResponse<Data extends object | null = {}, Payload extends object | 
             clientId: string;
             userId: string;
             requestId: string;
-            token: string;
             error: string;
             payload: Payload;
           };
