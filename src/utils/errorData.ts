@@ -4,7 +4,7 @@
  * @param error - The Error object.
  * @returns - An object containing the enumerable properties of the Error object.
  */
-export const errorData = (error: Error) => {
+export const errorData = (error: any) => {
     if (!error) {
         return {};
     }

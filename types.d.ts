@@ -1601,7 +1601,7 @@ declare const truely: <T = string>(arr: (T | null)[]) => T[];
  * @param error - The Error object.
  * @returns - An object containing the enumerable properties of the Error object.
  */
-declare const errorData: (error: Error) => {};
+declare const errorData: (error: any) => {};
 
 type RequestInfo = string | URL | Request;
 interface Request {
