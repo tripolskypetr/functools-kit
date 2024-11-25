@@ -9,6 +9,8 @@ export { formatText } from './utils/formatText';
 export { timeout, TIMEOUT_SYMBOL } from './utils/hof/timeout';
 export { waitForNext } from './utils/hof/waitForNext';
 
+export { getErrorMessage } from './utils/getErrorMessage';
+
 export { singleshot, ISingleshotClearable } from './utils/hof/singleshot';
 export { singlerun, Task, ISinglerunClearable } from './utils/hof/singlerun';
 export { cancelable, CANCELED_PROMISE_SYMBOL, IWrappedCancelableFn } from './utils/hof/cancelable';
