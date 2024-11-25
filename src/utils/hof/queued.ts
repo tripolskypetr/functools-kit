@@ -1,4 +1,4 @@
-import { CANCELED_SYMBOL } from "./cancelable";
+import { CANCELED_PROMISE_SYMBOL } from "./cancelable";
 
 import compose, { Function } from "../compose";
 
@@ -8,7 +8,7 @@ import compose, { Function } from "../compose";
  * @template P - The types of the parameters of the wrapped function.
  */
 export interface IWrappedQueuedFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    (...args: P): Promise<T | typeof CANCELED_PROMISE_SYMBOL>;
     clear(): void;
     cancel(): void;
 };
@@ -31,7 +31,7 @@ export const queued = <T extends any = any, P extends any[] = any[]>(promise: (.
      * @template P - The tuple type of the arguments passed to the promise function.
      * @param promise - The promise function to be executed.
      * @param args - The arguments to be passed to the promise function.
-     * @returns - A promise that resolves with the result of the promise function or CANCELED_SYMBOL if canceled.
+     * @returns - A promise that resolves with the result of the promise function or CANCELED_PROMISE_SYMBOL if canceled.
      */
     const wrappedFn = (...args: P) => {
         let isCanceled = false;
@@ -42,7 +42,7 @@ export const queued = <T extends any = any, P extends any[] = any[]>(promise: (.
                 if (!isCanceled) {
                     return await promise(...args)
                 }
-                return CANCELED_SYMBOL;
+                return CANCELED_PROMISE_SYMBOL;
             })
             .finally(() => {
                 wrappedFn.clear();
@@ -79,6 +79,6 @@ export const queued = <T extends any = any, P extends any[] = any[]>(promise: (.
     return wrappedFn;
 };
 
-export { CANCELED_SYMBOL };
+export { CANCELED_PROMISE_SYMBOL };
 
 export default queued;

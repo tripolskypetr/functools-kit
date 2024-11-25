@@ -8,7 +8,7 @@ import sleep from "../sleep";
 import queued from "../hof/queued";
 import debounce from "../hof/debounce";
 
-import { CANCELED_SYMBOL } from "../hof/cancelable";
+import { CANCELED_PROMISE_SYMBOL } from "../hof/cancelable";
 
 const OBSERVER_EVENT = Symbol('observer-subscribe');
 
@@ -248,7 +248,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const handler = async (value: Data) => {
             try {
                 const pendingValue = await iteraction(value);
-                if (pendingValue !== CANCELED_SYMBOL) {
+                if (pendingValue !== CANCELED_PROMISE_SYMBOL) {
                     observer.emit(pendingValue);
                 }
             } catch (e: any) {

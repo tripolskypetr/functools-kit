@@ -4,7 +4,7 @@
  * @template P - The types of the parameters of the wrapped function.
  */
 export interface IWrappedCancelableFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    (...args: P): Promise<T | typeof CANCELED_PROMISE_SYMBOL>;
     cancel(): void;
 };
 
@@ -12,9 +12,9 @@ export interface IWrappedCancelableFn<T extends any = any, P extends any[] = any
  * Symbol representing cancellation status.
  *
  * @type {Symbol}
- * @name CANCELED_SYMBOL
+ * @name CANCELED_PROMISE_SYMBOL
  */
-export const CANCELED_SYMBOL = Symbol('cancelable-canceled');
+export const CANCELED_PROMISE_SYMBOL = Symbol('cancelable-canceled');
 
 /**
  * Wraps a promise function and provides cancellation functionality.
@@ -34,15 +34,15 @@ export const cancelable = <T extends any = any, P extends any[] = any[]>(promise
      * @template P - The type of the arguments passed to the wrapped function.
      * @template T - The type of the resolved value of the promise.
      * @param promise - The promise to be wrapped.
-     * @returns A promise that resolves with the resolved value of the given promise, or with the symbol `CANCELED_SYMBOL` if the wrapped function's
+     * @returns A promise that resolves with the resolved value of the given promise, or with the symbol `CANCELED_PROMISE_SYMBOL` if the wrapped function's
      * cancellation is triggered.
      */
-    const wrappedFn = (...args: P) => new Promise<T | typeof CANCELED_SYMBOL>((resolve, reject) => {
+    const wrappedFn = (...args: P) => new Promise<T | typeof CANCELED_PROMISE_SYMBOL>((resolve, reject) => {
         let hasCanceled = false;
         cancelRef && cancelRef();
         cancelRef = () => {
             hasCanceled = true;
-            resolve(CANCELED_SYMBOL);
+            resolve(CANCELED_PROMISE_SYMBOL);
         };
         const result = promise(...args);
         result.then((val) => {

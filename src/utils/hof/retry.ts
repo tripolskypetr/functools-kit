@@ -1,4 +1,4 @@
-import queued, { CANCELED_SYMBOL } from "./queued";
+import queued, { CANCELED_PROMISE_SYMBOL } from "./queued";
 
 /**
  * Represents a wrapped function that returns a promise.
@@ -6,7 +6,7 @@ import queued, { CANCELED_SYMBOL } from "./queued";
  * @template P - The type of the function's arguments.
  */
 export interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    (...args: P): Promise<T | typeof CANCELED_PROMISE_SYMBOL>;
     cancel(): void;
     clear(): void;
 };

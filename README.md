@@ -54,4 +54,4 @@ The complete description is available [by this link](https://github.com/react-de
  
 4. **Constants** : 
 
-  - `CANCELED_SYMBOL`: A unique symbol representing cancellation status.
+  - `CANCELED_PROMISE_SYMBOL`: A unique symbol representing cancellation status.

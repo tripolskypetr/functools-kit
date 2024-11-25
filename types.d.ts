@@ -701,16 +701,16 @@ declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & ISin
  * @template P - The types of the parameters of the wrapped function.
  */
 interface IWrappedCancelableFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    (...args: P): Promise<T | typeof CANCELED_PROMISE_SYMBOL>;
     cancel(): void;
 }
 /**
  * Symbol representing cancellation status.
  *
  * @type {Symbol}
- * @name CANCELED_SYMBOL
+ * @name CANCELED_PROMISE_SYMBOL
  */
-declare const CANCELED_SYMBOL: unique symbol;
+declare const CANCELED_PROMISE_SYMBOL: unique symbol;
 /**
  * Wraps a promise function and provides cancellation functionality.
  *
@@ -745,7 +745,7 @@ declare const debounce: <T extends (...args: any[]) => any>(run: T, delay?: numb
  * @template P - The types of the parameters of the wrapped function.
  */
 interface IWrappedQueuedFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    (...args: P): Promise<T | typeof CANCELED_PROMISE_SYMBOL>;
     clear(): void;
     cancel(): void;
 }
@@ -805,7 +805,7 @@ declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: 
  * @template P - The type of the function's arguments.
  */
 interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_SYMBOL>;
+    (...args: P): Promise<T | typeof CANCELED_PROMISE_SYMBOL>;
     cancel(): void;
     clear(): void;
 }
@@ -1690,4 +1690,4 @@ type TOffsetPaginator<FilterData extends {} = any, RowData extends IRowData = an
 type TCursorPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TCursorPaginator$1<FilterData, RowData, Payload>;
 type TPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TPaginator$1<FilterData, RowData, Payload>;
 
-export { BehaviorSubject, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
+export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };

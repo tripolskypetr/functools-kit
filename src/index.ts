@@ -11,7 +11,7 @@ export { waitForNext } from './utils/hof/waitForNext';
 
 export { singleshot, ISingleshotClearable } from './utils/hof/singleshot';
 export { singlerun, Task, ISinglerunClearable } from './utils/hof/singlerun';
-export { cancelable, CANCELED_SYMBOL as CANCELED_PROMISE_SYMBOL, IWrappedCancelableFn } from './utils/hof/cancelable';
+export { cancelable, CANCELED_PROMISE_SYMBOL, IWrappedCancelableFn } from './utils/hof/cancelable';
 export { debounce, IDebounceClearable } from './utils/hof/debounce';
 export { queued, IWrappedQueuedFn } from './utils/hof/queued';
 export { execpool, IWrappedExecpoolFn } from './utils/hof/execpool';
