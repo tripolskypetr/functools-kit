@@ -73,14 +73,20 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
      * @param awaiter - The awaiter to resolve the function execution.
      * @param args - The arguments to pass to the function.
      */
-    const execute = (awaiter: IAwaiter<T>, ...args: P) => {
-        const exec = run(...args);
-        execSet.add(
-            exec
-                .catch((error) => console.error("functools-kit execpool exec catch", {error, args}) as unknown as T)
-                .finally(() => execSet.delete(exec))
-        );
-        awaiter.resolve(exec);
+    const execute = async (awaiter: IAwaiter<T>, ...args: P) => {
+        const exec = run(...args)
+            .then((value) => {
+                awaiter.resolve(value);
+                execSet.delete(exec);
+                return value;
+            })
+            .catch((reason) => {
+                awaiter.reject(reason);
+                execSet.delete(exec);
+                return null as unknown as T;
+            });
+        execSet.add(exec);
+        return await exec;
     };
 
     /**
@@ -98,7 +104,7 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
                 continue;
             }
             const { args, awaiter } = execStack.pop()!;
-            execute(awaiter, ...args);
+            await execute(awaiter, ...args);
         }
     });
 
@@ -112,13 +118,13 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
     const wrappedFn: IWrappedExecpoolFn<T, P> = async (...args: P): Promise<T> => {
         const [result, awaiter] = createAwaiter<T>();
         if (execSet.size < maxExec) {
-            execute(awaiter, ...args);
+            await execute(awaiter, ...args);
         } else {
             execStack.unshift({
                 awaiter,
                 args,
             });
-            initLoop();
+            await initLoop();
         }
         return await result;
     };
