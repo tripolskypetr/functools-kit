@@ -19,6 +19,6 @@ export interface TOffsetPaginator<
     Payload = any
 > {
     (filterData: FilterData, limit: number, offset: number, payload: Payload): Promise<RowData[]> | RowData[];
-} 
+}
 
 export default TOffsetPaginator;

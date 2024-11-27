@@ -1364,7 +1364,7 @@ interface TCursorPaginator$1<FilterData extends {} = any, RowData extends IRowDa
  */
 interface IListSortItem<RowData extends IRowData = any> {
     field: keyof RowData;
-    sort: 'asc' | 'desc';
+    sort: "asc" | "desc";
 }
 /**
  * Represents a pagination handler for a list.
@@ -1407,7 +1407,7 @@ type ListHandlerSortModel<RowData extends IRowData = any> = IListSortItem<RowDat
 type TPaginator$1<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = (data: FilterData, pagination: ListHandlerPagination, sort: ListHandlerSortModel<RowData>, chips: ListHandlerChips<RowData>, search: string, payload: Payload) => Promise<{
     rows: RowData[];
     total: number | null;
-} | RowData[]>;
+}>;
 
 /**
  * Resolves the documents from an async generator and paginates them.

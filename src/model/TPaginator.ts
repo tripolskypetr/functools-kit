@@ -6,7 +6,7 @@ import IRowData from "./IRowData";
  */
 export interface IListSortItem<RowData extends IRowData = any> {
   field: keyof RowData;
-  sort: 'asc' | 'desc';
+  sort: "asc" | "desc";
 }
 
 /**
@@ -25,15 +25,17 @@ export type ListHandlerPagination = {
  * Represents a list handler for chips.
  * @template RowData - The type of row data.
  */
-export type ListHandlerChips<RowData extends IRowData = any> = Partial<Record<keyof RowData, boolean>>;
+export type ListHandlerChips<RowData extends IRowData = any> = Partial<
+  Record<keyof RowData, boolean>
+>;
 
 /**
  * Represents a sorting model for a list handler.
  *
  * @template RowData - The type of data in list rows.
  */
-export type ListHandlerSortModel<RowData extends IRowData = any> = IListSortItem<RowData>[];
-
+export type ListHandlerSortModel<RowData extends IRowData = any> =
+  IListSortItem<RowData>[];
 
 /**
  * Type definition for TPaginator.
@@ -62,12 +64,9 @@ export type TPaginator<
   chips: ListHandlerChips<RowData>,
   search: string,
   payload: Payload
-) => Promise<
-  | {
-      rows: RowData[];
-      total: number | null;
-    }
-  | RowData[]
->;
+) => Promise<{
+  rows: RowData[];
+  total: number | null;
+}>;
 
 export default TPaginator;

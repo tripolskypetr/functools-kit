@@ -18,6 +18,6 @@ export interface TCursorPaginator<
     Payload = any
 > {
     (filterData: FilterData, lastId: RowId, payload: Payload): Promise<RowData[]> | RowData[];
-} 
+}
 
 export default TCursorPaginator;
