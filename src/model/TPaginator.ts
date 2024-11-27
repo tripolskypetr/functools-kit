@@ -66,7 +66,7 @@ export type TPaginator<
   payload: Payload
 ) => Promise<{
   rows: RowData[];
-  total: number | null;
+  total: number;
 }>;
 
 export default TPaginator;

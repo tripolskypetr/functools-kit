@@ -17,7 +17,7 @@ import { ListHandlerPagination } from "./TPaginator";
  *
  * @returns A promise that resolves to either an array of row data or an object containing rows and total count.
  */
-export type TSimplePaginator<
+export type TBasePaginator<
   FilterData extends {} = any,
   RowData extends IRowData = any
 > = (
@@ -25,7 +25,7 @@ export type TSimplePaginator<
   pagination: ListHandlerPagination,
 ) => Promise<{
   rows: RowData[];
-  total: number | null;
+  total: number;
 }>;
 
-export default TSimplePaginator;
+export default TBasePaginator;
