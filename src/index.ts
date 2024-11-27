@@ -53,6 +53,7 @@ export type TBehaviorSubject<Data = unknown> = TBehaviorSubjectInternal<Data>;
 
 import TOffsetPaginatorInternal from './model/TOffsetPaginator';
 import TCursorPaginatorInternal from './model/TCursorPaginator';
+import TSimplePaginatorInternal from './model/TSimplePaginator';
 import TPaginatorInternal from './model/TPaginator';
 
 export type TOffsetPaginator<
@@ -72,6 +73,11 @@ export type TPaginator<
     RowData extends IRowData = any,
     Payload = any
 > = TPaginatorInternal<FilterData, RowData, Payload>;
+
+export type TSimplePaginator<
+  FilterData extends {} = any,
+  RowData extends IRowData = any,
+> = TSimplePaginatorInternal<FilterData, RowData>;
 
 export type { IRowData, RowId };
 
