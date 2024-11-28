@@ -29,6 +29,7 @@ export class FetchError extends Error {
         readonly originalError: any,
         readonly request: RequestInfo,
         readonly response: Response | undefined,
+        readonly statusCode: number,
     ) {
         super(originalError.message || 'FetchError');
     }
@@ -70,6 +71,7 @@ export const fetchApi = async <T = any>(input: RequestInfo | URL, init?: Request
             error,
             request,
             response,
+            response?.status || 0,
         );
     }
 };
