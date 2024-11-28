@@ -58,7 +58,8 @@ export const fetchApi = async <T = any>(input: RequestInfo | URL, init?: Request
             },
         });
         if (!response.ok) {
-            throw new Error('fetchApi response not ok');
+            const responseText = await response.text().catch(() => 'Unable to read response text');
+            throw new Error(`fetchApi response not ok. Status: ${response.status}, Message: ${responseText}`);
         }
         return await response.json() as unknown as T;
     } catch (error: any) {
