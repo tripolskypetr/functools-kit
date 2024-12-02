@@ -1,4 +1,4 @@
-import { CATCH_SYMBOL } from "src/utils/hof/trycatch";
+import trycatch, { CATCH_SYMBOL } from "src/utils/hof/trycatch";
 
 type RequestInfo = string | URL | Request;
 
@@ -30,6 +30,8 @@ export class FetchError extends Error {
         readonly request: RequestInfo,
         readonly response: Response | undefined,
         readonly statusCode: number,
+        readonly info?: RequestInfo | URL | null,
+        readonly init?: RequestInit | null
     ) {
         super(originalError.message || 'FetchError');
     }
@@ -59,8 +61,10 @@ export const fetchApi = async <T = any>(input: RequestInfo | URL, init?: Request
             },
         });
         if (!response.ok) {
-            const responseText = await response.text().catch(() => 'Unable to read response text');
-            throw new Error(`fetchApi response not ok. Status: ${response.status}, Message: ${responseText}`);
+            const responseText = await trycatch(response.text, { defaultValue: null })();
+            const requestInfo = trycatch(JSON.stringify, { defaultValue: null })(input);
+            const requestInit = trycatch(JSON.stringify, { defaultValue: null })(init);
+            throw new Error(`fetchApi response not ok. Info: ${requestInfo}, Init: ${requestInit}, Status: ${response.status}, Message: ${responseText}`);
         }
         return await response.json() as unknown as T;
     } catch (error: any) {
@@ -72,6 +76,8 @@ export const fetchApi = async <T = any>(input: RequestInfo | URL, init?: Request
             request,
             response,
             response?.status || 0,
+            input || null,
+            init || null
         );
     }
 };

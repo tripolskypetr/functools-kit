@@ -1646,7 +1646,9 @@ declare class FetchError extends Error {
     readonly request: RequestInfo;
     readonly response: Response | undefined;
     readonly statusCode: number;
-    constructor(originalError: any, request: RequestInfo, response: Response | undefined, statusCode: number);
+    readonly info?: RequestInfo | URL | null;
+    readonly init?: RequestInit | null;
+    constructor(originalError: any, request: RequestInfo, response: Response | undefined, statusCode: number, info?: RequestInfo | URL | null, init?: RequestInit | null);
 }
 /**
  * Makes an asynchronous HTTP request using the Fetch API.
