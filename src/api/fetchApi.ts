@@ -61,7 +61,7 @@ export const fetchApi = async <T = any>(input: RequestInfo | URL, init?: Request
             },
         });
         if (!response.ok) {
-            const responseText = await trycatch(response.text, { defaultValue: null })();
+            const responseText = await trycatch(async () => await response.text(), { defaultValue: null })();
             const requestInfo = trycatch(JSON.stringify, { defaultValue: null })(input);
             const requestInit = trycatch(JSON.stringify, { defaultValue: null })(init);
             throw new Error(`fetchApi response not ok. Info: ${requestInfo}, Init: ${requestInit}, Status: ${response.status}, Message: ${responseText}`);
