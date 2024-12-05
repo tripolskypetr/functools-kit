@@ -3,6 +3,7 @@ import Observer from "./Observer";
 
 import type TSubject from "../../model/TSubject";
 import TObserver, { TObservable } from "../../model/TObserver";
+import sleep from "../sleep";
 
 export const SUBJECT_EVENT = Symbol('rn-declarative-subject');
 
@@ -23,6 +24,19 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
         this.next = this.next.bind(this);
         this.toObserver = this.toObserver.bind(this);
         this.toIteratorContext = this.toIteratorContext.bind(this);
+    };
+
+    public get hasListeners() {
+        return this._emitter.hasListeners;
+    };
+
+    public waitForListener = async () => {
+        while (true) {
+            if (this.hasListeners) {
+                break;
+            }
+            await sleep(500);
+        }
     };
 
     /**

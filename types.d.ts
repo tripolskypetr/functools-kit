@@ -485,6 +485,8 @@ type Function$1 = (...args: any[]) => void;
 declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Data> {
     private _emitter;
     constructor();
+    get hasListeners(): boolean;
+    waitForListener: () => Promise<void>;
     /**
      * Maps the values of the observer using the given callback function.
      *
