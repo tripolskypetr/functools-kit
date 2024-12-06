@@ -24,6 +24,8 @@ export { trycatch, IControllTrycatch, IErrorTrycatch, CATCH_SYMBOL } from './uti
 export { ttl, IClearableTtl } from './utils/hof/ttl';
 export { throttle, IClearableThrottle } from './utils/hof/throttle';
 
+export { pubsub } from './utils/hof/pubsub';
+
 export { obsolete } from './utils/hof/obsolete';
 export { singletick, IClearableSingletick } from './utils/hof/singletick';
 export { afterinit, IWrappedAfterInitFn } from './utils/hof/afterinit';
@@ -32,7 +34,7 @@ export { lock, IWrappedLockFn } from './utils/hof/lock';
 export { sleep } from './utils/sleep';
 export { deepFlat } from './utils/deepFlat';
 
-export { createAwaiter } from './utils/createAwaiter';
+export { createAwaiter, IAwaiter } from './utils/createAwaiter';
 
 export { BehaviorSubject } from './utils/rx/BehaviorSubject';
 export { EventEmitter } from './utils/rx/EventEmitter';
