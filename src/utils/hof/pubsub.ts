@@ -42,7 +42,12 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
         }
         while (queue.length) {
             const [[data, { resolve }]] = queue;
-            const success = await emitter(data);
+            let success = false;
+            try {
+                success = await emitter(data);
+            } catch {
+                success = false;
+            }
             if (success) {
                 lastOk = Date.now();
                 queue.shift();
