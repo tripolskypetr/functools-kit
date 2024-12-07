@@ -10,7 +10,7 @@ export interface ISinglerunClearable {
  * Interface for reading task status
  * @interface
  */
-interface ITaskStatus {
+export interface ITaskStatus {
     getStatus: () => "pending" | "fulfilled" | "rejected" | "ready";
 }
 

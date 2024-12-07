@@ -9,6 +9,7 @@ import queued from "../hof/queued";
 import debounce from "../hof/debounce";
 
 import { CANCELED_PROMISE_SYMBOL } from "../hof/cancelable";
+import singlerun from "../hof/singlerun";
 
 const OBSERVER_EVENT = Symbol('observer-subscribe');
 
@@ -495,9 +496,9 @@ export class Observer<Data = any> implements TObserver<Data> {
      *
      * @returns A Promise that resolves with the data.
      */
-    public toPromise = () => new Promise<Data>((res) => {
+    public toPromise = singlerun(() => new Promise<Data>((res) => {
         this.once((data) => res(data));
-    });
+    }));
 
     /**
      * Creates a context for iterating asynchronously using a generator function.

@@ -4,6 +4,7 @@ import Observer from "./Observer";
 import type TSubject from "../../model/TSubject";
 import TObserver, { TObservable } from "../../model/TObserver";
 import sleep from "../sleep";
+import singlerun from "../hof/singlerun";
 
 export const SUBJECT_EVENT = Symbol('rn-declarative-subject');
 
@@ -266,7 +267,7 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @instance
      * @returns A promise representing the completion or failure of the asynchronous operation.
      */
-    public toPromise = () => this.toObserver().toPromise();
+    public toPromise = singlerun(() => this.toObserver().toPromise());
 
     /**
      * Converts the current object to an iterator context.

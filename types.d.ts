@@ -58,6 +58,51 @@ declare const formatText: (raw: string, template: string, { symbol, allowed, rep
 declare const TIMEOUT_SYMBOL: unique symbol;
 declare const timeout: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, delay?: number) => (...args: P) => Promise<symbol | T>;
 
+/**
+ * Interface for classes that can be cleared.
+ * @interface
+ */
+interface ISinglerunClearable {
+    clear: () => void;
+}
+/**
+ * Interface for reading task status
+ * @interface
+ */
+interface ITaskStatus {
+    getStatus: () => "pending" | "fulfilled" | "rejected" | "ready";
+}
+/**
+ * A class representing a task.
+ *
+ * @class
+ */
+declare class Task {
+    readonly target: Promise<any>;
+    private _status;
+    /**
+     * Retrieves the current status value.
+     *
+     * @return The value of the status.
+     */
+    get status(): "pending" | "fulfilled" | "rejected";
+    /**
+     * Constructor for creating an instance of the class.
+     *
+     * @param target - The target promise to be handled.
+     *
+     * @return - This method does not return any value.
+     */
+    constructor(target: Promise<any>);
+}
+/**
+ * Represents a higher-order function that runs a task only once and provides a way to clear the result.
+ * @template T - The function type.
+ * @param run - The function to be executed.
+ * @returns - The wrapped function with additional clear functionality.
+ */
+declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & ISinglerunClearable & ITaskStatus;
+
 type Function$2 = (...args: any[]) => any;
 /**
  * Compose multiple functions together to create a new function that applies the given functions from right to left.
@@ -420,7 +465,7 @@ declare class Observer<Data = any> implements TObserver$1<Data> {
      *
      * @returns A Promise that resolves with the data.
      */
-    toPromise: () => Promise<Data>;
+    toPromise: (() => Promise<Data>) & ISinglerunClearable & ITaskStatus;
     /**
      * Creates a context for iterating asynchronously using a generator function.
      *
@@ -621,7 +666,7 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
      * @instance
      * @returns A promise representing the completion or failure of the asynchronous operation.
      */
-    toPromise: () => Promise<Data>;
+    toPromise: (() => Promise<Data>) & ISinglerunClearable & ITaskStatus;
     /**
      * Converts the current object to an iterator context.
      *
@@ -659,51 +704,6 @@ interface ISingleshotClearable {
  * @returns - The executed function with additional "clear" method to reset the execution state.
  */
 declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & ISingleshotClearable;
-
-/**
- * Interface for classes that can be cleared.
- * @interface
- */
-interface ISinglerunClearable {
-    clear: () => void;
-}
-/**
- * Interface for reading task status
- * @interface
- */
-interface ITaskStatus {
-    getStatus: () => "pending" | "fulfilled" | "rejected" | "ready";
-}
-/**
- * A class representing a task.
- *
- * @class
- */
-declare class Task {
-    readonly target: Promise<any>;
-    private _status;
-    /**
-     * Retrieves the current status value.
-     *
-     * @return The value of the status.
-     */
-    get status(): "pending" | "fulfilled" | "rejected";
-    /**
-     * Constructor for creating an instance of the class.
-     *
-     * @param target - The target promise to be handled.
-     *
-     * @return - This method does not return any value.
-     */
-    constructor(target: Promise<any>);
-}
-/**
- * Represents a higher-order function that runs a task only once and provides a way to clear the result.
- * @template T - The function type.
- * @param run - The function to be executed.
- * @returns - The wrapped function with additional clear functionality.
- */
-declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & ISinglerunClearable & ITaskStatus;
 
 /**
  * Represents a wrapped function that returns a promise.
