@@ -5,15 +5,22 @@ import sleep from "../sleep";
 
 const PUBSUB_TIMEOUT = 30_000;
 
-interface IConfig {
-    onDestroy?: () => Promise<void>;
+export interface IPubsubConfig<Data = any> {
+    onDestroy?: () => (Promise<void> | void);
+    onData?: (data: Data) => (Promise<void> | void);
     timeout?: number;
+}
+
+export interface IPubsubWrappedFn<Data = any> {
+    (data: Data): Promise<void>;
+    stop: () => Promise<void>;
 }
 
 export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
     onDestroy,
+    onData,
     timeout = PUBSUB_TIMEOUT,
-}: Partial<IConfig> = {}) => {
+}: Partial<IPubsubConfig> = {}) => {
 
     const queue: [Data, IAwaiter<void>][] = [];
     let lastOk = Date.now();
@@ -53,6 +60,9 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
     const wrappedFn = async (data: Data) => {
         if (isStopped) {
             return;
+        }
+        if (onData) {
+            await onData(data);
         }
         const [result, awaiter] = createAwaiter<void>();
         queue.push([data, awaiter]);
