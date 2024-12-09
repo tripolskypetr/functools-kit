@@ -2,19 +2,20 @@ import createAwaiter, { IAwaiter } from "../createAwaiter";
 
 import singleshot from "./singleshot";
 import singlerun from "./singlerun";
-import queued from "./queued";
 import sleep from "../sleep";
+
+import randomString from "../randomString";
 
 const PUBSUB_TIMEOUT = 30_000;
 
-export interface IPubsubConfig<Data extends WeakKey = any> {
+export interface IPubsubConfig<Data = any> {
     onDestroy?: () => (Promise<void> | void);
     onData?: (data: Data) => (Promise<void> | void);
-    Adapter?: IPubsubArrayFactory<Data>;
+    queue?: IPubsubArray<[string, Data]>;
     timeout?: number;
 }
 
-export interface IPubsubWrappedFn<Data extends WeakKey = any> {
+export interface IPubsubWrappedFn<Data = any> {
     (data: Data): Promise<void>;
     stop: () => Promise<void>;
 }
@@ -25,11 +26,7 @@ export interface IPubsubArray<T = any> {
   shift(): Promise<T | null>;
   length(): Promise<number>;
   clear(): Promise<void>;
-  toArray(): Promise<T[]>;
-}
-
-export interface IPubsubArrayFactory<T = any> {
-    new (): IPubsubArray<T>;
+  [Symbol.asyncIterator](): AsyncIterableIterator<T>;
 }
 
 export class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
@@ -57,19 +54,23 @@ export class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
         return Promise.resolve();
     };
 
-    toArray = () => Promise.resolve(this._array);
+    async *[Symbol.asyncIterator](): AsyncIterableIterator<T> {
+        for (const item of this._array) {
+            yield item;
+        }
+    };
 }
 
-export const pubsub = <Data extends WeakKey = any>(emitter: (data: Data) => Promise<boolean>, {
+export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
     onDestroy,
     onData,
     timeout = PUBSUB_TIMEOUT,
-    Adapter = PubsubArrayAdapter,
+    queue: initialQueue = new PubsubArrayAdapter(),
 }: Partial<IPubsubConfig<Data>> = {}) => {
 
-    const awaiterMap = new WeakMap<Data, IAwaiter<void>>();
+    const awaiterMap = new Map<string, IAwaiter<void>>();
 
-    const queue = new Adapter();
+    const queue = initialQueue;
     let lastOk = Date.now();
 
     let isStopped = false;
@@ -78,11 +79,12 @@ export const pubsub = <Data extends WeakKey = any>(emitter: (data: Data) => Prom
         if (isStopped) {
             return;
         }
+        isStopped = true;
         await queue.clear();
+        awaiterMap.clear();
         if (onDestroy) {
             await onDestroy();
         }
-        isStopped = true;
     };
 
     const makeBroadcast = singlerun(async () => {
@@ -90,12 +92,14 @@ export const pubsub = <Data extends WeakKey = any>(emitter: (data: Data) => Prom
             return;
         }
         while (await queue.length()) {
-            const data = await queue.getFirst();
-            if (!data) {
+            const first = await queue.getFirst();
+            if (!first) {
                 break;
             }
-            const awaiter = awaiterMap.get(data);
+            const [id, data] = first;
+            const awaiter = awaiterMap.get(id);
             if (!awaiter) {
+                console.error("functools-kit pubsub missing awaiter", { id, data });
                 continue;
             }
             let success = false;
@@ -107,6 +111,7 @@ export const pubsub = <Data extends WeakKey = any>(emitter: (data: Data) => Prom
             if (success) {
                 lastOk = Date.now();
                 await queue.shift();
+                awaiterMap.delete(id);
                 awaiter.resolve();
                 continue;
             }
@@ -118,22 +123,27 @@ export const pubsub = <Data extends WeakKey = any>(emitter: (data: Data) => Prom
         }
     });
 
-    const makeCommit = queued(async (data: Data) => {
+    const makeCommit = async (data: Data) => {
         if (onData) {
             await onData(data);
         }
         const [result, awaiter] = createAwaiter<void>();
-        awaiterMap.set(data, awaiter);
-        await queue.push(data);
+        const id = randomString();
+        awaiterMap.set(id, awaiter);
+        await queue.push([id, data]);
         await makeBroadcast();
         return await result;
-    });
+    };
 
     const makeInit = singleshot(async () => {
-        for (const data of await queue.toArray()) {
-            await makeCommit(data);
-        }
-        await queue.clear();
+        const resolveList: Promise<void>[] = [];
+        for await (const [id] of queue) {
+            const [resolve, awaiter] = createAwaiter<void>();
+            awaiterMap.set(id, awaiter);
+            resolveList.push(resolve);
+        } 
+        await makeBroadcast();
+        await Promise.all(resolveList);
     });
 
     const wrappedFn = async (data: Data) => {

@@ -1,6 +1,6 @@
 {
   "name": "functools-kit",
-  "version": "1.0.42",
+  "version": "1.0.43",
   "description": "A library with helpers for react-declarative app backend development",
   "author": {
     "name": "Petr Tripolsky",
@@ -47,6 +47,7 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "11.1.6",
     "@types/node": "22.9.0",
+    "@types/uuid": "10.0.0",
     "rollup": "3.29.4",
     "rollup-plugin-dts": "6.1.1",
     "rollup-plugin-peer-deps-external": "2.2.4",
@@ -54,5 +55,8 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "uuid": "11.0.3"
   }
 }

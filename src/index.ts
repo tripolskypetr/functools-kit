@@ -24,7 +24,7 @@ export { trycatch, IControllTrycatch, IErrorTrycatch, CATCH_SYMBOL } from './uti
 export { ttl, IClearableTtl } from './utils/hof/ttl';
 export { throttle, IClearableThrottle } from './utils/hof/throttle';
 
-export { pubsub, PubsubArrayAdapter, IPubsubConfig, IPubsubWrappedFn, IPubsubArray, IPubsubArrayFactory } from './utils/hof/pubsub';
+export { pubsub, PubsubArrayAdapter, IPubsubConfig, IPubsubWrappedFn, IPubsubArray } from './utils/hof/pubsub';
 
 export { obsolete } from './utils/hof/obsolete';
 export { singletick, IClearableSingletick } from './utils/hof/singletick';
