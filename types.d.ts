@@ -966,37 +966,13 @@ interface IClearableThrottle {
  */
 declare const throttle: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IClearableThrottle;
 
-/**
- * Represents an object used for awaiting a value or a promise.
- *
- * @template T - The type of the value to be resolved.
- *
- * @interface
- * @function
- * @param value - The value or promise to resolve.
- * @param reason - The reason for rejecting the promise.
- */
-interface IAwaiter<T extends unknown> {
-    resolve(value: T | PromiseLike<T>): void;
-    reject(reason?: any): void;
-}
-/**
- * Creates an awaiter object along with a promise.
- *
- * @template T - The type of the value to be resolved.
- *
- * @function
- * @returns An array containing the promise and the awaiter object.
- */
-declare const createAwaiter: <T extends unknown>() => [Promise<T>, IAwaiter<T>];
-
-interface IPubsubConfig<Data = any> {
+interface IPubsubConfig<Data extends WeakKey = any> {
     onDestroy?: () => (Promise<void> | void);
     onData?: (data: Data) => (Promise<void> | void);
-    Adapter?: IPubsubArrayFactory<[Data, IAwaiter<void>]>;
+    Adapter?: IPubsubArrayFactory<Data>;
     timeout?: number;
 }
-interface IPubsubWrappedFn<Data = any> {
+interface IPubsubWrappedFn<Data extends WeakKey = any> {
     (data: Data): Promise<void>;
     stop: () => Promise<void>;
 }
@@ -1006,6 +982,7 @@ interface IPubsubArray<T = any> {
     shift(): Promise<T | null>;
     length(): Promise<number>;
     clear(): Promise<void>;
+    toArray(): Promise<T[]>;
 }
 interface IPubsubArrayFactory<T = any> {
     new (): IPubsubArray<T>;
@@ -1017,8 +994,9 @@ declare class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
     shift: () => Promise<Awaited<T>>;
     getFirst(): Promise<T>;
     clear: () => Promise<void>;
+    toArray: () => Promise<T[]>;
 }
-declare const pubsub: <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onData, timeout, Adapter, }?: Partial<IPubsubConfig<Data>>) => {
+declare const pubsub: <Data extends WeakKey = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onData, timeout, Adapter, }?: Partial<IPubsubConfig<Data>>) => {
     (data: Data): Promise<void>;
     stop: () => Promise<void>;
 };
@@ -1097,6 +1075,30 @@ declare const sleep: (timeout?: number) => Promise<void>;
  * @template T - The type of elements in the input array.
  */
 declare const deepFlat: <T = any>(arr?: T[]) => T[];
+
+/**
+ * Represents an object used for awaiting a value or a promise.
+ *
+ * @template T - The type of the value to be resolved.
+ *
+ * @interface
+ * @function
+ * @param value - The value or promise to resolve.
+ * @param reason - The reason for rejecting the promise.
+ */
+interface IAwaiter<T extends unknown> {
+    resolve(value: T | PromiseLike<T>): void;
+    reject(reason?: any): void;
+}
+/**
+ * Creates an awaiter object along with a promise.
+ *
+ * @template T - The type of the value to be resolved.
+ *
+ * @function
+ * @returns An array containing the promise and the awaiter object.
+ */
+declare const createAwaiter: <T extends unknown>() => [Promise<T>, IAwaiter<T>];
 
 /**
  * Represents a behavior subject.
