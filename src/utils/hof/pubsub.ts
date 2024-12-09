@@ -107,6 +107,8 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
                 success = await emitter(data);
             } catch {
                 success = false;
+            } finally {
+                await sleep(10);
             }
             if (success) {
                 lastOk = Date.now();
