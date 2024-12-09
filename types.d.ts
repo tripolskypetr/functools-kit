@@ -966,16 +966,59 @@ interface IClearableThrottle {
  */
 declare const throttle: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IClearableThrottle;
 
+/**
+ * Represents an object used for awaiting a value or a promise.
+ *
+ * @template T - The type of the value to be resolved.
+ *
+ * @interface
+ * @function
+ * @param value - The value or promise to resolve.
+ * @param reason - The reason for rejecting the promise.
+ */
+interface IAwaiter<T extends unknown> {
+    resolve(value: T | PromiseLike<T>): void;
+    reject(reason?: any): void;
+}
+/**
+ * Creates an awaiter object along with a promise.
+ *
+ * @template T - The type of the value to be resolved.
+ *
+ * @function
+ * @returns An array containing the promise and the awaiter object.
+ */
+declare const createAwaiter: <T extends unknown>() => [Promise<T>, IAwaiter<T>];
+
 interface IPubsubConfig<Data = any> {
     onDestroy?: () => (Promise<void> | void);
     onData?: (data: Data) => (Promise<void> | void);
+    Adapter?: IPubsubArrayFactory<[Data, IAwaiter<void>]>;
     timeout?: number;
 }
 interface IPubsubWrappedFn<Data = any> {
     (data: Data): Promise<void>;
     stop: () => Promise<void>;
 }
-declare const pubsub: <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onData, timeout, }?: Partial<IPubsubConfig>) => {
+interface IPubsubArray<T = any> {
+    getFirst(): Promise<T | null>;
+    push(value: T): Promise<void>;
+    shift(): Promise<T | null>;
+    length(): Promise<number>;
+    clear(): Promise<void>;
+}
+interface IPubsubArrayFactory<T = any> {
+    new (): IPubsubArray<T>;
+}
+declare class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
+    _array: T[];
+    length: () => Promise<number>;
+    push: (value: T) => Promise<void>;
+    shift: () => Promise<Awaited<T>>;
+    getFirst(): Promise<T>;
+    clear: () => Promise<void>;
+}
+declare const pubsub: <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onData, timeout, Adapter, }?: Partial<IPubsubConfig<Data>>) => {
     (data: Data): Promise<void>;
     stop: () => Promise<void>;
 };
@@ -1054,30 +1097,6 @@ declare const sleep: (timeout?: number) => Promise<void>;
  * @template T - The type of elements in the input array.
  */
 declare const deepFlat: <T = any>(arr?: T[]) => T[];
-
-/**
- * Represents an object used for awaiting a value or a promise.
- *
- * @template T - The type of the value to be resolved.
- *
- * @interface
- * @function
- * @param value - The value or promise to resolve.
- * @param reason - The reason for rejecting the promise.
- */
-interface IAwaiter<T extends unknown> {
-    resolve(value: T | PromiseLike<T>): void;
-    reject(reason?: any): void;
-}
-/**
- * Creates an awaiter object along with a promise.
- *
- * @template T - The type of the value to be resolved.
- *
- * @function
- * @returns An array containing the promise and the awaiter object.
- */
-declare const createAwaiter: <T extends unknown>() => [Promise<T>, IAwaiter<T>];
 
 /**
  * Represents a behavior subject.
@@ -1741,4 +1760,4 @@ type TCursorPaginator<FilterData extends {} = any, RowData extends IRowData = an
 type TPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TPaginator$1<FilterData, RowData, Payload>;
 type TBasePaginator<FilterData extends {} = any, RowData extends IRowData = any> = TBasePaginator$1<FilterData, RowData>;
 
-export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubConfig, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, type RowId, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
+export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubArrayFactory, type IPubsubConfig, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, PubsubArrayAdapter, type RowId, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
