@@ -969,6 +969,7 @@ declare const throttle: <T extends (...args: any[]) => any>(run: T, delay?: numb
 interface IPubsubConfig<Data = any> {
     onDestroy?: (queue: IPubsubArray<[string, Data]>) => (Promise<void> | void);
     onBegin?: (data: Data) => (Promise<void> | void);
+    onProcess?: (data: Data) => (Promise<void> | void);
     onEnd?: (data: Data) => (Promise<void> | void);
     queue?: IPubsubArray<[string, Data]>;
     timeout?: number;
@@ -994,7 +995,7 @@ declare class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
     clear: () => Promise<void>;
     [Symbol.asyncIterator](): AsyncIterableIterator<T>;
 }
-declare const pubsub: <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onBegin, onEnd, timeout, queue: initialQueue, }?: Partial<IPubsubConfig<Data>>) => {
+declare const pubsub: <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onBegin, onProcess, onEnd, timeout, queue: initialQueue, }?: Partial<IPubsubConfig<Data>>) => {
     (data: Data): Promise<void>;
     stop: () => Promise<void>;
 };

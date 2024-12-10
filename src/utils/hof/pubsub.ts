@@ -11,6 +11,7 @@ const PUBSUB_TIMEOUT = 30_000;
 export interface IPubsubConfig<Data = any> {
     onDestroy?: (queue: IPubsubArray<[string, Data]>) => (Promise<void> | void);
     onBegin?: (data: Data) => (Promise<void> | void);
+    onProcess?: (data: Data) => (Promise<void> | void);
     onEnd?: (data: Data) => (Promise<void> | void);
     queue?: IPubsubArray<[string, Data]>;
     timeout?: number;
@@ -65,6 +66,7 @@ export class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
 export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
     onDestroy,
     onBegin,
+    onProcess,
     onEnd,
     timeout = PUBSUB_TIMEOUT,
     queue: initialQueue = new PubsubArrayAdapter(),
@@ -138,6 +140,9 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
         const id = randomString();
         awaiterMap.set(id, awaiter);
         await queue.push([id, data]);
+        if (onProcess) {
+            await onProcess(data);
+        }
         await makeBroadcast();
         return await result;
     };
