@@ -9,8 +9,9 @@ import randomString from "../randomString";
 const PUBSUB_TIMEOUT = 30_000;
 
 export interface IPubsubConfig<Data = any> {
-    onDestroy?: () => (Promise<void> | void);
-    onData?: (data: Data) => (Promise<void> | void);
+    onDestroy?: (queue: IPubsubArray<[string, Data]>) => (Promise<void> | void);
+    onBegin?: (data: Data) => (Promise<void> | void);
+    onEnd?: (data: Data) => (Promise<void> | void);
     queue?: IPubsubArray<[string, Data]>;
     timeout?: number;
 }
@@ -63,7 +64,8 @@ export class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
 
 export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
     onDestroy,
-    onData,
+    onBegin,
+    onEnd,
     timeout = PUBSUB_TIMEOUT,
     queue: initialQueue = new PubsubArrayAdapter(),
 }: Partial<IPubsubConfig<Data>> = {}) => {
@@ -80,11 +82,11 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
             return;
         }
         isStopped = true;
+        if (onDestroy) {
+            await onDestroy(queue);
+        }
         await queue.clear();
         awaiterMap.clear();
-        if (onDestroy) {
-            await onDestroy();
-        }
     };
 
     const makeBroadcast = singlerun(async () => {
@@ -110,6 +112,9 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
             } finally {
                 await sleep(10);
             }
+            if (success && onEnd) {
+                await onEnd(data);
+            }
             if (success) {
                 lastOk = Date.now();
                 await queue.shift();
@@ -126,8 +131,8 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
     });
 
     const makeCommit = async (data: Data) => {
-        if (onData) {
-            await onData(data);
+        if (onBegin) {
+            await onBegin(data);
         }
         const [result, awaiter] = createAwaiter<void>();
         const id = randomString();

@@ -67,7 +67,7 @@ export const GET_VALUE_MAP = Symbol('get-value-map');
  * @param run - The original function to be memoized
  * @returns - A memoized version of the original function with the ability to clear the cache
  */
-export const memoize = <T extends (...args: A) => any, A extends any[], K = string>(key: (args: A) => K, run: T): T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>> => {
+export const memoize = <T extends (...args: any[]) => any, K = string>(key: (args: Parameters<T>) => K, run: T): T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>> => {
 
     /**
      * A map that associates keys of type K with values of type IRefMemoize<ReturnType<T>>.
@@ -102,7 +102,7 @@ export const memoize = <T extends (...args: A) => any, A extends any[], K = stri
      * @param args - The arguments to pass to the function.
      * @returns - The cached result of the function.
      */
-    const executeFn: Function & IClearableMemoize<any> & IControlMemoize<K, ReturnType<T>> = (...args: A) => {
+    const executeFn: Function & IClearableMemoize<any> & IControlMemoize<K, ReturnType<T>> = (...args: Parameters<T>) => {
         const k = key(args);
         let value = valueMap.get(k)?.current;
         if (value === undefined) {

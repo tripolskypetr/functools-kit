@@ -844,7 +844,7 @@ interface IClearableCached {
  * @param run - The function to be cached.
  * @returns - The cached function with additional clear method.
  */
-declare const cached: <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T) => T & IClearableCached;
+declare const cached: <T extends (...args: any[]) => any>(changed: (prevArgs: Parameters<T>, currentArgs: Parameters<T>) => boolean, run: T) => T & IClearableCached;
 
 /**
  * Interface representing a clearable object.
@@ -891,7 +891,7 @@ interface IControlMemoize<K, V> {
  * @param run - The original function to be memoized
  * @returns - A memoized version of the original function with the ability to clear the cache
  */
-declare const memoize: <T extends (...args: A) => any, A extends any[], K = string>(key: (args: A) => K, run: T) => T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>>;
+declare const memoize: <T extends (...args: any[]) => any, K = string>(key: (args: Parameters<T>) => K, run: T) => T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>>;
 
 declare const CATCH_SYMBOL: unique symbol;
 interface IErrorTrycatch extends Error {
@@ -924,7 +924,7 @@ interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL> {
  *
  * @returns - The wrapped function that handles errors and returns the result or the default value
  */
-declare const trycatch: <T extends (...args: A) => any, A extends any[], V, D = typeof CATCH_SYMBOL>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IControllTrycatch<D>>) => (...args: A) => ReturnType<T> | D;
+declare const trycatch: <T extends (...args: any[]) => any, V, D = typeof CATCH_SYMBOL>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IControllTrycatch<D>>) => (...args: Parameters<T>) => ReturnType<T> | D;
 
 /**
  * Represents a clearable object that can be garbage collected.
@@ -946,8 +946,8 @@ interface IClearableTtl<K = string> extends IClearableMemoize<K> {
  * @param [options.timeout] - The TTL duration in milliseconds.
  * @returns - The wrapped function with caching capability.
  */
-declare const ttl: <T extends (...args: A) => any, A extends any[], K = string>(run: T, { key, timeout, }?: {
-    key?: (args: A) => K;
+declare const ttl: <T extends (...args: any[]) => any, K = string>(run: T, { key, timeout, }?: {
+    key?: (args: Parameters<T>) => K;
     timeout?: number;
 }) => T & IClearableTtl<K> & IControlMemoize<K, ReturnType<T>>;
 
@@ -967,8 +967,9 @@ interface IClearableThrottle {
 declare const throttle: <T extends (...args: any[]) => any>(run: T, delay?: number) => T & IClearableThrottle;
 
 interface IPubsubConfig<Data = any> {
-    onDestroy?: () => (Promise<void> | void);
-    onData?: (data: Data) => (Promise<void> | void);
+    onDestroy?: (queue: IPubsubArray<[string, Data]>) => (Promise<void> | void);
+    onBegin?: (data: Data) => (Promise<void> | void);
+    onEnd?: (data: Data) => (Promise<void> | void);
     queue?: IPubsubArray<[string, Data]>;
     timeout?: number;
 }
@@ -993,7 +994,7 @@ declare class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
     clear: () => Promise<void>;
     [Symbol.asyncIterator](): AsyncIterableIterator<T>;
 }
-declare const pubsub: <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onData, timeout, queue: initialQueue, }?: Partial<IPubsubConfig<Data>>) => {
+declare const pubsub: <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onBegin, onEnd, timeout, queue: initialQueue, }?: Partial<IPubsubConfig<Data>>) => {
     (data: Data): Promise<void>;
     stop: () => Promise<void>;
 };

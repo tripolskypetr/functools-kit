@@ -52,8 +52,7 @@ const awaiter = async <V, D>(
  * @returns - The wrapped function that handles errors and returns the result or the default value
  */
 export const trycatch = <
-    T extends (...args: A) => any,
-    A extends any[],
+    T extends (...args: any[]) => any,
     V,
     D = typeof CATCH_SYMBOL
 >(
@@ -63,7 +62,7 @@ export const trycatch = <
         fallback,
         defaultValue = CATCH_SYMBOL as D,
     }: Partial<IControllTrycatch<D>> = {}
-): (...args: A) => ReturnType<T> | D => {
+): (...args: Parameters<T>) => ReturnType<T> | D => {
     return (...args) => {
         try {
             const result = run(...args);

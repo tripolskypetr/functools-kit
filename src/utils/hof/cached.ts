@@ -15,7 +15,7 @@ export interface IClearableCached {
  * @param run - The function to be cached.
  * @returns - The cached function with additional clear method.
  */
-export const cached = <T extends (...args: A) => any, A extends any[]>(changed: (prevArgs: A, currentArgs: A) => boolean, run: T): T & IClearableCached => {
+export const cached = <T extends (...args: any[]) => any>(changed: (prevArgs: Parameters<T>, currentArgs: Parameters<T>) => boolean, run: T): T & IClearableCached => {
 
     let lastArgs: any = null;
     let initial = true;
@@ -37,7 +37,7 @@ export const cached = <T extends (...args: A) => any, A extends any[]>(changed: 
      * @param args - The arguments to be passed to the function.
      * @returns - The result of the executed function.
      */
-    const executeFn = (...args: A) => {
+    const executeFn = (...args: Parameters<T>) => {
         if (!initial) {
             if (!changed(lastArgs, args)) {
                 return lastValue;

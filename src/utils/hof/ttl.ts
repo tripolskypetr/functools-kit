@@ -34,11 +34,11 @@ export interface IClearableTtl<K = string> extends IClearableTtlInternal<K> {
  * @param [options.timeout] - The TTL duration in milliseconds.
  * @returns - The wrapped function with caching capability.
  */
-export const ttl = <T extends (...args: A) => any, A extends any[], K = string>(run: T, {
+export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
     key = () => NEVER_VALUE as never,
     timeout = DEFAULT_TIMEOUT,
 }: {
-    key?: (args: A) => K;
+    key?: (args: Parameters<T>) => K;
     timeout?: number;
 } = {}): T & IClearableTtl<K> & IControl<K, ReturnType<T>> => {
 
@@ -50,7 +50,7 @@ export const ttl = <T extends (...args: A) => any, A extends any[], K = string>(
      * @param run - The original function to be memoized.
      * @returns - A memoized function that returns the cached value.
      */
-    const wrappedFn = memoize(key, (...args) => ({
+    const wrappedFn = memoize(<any>key, (...args: Parameters<T>) => ({
         value: run(...args),
         ttl: Date.now(),
     }));
@@ -60,12 +60,12 @@ export const ttl = <T extends (...args: A) => any, A extends any[], K = string>(
      * @param args - The arguments for the wrapped function.
      * @returns - The return value of the wrapped function.
      */
-    const executeFn = (...args: A): ReturnType<T> => {
+    const executeFn = (...args: Parameters<T>): ReturnType<T> => {
         const currentTtl = Date.now();
         const { value, ttl } = wrappedFn(...args);
         if (currentTtl - ttl > timeout) {
             const k = key(args);
-            wrappedFn.clear(k);
+            wrappedFn.clear(k as string);
             return executeFn(...args);
         }
         return value;
@@ -81,7 +81,7 @@ export const ttl = <T extends (...args: A) => any, A extends any[], K = string>(
      * @returns
      */
     executeFn.clear = (key?: K) => {
-        wrappedFn.clear(key);
+        wrappedFn.clear(key as string);
     };
 
     /**
@@ -95,12 +95,12 @@ export const ttl = <T extends (...args: A) => any, A extends any[], K = string>(
         for (const [key, item] of valueMap.entries()) {
             const currentTtl = Date.now();
             if (currentTtl - item.current.ttl > timeout) {
-                wrappedFn.clear(key);
+                wrappedFn.clear(key as string);
             }
         }
     };
 
-    executeFn.add = (key: K, value: ReturnType<T>) => wrappedFn.add(key, {
+    executeFn.add = (key: K, value: ReturnType<T>) => wrappedFn.add(key as string, {
         value,
         ttl: Date.now(),
     });
