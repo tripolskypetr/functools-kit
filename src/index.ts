@@ -12,7 +12,7 @@ export { waitForNext } from './utils/hof/waitForNext';
 export { getErrorMessage } from './utils/getErrorMessage';
 
 export { singleshot, ISingleshotClearable } from './utils/hof/singleshot';
-export { singlerun, Task, ISinglerunClearable } from './utils/hof/singlerun';
+export { singlerun, Task, ISinglerunClearable, ITaskStatus } from './utils/hof/singlerun';
 export { cancelable, CANCELED_PROMISE_SYMBOL, IWrappedCancelableFn } from './utils/hof/cancelable';
 export { debounce, IDebounceClearable } from './utils/hof/debounce';
 export { queued, IWrappedQueuedFn } from './utils/hof/queued';

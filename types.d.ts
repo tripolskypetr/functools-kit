@@ -58,51 +58,6 @@ declare const formatText: (raw: string, template: string, { symbol, allowed, rep
 declare const TIMEOUT_SYMBOL: unique symbol;
 declare const timeout: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, delay?: number) => (...args: P) => Promise<symbol | T>;
 
-/**
- * Interface for classes that can be cleared.
- * @interface
- */
-interface ISinglerunClearable {
-    clear: () => void;
-}
-/**
- * Interface for reading task status
- * @interface
- */
-interface ITaskStatus {
-    getStatus: () => "pending" | "fulfilled" | "rejected" | "ready";
-}
-/**
- * A class representing a task.
- *
- * @class
- */
-declare class Task {
-    readonly target: Promise<any>;
-    private _status;
-    /**
-     * Retrieves the current status value.
-     *
-     * @return The value of the status.
-     */
-    get status(): "pending" | "fulfilled" | "rejected";
-    /**
-     * Constructor for creating an instance of the class.
-     *
-     * @param target - The target promise to be handled.
-     *
-     * @return - This method does not return any value.
-     */
-    constructor(target: Promise<any>);
-}
-/**
- * Represents a higher-order function that runs a task only once and provides a way to clear the result.
- * @template T - The function type.
- * @param run - The function to be executed.
- * @returns - The wrapped function with additional clear functionality.
- */
-declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & ISinglerunClearable & ITaskStatus;
-
 type Function$2 = (...args: any[]) => any;
 /**
  * Compose multiple functions together to create a new function that applies the given functions from right to left.
@@ -704,6 +659,51 @@ interface ISingleshotClearable {
  * @returns - The executed function with additional "clear" method to reset the execution state.
  */
 declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & ISingleshotClearable;
+
+/**
+ * Interface for classes that can be cleared.
+ * @interface
+ */
+interface ISinglerunClearable {
+    clear: () => void;
+}
+/**
+ * Interface for reading task status
+ * @interface
+ */
+interface ITaskStatus {
+    getStatus: () => "pending" | "fulfilled" | "rejected" | "ready";
+}
+/**
+ * A class representing a task.
+ *
+ * @class
+ */
+declare class Task {
+    readonly target: Promise<any>;
+    private _status;
+    /**
+     * Retrieves the current status value.
+     *
+     * @return The value of the status.
+     */
+    get status(): "pending" | "fulfilled" | "rejected";
+    /**
+     * Constructor for creating an instance of the class.
+     *
+     * @param target - The target promise to be handled.
+     *
+     * @return - This method does not return any value.
+     */
+    constructor(target: Promise<any>);
+}
+/**
+ * Represents a higher-order function that runs a task only once and provides a way to clear the result.
+ * @template T - The function type.
+ * @param run - The function to be executed.
+ * @returns - The wrapped function with additional clear functionality.
+ */
+declare const singlerun: <T extends (...args: any[]) => any>(run: T) => T & ISinglerunClearable & ITaskStatus;
 
 /**
  * Represents a wrapped function that returns a promise.
@@ -1759,4 +1759,4 @@ type TCursorPaginator<FilterData extends {} = any, RowData extends IRowData = an
 type TPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TPaginator$1<FilterData, RowData, Payload>;
 type TBasePaginator<FilterData extends {} = any, RowData extends IRowData = any> = TBasePaginator$1<FilterData, RowData>;
 
-export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, PubsubArrayAdapter, type RowId, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
+export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, PubsubArrayAdapter, type RowId, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
