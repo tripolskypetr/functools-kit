@@ -31,6 +31,15 @@ export interface IPubsubArray<T = any> {
   [Symbol.asyncIterator](): AsyncIterableIterator<T>;
 }
 
+export interface IPubsubMap<T = any> {
+    clear(): Promise<void>;
+    getFirst(): Promise<[string, T] | null>;
+    size(): Promise<number>;
+    set(key: string, value: T): Promise<void>;
+    shift(): Promise<[string, T] | null>;
+    [Symbol.asyncIterator](): AsyncIterableIterator<[string, T]>;
+}
+
 export class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
 
     _array: T[] = [];
@@ -169,6 +178,19 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
     wrappedFn.stop = handleStop;
 
     return wrappedFn;
+};
+
+pubsub.fromMap = <Data = any>(map: IPubsubMap<Data>) => new class implements IPubsubArray<[string, Data]> {
+    clear = async () => await map.clear();
+    getFirst = async () => await map.getFirst();
+    length = async () => await map.size();
+    push = async ([key, value]: [string, Data]) => await map.set(key, value);
+    shift = async () => await map.shift();
+    async *[Symbol.asyncIterator](): AsyncIterableIterator<[string, Data]> {
+      for await (const entry of map) {
+        yield entry;
+      }
+    }
 };
 
 export default pubsub;

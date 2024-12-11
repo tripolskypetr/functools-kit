@@ -986,6 +986,14 @@ interface IPubsubArray<T = any> {
     clear(): Promise<void>;
     [Symbol.asyncIterator](): AsyncIterableIterator<T>;
 }
+interface IPubsubMap<T = any> {
+    clear(): Promise<void>;
+    getFirst(): Promise<[string, T] | null>;
+    size(): Promise<number>;
+    set(key: string, value: T): Promise<void>;
+    shift(): Promise<[string, T] | null>;
+    [Symbol.asyncIterator](): AsyncIterableIterator<[string, T]>;
+}
 declare class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
     _array: T[];
     length: () => Promise<number>;
@@ -995,9 +1003,19 @@ declare class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
     clear: () => Promise<void>;
     [Symbol.asyncIterator](): AsyncIterableIterator<T>;
 }
-declare const pubsub: <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onBegin, onProcess, onEnd, timeout, queue: initialQueue, }?: Partial<IPubsubConfig<Data>>) => {
-    (data: Data): Promise<void>;
-    stop: () => Promise<void>;
+declare const pubsub: {
+    <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onBegin, onProcess, onEnd, timeout, queue: initialQueue, }?: Partial<IPubsubConfig<Data>>): {
+        (data: Data): Promise<void>;
+        stop: () => Promise<void>;
+    };
+    fromMap<Data = any>(map: IPubsubMap<Data>): {
+        clear: () => Promise<void>;
+        getFirst: () => Promise<[string, Data]>;
+        length: () => Promise<number>;
+        push: ([key, value]: [string, Data]) => Promise<void>;
+        shift: () => Promise<[string, Data]>;
+        [Symbol.asyncIterator](): AsyncIterableIterator<[string, Data]>;
+    };
 };
 
 declare const obsolete: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>) => (...args: P) => Promise<T>;
@@ -1761,4 +1779,4 @@ type TCursorPaginator<FilterData extends {} = any, RowData extends IRowData = an
 type TPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TPaginator$1<FilterData, RowData, Payload>;
 type TBasePaginator<FilterData extends {} = any, RowData extends IRowData = any> = TBasePaginator$1<FilterData, RowData>;
 
-export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, PubsubArrayAdapter, type RowId, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
+export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, PubsubArrayAdapter, type RowId, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
