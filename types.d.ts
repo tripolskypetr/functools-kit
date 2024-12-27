@@ -1577,7 +1577,7 @@ declare const iterateUnion: <Data = IRowData>(iterators: AsyncGenerator<Data | D
 
 declare function iterateList<T = IRowData>(rows: T[], map?: (row: T) => Promise<Awaited<T>>): AsyncGenerator<Awaited<T>, void, unknown>;
 
-declare const has: <T = unknown>(arr: T | T[] | Set<T> | Map<T, unknown> | null | undefined, value: T) => boolean;
+declare const has: <T = unknown>(arr: T | T[] | Set<T> | Map<T, unknown> | null | undefined, ...value: T[]) => boolean;
 
 type Value$3 = number | boolean;
 /**
