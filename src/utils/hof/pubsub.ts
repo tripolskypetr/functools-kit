@@ -36,6 +36,7 @@ export interface IPubsubMap<T = any> {
     getFirst(): Promise<[string, T] | null>;
     size(): Promise<number>;
     set(key: string, value: T): Promise<void>;
+    get(key: string): Promise<T | null>;
     shift(): Promise<[string, T] | null>;
     [Symbol.asyncIterator](): AsyncIterableIterator<[string, T]>;
 }
@@ -75,6 +76,52 @@ export class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
             yield item;
         }
     };
+}
+
+export class PubsubMapAdapter<T = any> implements IPubsubMap<T> {
+
+    private _map: Map<string, T> = new Map();
+
+    clear(): Promise<void> {
+        this._map.clear();
+        return Promise.resolve();
+    }
+
+    getFirst(): Promise<[string, T] | null> {
+        const iterator = this._map.entries();
+        const first = iterator.next();
+        return Promise.resolve(first.done ? null : first.value);
+    }
+
+    size(): Promise<number> {
+        return Promise.resolve(this._map.size);
+    }
+
+    set(key: string, value: T): Promise<void> {
+        this._map.set(key, value);
+        return Promise.resolve();
+    }
+
+    get(key: string): Promise<T | null> {
+        const value = this._map.get(key) ?? null;
+        return Promise.resolve(value);
+    }
+
+    shift(): Promise<[string, T] | null> {
+        const iterator = this._map.entries();
+        const first = iterator.next();
+        if (first.done) {
+            return Promise.resolve(null);
+        }
+        this._map.delete(first.value[0]);
+        return Promise.resolve(first.value);
+    }
+
+    async *[Symbol.asyncIterator](): AsyncIterableIterator<[string, T]> {
+        for (const entry of this._map.entries()) {
+            yield entry;
+        }
+    }
 }
 
 export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
