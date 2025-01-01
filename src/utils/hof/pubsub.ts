@@ -42,12 +42,17 @@ export interface IPubsubMap<T = any> {
 
 export class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
 
-    _array: T[] = [];
+    private _array: T[] = [];
+
+    constructor(private readonly _maxItems: number = Number.POSITIVE_INFINITY) { }
 
     length = () => Promise.resolve(this._array.length);
 
-    push = (value: T) => {
+    push = async (value: T) => {
         this._array.push(value);
+        while (await this.length() > this._maxItems) {
+            this._array.shift();
+        }
         return Promise.resolve();
     }
 

@@ -995,7 +995,9 @@ interface IPubsubMap<T = any> {
     [Symbol.asyncIterator](): AsyncIterableIterator<[string, T]>;
 }
 declare class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
-    _array: T[];
+    private readonly _maxItems;
+    private _array;
+    constructor(_maxItems?: number);
     length: () => Promise<number>;
     push: (value: T) => Promise<void>;
     shift: () => Promise<Awaited<T>>;
