@@ -992,6 +992,7 @@ interface IPubsubMap<T = any> {
     size(): Promise<number>;
     set(key: string, value: T): Promise<void>;
     get(key: string): Promise<T | null>;
+    delete(key: string): Promise<void>;
     shift(): Promise<[string, T] | null>;
     [Symbol.asyncIterator](): AsyncIterableIterator<[string, T]>;
 }
@@ -1013,6 +1014,7 @@ declare class PubsubMapAdapter<T = any> implements IPubsubMap<T> {
     size(): Promise<number>;
     set(key: string, value: T): Promise<void>;
     get(key: string): Promise<T | null>;
+    delete(key: string): Promise<void>;
     shift(): Promise<[string, T] | null>;
     [Symbol.asyncIterator](): AsyncIterableIterator<[string, T]>;
 }

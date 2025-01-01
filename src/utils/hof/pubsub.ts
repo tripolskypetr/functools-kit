@@ -37,6 +37,7 @@ export interface IPubsubMap<T = any> {
     size(): Promise<number>;
     set(key: string, value: T): Promise<void>;
     get(key: string): Promise<T | null>;
+    delete(key: string): Promise<void>;
     shift(): Promise<[string, T] | null>;
     [Symbol.asyncIterator](): AsyncIterableIterator<[string, T]>;
 }
@@ -105,6 +106,11 @@ export class PubsubMapAdapter<T = any> implements IPubsubMap<T> {
     get(key: string): Promise<T | null> {
         const value = this._map.get(key) ?? null;
         return Promise.resolve(value);
+    }
+
+    delete(key: string): Promise<void> {
+        this._map.delete(key);
+        return Promise.resolve();
     }
 
     shift(): Promise<[string, T] | null> {
