@@ -56,7 +56,12 @@ export class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
             this._array.shift();
         }
         return Promise.resolve();
-    }
+    };
+
+    pop = async () => {
+        const value = this._array.pop();
+        return Promise.resolve(value);
+    };
 
     shift = () => Promise.resolve(this._array.shift());
 

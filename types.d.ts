@@ -1002,6 +1002,7 @@ declare class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
     constructor(_maxItems?: number);
     length: () => Promise<number>;
     push: (value: T) => Promise<void>;
+    pop: () => Promise<T>;
     shift: () => Promise<Awaited<T>>;
     getFirst(): Promise<T>;
     clear: () => Promise<void>;
