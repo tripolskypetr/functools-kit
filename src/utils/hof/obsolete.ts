@@ -20,8 +20,7 @@ const getMethodName = (fn: Function, self: object | undefined): string => {
     return getMethodName(fn, Object.getPrototypeOf(self));
 };
 
-export const obsolete = <T extends any = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>) => {
-    let methodName = "";
+export const obsolete = <T extends any = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, methodName = "") => {
     const fn = async (...args: P): Promise<T> => {
         methodName = methodName || getMethodName(fn, this);
         console.log(`react-declarative obsolete hof call method_name=${methodName}`);

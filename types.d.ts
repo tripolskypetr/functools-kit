@@ -1034,7 +1034,7 @@ declare const pubsub: {
     };
 };
 
-declare const obsolete: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>) => (...args: P) => Promise<T>;
+declare const obsolete: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, methodName?: string) => (...args: P) => Promise<T>;
 
 /**
  * Represents a clearable object.
