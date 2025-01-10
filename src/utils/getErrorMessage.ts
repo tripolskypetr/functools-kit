@@ -9,13 +9,14 @@ export const getErrorMessage = (error: any) => {
     if (typeof error === 'string') {
       errorMessage = error;
     } else if (typeof error === 'object' && error !== null) {
-      // Support any type of error from the Web3 Provider...
-      if (error?.error?.message !== undefined) {
+      if (error?.error?.message) {
         errorMessage = error.error.message;
-      } else if (error?.data?.message !== undefined) {
+      } else if (error?.data?.message) {
         errorMessage = error.data.message;
-      } else if (error?.message !== undefined) {
+      } else if (error?.message) {
         errorMessage = error.message;
+      } else {
+        errorMessage = error.toString();
       }
     }
     return errorMessage;
