@@ -25,7 +25,7 @@ export const rate = <T extends (...args: any[]) => any, K = string>(run: T, {
     delay?: number;
 } = {}): T & IClearableRate<K> & IControl<K, ReturnType<T>> => {
 
-    const wrappedFn = memoize(<any>key, (tick: string, ...args: Parameters<T>) => ({
+    const wrappedFn = memoize((args) => key(<any>args.slice(1)), (tick: string, ...args: Parameters<T>) => ({
         tick,
         value: run(...args),
         when: Date.now(),
@@ -47,7 +47,7 @@ export const rate = <T extends (...args: any[]) => any, K = string>(run: T, {
             return value;
         }
         const k = key(args);
-        wrappedFn.clear(k as string);
+        wrappedFn.clear(k);
         return executeFn(...args);
     };
 
@@ -61,7 +61,7 @@ export const rate = <T extends (...args: any[]) => any, K = string>(run: T, {
      * @returns
      */
     executeFn.clear = (key?: K) => {
-        wrappedFn.clear(key as string);
+        wrappedFn.clear(key);
     };
 
     /**
@@ -75,12 +75,12 @@ export const rate = <T extends (...args: any[]) => any, K = string>(run: T, {
         for (const [key, item] of valueMap.entries()) {
             const currentRate = Date.now();
             if (currentRate - item.current.ttl > delay) {
-                wrappedFn.clear(key as string);
+                wrappedFn.clear(key);
             }
         }
     };
 
-    executeFn.add = (key: K, value: ReturnType<T>) => wrappedFn.add(key as string, {
+    executeFn.add = (key: K, value: ReturnType<T>) => wrappedFn.add(key, {
         value,
         tick: randomString(),
         when: Date.now(),
