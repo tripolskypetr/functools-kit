@@ -40,11 +40,11 @@ export const rate = <T extends (...args: any[]) => any, K = string>(run: T, {
         const currentTime = Date.now();
         const currentTick = randomString();
         const { value, when, tick } = wrappedFn(currentTick, ...args);
-        if (currentTime - when < delay) {
-            throw new RateError(`functools-kit rate rateName=${rateName} delay not reached`);
-        }
         if (tick === currentTick) {
             return value;
+        }
+        if (currentTime - when < delay) {
+            throw new RateError(`functools-kit rate rateName=${rateName} delay not reached`);
         }
         const k = key(args);
         wrappedFn.clear(k);
