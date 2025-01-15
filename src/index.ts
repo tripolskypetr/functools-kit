@@ -114,3 +114,5 @@ export { fetchApi, FetchError } from './api/fetchApi';
 
 export type { TRequest } from './model/TRequest';
 export type { TResponse } from './model/TResponse';
+
+export { ToolRegistry } from './helpers/ToolRegistry';

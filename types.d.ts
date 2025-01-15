@@ -1797,6 +1797,15 @@ type TResponse<Data extends object | null = {}, Payload extends object | undefin
     payload: Payload;
 };
 
+declare class ToolRegistry<T extends Record<string, unknown> = {}> {
+    private registryName;
+    private tools;
+    constructor(registryName: string, tools?: T);
+    register: <K extends string, U>(name: K, tool: U) => ToolRegistry<T & Record<K, U>>;
+    get: <K extends keyof T>(name: K) => T[K];
+    init: () => void;
+}
+
 type TSubject<Data = void> = TSubject$1<Data>;
 type TObserver<Data = void> = TObserver$1<Data>;
 type TObservable<Data = void> = TObservable$1<Data>;
@@ -1807,4 +1816,4 @@ type TCursorPaginator<FilterData extends {} = any, RowData extends IRowData = an
 type TPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TPaginator$1<FilterData, RowData, Payload>;
 type TBasePaginator<FilterData extends {} = any, RowData extends IRowData = any> = TBasePaginator$1<FilterData, RowData>;
 
-export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
+export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, ToolRegistry, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, singlerun, singleshot, singletick, sleep, throttle, timeout, truely, trycatch, ttl, waitForNext };
