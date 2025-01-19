@@ -107,6 +107,7 @@ export { join } from './utils/math/join';
 export { str } from './utils/math/str';
 export { last } from './utils/math/last';
 export { truely } from './utils/math/truely';
+export { split } from './utils/math/split';
 
 export { compose } from './utils/compose';
 export { errorData } from './utils/errorData';

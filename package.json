@@ -1,6 +1,6 @@
 {
   "name": "functools-kit",
-  "version": "1.0.62",
+  "version": "1.0.63",
   "description": "A library with helpers for react-declarative app backend development",
   "author": {
     "name": "Petr Tripolsky",
