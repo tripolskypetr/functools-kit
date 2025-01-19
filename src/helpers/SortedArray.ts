@@ -20,7 +20,7 @@ export class SortedArray<T = any> {
   }
 
   pop(item: T): boolean {
-    const index = this.items.findIndex(entry => entry.item === item);
+    const index = this.items.findIndex((entry) => entry.item === item);
     if (index !== -1) {
       this.items.splice(index, 1);
       return true;
@@ -30,6 +30,19 @@ export class SortedArray<T = any> {
 
   getItems(): T[] {
     return this.items.map((entry) => entry.item);
+  }
+
+  take(n: number): T[] {
+    const result: T[] = [];
+    let count = 0;
+    for (const item of this) {
+      if (count >= n) {
+        break;
+      }
+      result.push(item);
+      count++;
+    }
+    return result;
   }
 
   [Symbol.iterator]() {
