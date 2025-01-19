@@ -104,6 +104,7 @@ export { match } from './utils/math/match';
 
 export { first } from './utils/math/first';
 export { join } from './utils/math/join';
+export { str } from './utils/math/str';
 export { last } from './utils/math/last';
 export { truely } from './utils/math/truely';
 
