@@ -1684,7 +1684,29 @@ declare const join: <T = string>(...arr: (T | T[] | null)[] | (T | T[] | null)[]
  * Joins an array of strings or arrays of strings into a single string, with each element separated by a space.
  * It also handles cases where the input is null or nested arrays.
  */
-declare const str: (...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]) => string;
+declare const str: {
+    (...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string;
+    /**
+     * Joins an array of strings or arrays of strings into a single string, with each element separated by a newline.
+     */
+    newline(...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string;
+    /**
+     * Joins an array of strings or arrays of strings into a single string, with each element separated by a space.
+     */
+    space(...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string;
+    /**
+     * Joins an array of strings or arrays of strings into a single string, with each element separated by a comma.
+     */
+    comma(...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string;
+    /**
+     * Joins an array of strings or arrays of strings into a single string, with each element separated by a period.
+     */
+    dot(...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string;
+    /**
+     * Joins an array of strings or arrays of strings into a single string, with each element separated by a semicolon.
+     */
+    semicolon(...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string;
+};
 
 /**
  * Returns the last element of an array or null if the array is empty or not an array.

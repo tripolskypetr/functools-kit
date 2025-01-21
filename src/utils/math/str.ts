@@ -8,4 +8,39 @@ export const str = (...arr: (number | string | string[] | null)[] | (number | st
     return join(...arr).join(" ");
 };
 
+/**
+ * Joins an array of strings or arrays of strings into a single string, with each element separated by a newline.
+ */
+str.newline = (...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string => {
+    return join(...arr).join("\n");
+};
+
+/**
+ * Joins an array of strings or arrays of strings into a single string, with each element separated by a space.
+ */
+str.space = (...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string => {
+    return join(...arr).join(" ");
+};
+
+/**
+ * Joins an array of strings or arrays of strings into a single string, with each element separated by a comma.
+ */
+str.comma = (...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string => {
+    return join(...arr).join(", ");
+};
+
+/**
+ * Joins an array of strings or arrays of strings into a single string, with each element separated by a period.
+ */
+str.dot = (...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string => {
+    return join(...arr).join(". ");
+};
+
+/**
+ * Joins an array of strings or arrays of strings into a single string, with each element separated by a semicolon.
+ */
+str.semicolon =  (...arr: (number | string | string[] | null)[] | (number | string | string[] | null)[][]): string => {
+    return join(...arr).join(";");
+};
+
 export default str;
