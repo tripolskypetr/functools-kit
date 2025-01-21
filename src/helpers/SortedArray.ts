@@ -10,7 +10,7 @@ export class SortedArray<T = any> {
       if (this.items[mid].score === score) {
         left = mid;
         break;
-      } else if (this.items[mid].score < score) {
+      } else if (this.items[mid].score > score) {
         left = mid + 1;
       } else {
         right = mid - 1;
