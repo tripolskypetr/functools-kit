@@ -32,10 +32,13 @@ export class SortedArray<T = any> {
     return this.items.map((entry) => entry.item);
   }
 
-  take(n: number): T[] {
+  take(n: number, minScore = Number.POSITIVE_INFINITY): T[] {
     const result: T[] = [];
     let count = 0;
-    for (const item of this) {
+    for (const { item, score } of this.items) {
+      if (score < minScore) {
+        break;
+      }
       if (count >= n) {
         break;
       }
