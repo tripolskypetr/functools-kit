@@ -1841,6 +1841,10 @@ declare class SortedArray<T = any> {
     push(item: T, score: number): void;
     pop(item: T): boolean;
     getItems(): T[];
+    getEntries(): {
+        item: T;
+        score: number;
+    }[];
     take(n: number, minScore?: number): T[];
     [Symbol.iterator](): {
         next: () => {
