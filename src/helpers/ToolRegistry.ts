@@ -18,11 +18,11 @@ export class ToolRegistry<T extends Record<string, unknown> = {}> {
 
   public get = <K extends keyof T>(name: K): T[K] => {
     if (name in this.tools) {
-      throw new Error(
-        `functools-kit Tool not registered name=${String(name)} registryName=${this.registryName}`
-      );
+      return this.tools[name];
     }
-    return this.tools[name];
+    throw new Error(
+      `functools-kit Tool not registered name=${String(name)} registryName=${this.registryName}`
+    );
   }
 
   public init = () => {
