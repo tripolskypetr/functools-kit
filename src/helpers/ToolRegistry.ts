@@ -7,7 +7,7 @@ export class ToolRegistry<T extends Record<string, unknown> = {}> {
   ): ToolRegistry<T & Record<K, U>> => {
     if (name in this.tools) {
       throw new Error(
-        `functools-kit Tool is already registered name=${name} registryName=${this.registryName}`
+        `functools-kit Tool is already registered name=${String(name)} registryName=${this.registryName}`
       );
     }
     return new ToolRegistry(this.registryName, {
@@ -17,6 +17,11 @@ export class ToolRegistry<T extends Record<string, unknown> = {}> {
   }
 
   public get = <K extends keyof T>(name: K): T[K] => {
+    if (name in this.tools) {
+      throw new Error(
+        `functools-kit Tool is already get name=${String(name)} registryName=${this.registryName}`
+      );
+    }
     return this.tools[name];
   }
 
