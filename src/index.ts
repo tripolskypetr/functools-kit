@@ -24,6 +24,7 @@ export { trycatch, IControllTrycatch, IErrorTrycatch, CATCH_SYMBOL } from './uti
 export { ttl, IClearableTtl } from './utils/hof/ttl';
 export { rate, RateError, IClearableRate } from './utils/hof/rate';
 export { throttle, IClearableThrottle } from './utils/hof/throttle';
+export { schedule, IScheduleParams, IWrappedScheduleFn } from './utils/hof/schedule';
 
 export { pubsub, PubsubMapAdapter, PubsubArrayAdapter, IPubsubConfig, IPubsubWrappedFn, IPubsubArray, IPubsubMap } from './utils/hof/pubsub';
 
