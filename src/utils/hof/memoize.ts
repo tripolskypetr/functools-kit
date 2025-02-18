@@ -35,6 +35,13 @@ export interface IControlMemoize<K, V> {
      * @returns true if ok
      */
     remove: (key: K) => boolean;
+
+    /**
+     * Check if key is exist
+     * @param key The key to remove.
+     * @returns true if ok
+     */
+    has: (key: K) => boolean;
 }
 
 /**
@@ -141,6 +148,10 @@ export const memoize = <T extends (...args: any[]) => any, K = string>(key: (arg
 
     executeFn.remove = (key: K) => {
         return valueMap.delete(key);
+    };
+
+    executeFn.has = (key: K) => {
+        return valueMap.has(key);
     };
 
     return executeFn as T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>>;

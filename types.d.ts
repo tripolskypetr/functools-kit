@@ -880,6 +880,12 @@ interface IControlMemoize<K, V> {
      * @returns true if ok
      */
     remove: (key: K) => boolean;
+    /**
+     * Check if key is exist
+     * @param key The key to remove.
+     * @returns true if ok
+     */
+    has: (key: K) => boolean;
 }
 /**
  * A memoization function that caches the result of a function based on its arguments.
