@@ -33,6 +33,8 @@ export { singletick, IClearableSingletick } from './utils/hof/singletick';
 export { afterinit, IWrappedAfterInitFn } from './utils/hof/afterinit';
 export { lock, IWrappedLockFn } from './utils/hof/lock';
 
+export { makeExtendable } from './utils/oop/makeExtendable';
+
 export { sleep } from './utils/sleep';
 export { deepFlat } from './utils/deepFlat';
 

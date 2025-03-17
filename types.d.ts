@@ -1120,6 +1120,16 @@ interface IWrappedLockFn<T extends any = any, P extends any[] = any> extends IWr
  */
 declare const lock: <T extends unknown = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>) => IWrappedLockFn<T, P>;
 
+type Ctor<T = any> = new (...args: any[]) => T;
+/**
+ * A utility function to make a class extendable.
+ *
+ * @template T - The type of the constructor.
+ * @param {T} BaseClass - The base class to be extended.
+ * @returns {T} - A new class that extends the base class.
+ */
+declare const makeExtendable: <T extends Ctor<any>>(BaseClass: T) => T;
+
 /**
  * Delays the execution for the specified amount of time.
  *
@@ -1884,4 +1894,4 @@ type TCursorPaginator<FilterData extends {} = any, RowData extends IRowData = an
 type TPaginator<FilterData extends {} = any, RowData extends IRowData = any, Payload = any> = TPaginator$1<FilterData, RowData, Payload>;
 type TBasePaginator<FilterData extends {} = any, RowData extends IRowData = any> = TBasePaginator$1<FilterData, RowData>;
 
-export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type IScheduleParams, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, type IWrappedScheduleFn, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, SortedArray, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, ToolRegistry, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, schedule, singlerun, singleshot, singletick, sleep, split, str, throttle, timeout, truely, trycatch, ttl, waitForNext };
+export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type IScheduleParams, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, type IWrappedScheduleFn, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, SortedArray, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, ToolRegistry, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, makeExtendable, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, schedule, singlerun, singleshot, singletick, sleep, split, str, throttle, timeout, truely, trycatch, ttl, waitForNext };
