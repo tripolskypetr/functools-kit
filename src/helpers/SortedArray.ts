@@ -54,11 +54,11 @@ export class SortedArray<T = any> {
 
   [Symbol.iterator]() {
     let index = 0;
-    const items = this.items;
+    const items = this.items || [];
     return {
       next: () => {
         if (index < items.length) {
-          return { value: items[index].item, done: false };
+          return { value: items[index++].item, done: false };
         } else {
           return { done: true };
         }
