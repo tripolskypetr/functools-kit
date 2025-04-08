@@ -486,7 +486,7 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
     private _emitter;
     constructor();
     get hasListeners(): boolean;
-    waitForListener: () => Promise<void>;
+    waitForListener(): Promise<void>;
     /**
      * Maps the values of the observer using the given callback function.
      *
@@ -494,14 +494,14 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
      * @param callbackfn - A function that maps each value of the observer.
      * @returns - An observer with the mapped values.
      */
-    map: <T = any>(callbackfn: (value: Data) => T) => TObserver$1<T>;
+    map<T = any>(callbackfn: (value: Data) => T): TObserver$1<T>;
     /**
      * Applies a transformation function to each value emitted by the observer and flattens the result into a single observer.
      * @template T - The type of values emitted by the observer.
      * @param callbackfn - The transformation function to apply to each value emitted by the observer.
      * @returns - The observer that emits the flattened values.
      */
-    flatMap: <T = any>(callbackfn: (value: Data) => T[]) => TObserver$1<T>;
+    flatMap<T = any>(callbackfn: (value: Data) => T[]): TObserver$1<T>;
     /**
      * Applies a reducer function to each value emitted by the observer and returns a single accumulated value.
      *
@@ -510,7 +510,7 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
      * @param begin - The initial value for the accumulator
      * @returns - An observer that emits the accumulated value when the original observer completes
      */
-    reduce: <T = any>(callbackfn: (acm: T, cur: Data) => T, begin: T) => TObserver$1<T>;
+    reduce<T = any>(callbackfn: (acm: T, cur: Data) => T, begin: T): TObserver$1<T>;
     /**
      * Asynchronously maps the emitted values of the observer using the provided callback function.
      *
@@ -519,19 +519,19 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
      * @param [fallbackfn] - The optional fallback function that handles errors during mapping.
      * @returns - Returns a new observer that emits the mapped values.
      */
-    mapAsync: <T = any>(callbackfn: (value: Data) => Promise<T>, fallbackfn?: (e: Error) => void) => TObserver$1<T>;
+    mapAsync<T = any>(callbackfn: (value: Data) => Promise<T>, fallbackfn?: (e: Error) => void): TObserver$1<T>;
     /**
      * Applies a filtering function to the observer and returns a new observer with filtered values.
      *
      * @param callbackfn - A function that tests each value in the observer. Should return true or false.
      * @returns - A new observer with filtered values.
      */
-    filter: (callbackfn: (value: Data) => boolean) => TObserver$1<Data>;
+    filter(callbackfn: (value: Data) => boolean): TObserver$1<Data>;
     /**
      * The tap function allows you to perform side effects without modifying the observed data.
      *
      */
-    tap: (callbackfn: (value: Data) => void) => TObserver$1<Data>;
+    tap(callbackfn: (value: Data) => void): TObserver$1<Data>;
     /**
      * Applies a callback function to the values emitted by an observer.
      *
@@ -542,32 +542,32 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
      *
      * @category Observables
      */
-    operator: <T = any>(callbackfn: (value: TObserver$1<Data>) => TObserver$1<T>) => TObserver$1<T>;
+    operator<T = any>(callbackfn: (value: TObserver$1<Data>) => TObserver$1<T>): TObserver$1<T>;
     /**
      * Splits the observed data into batches of arrays.
      *
      * @returns - The observer that emits batches of arrays.
      */
-    split: () => Observer<ReadonlyArray<FlatArray<Data[], 20>>>;
+    split(): Observer<ReadonlyArray<FlatArray<Data[], 20>>>;
     /**
      * Creates a debounced observer with an optional delay.
      * @param [delay] - The delay in milliseconds before emitting the data.
      * @returns - The debounced observer.
      */
-    debounce: (delay?: number) => TObserver$1<Data>;
+    debounce(delay?: number): TObserver$1<Data>;
     /**
      * Creates a delayed observer with an optional delay.
      * @param [delay] - The delay in milliseconds before emitting the data.
      * @returns - The delayed observer.
      */
-    delay: (delay?: number) => TObserver$1<Data>;
+    delay(delay?: number): TObserver$1<Data>;
     /**
      * Creates an observer that repeats emitting values at a specified interval.
      *
      * @param [interval] - The time interval at which to repeat emitting values.
      * @returns - The created observer.
      */
-    repeat: (interval?: number) => TObserver$1<Data>;
+    repeat(interval?: number): TObserver$1<Data>;
     /**
      * Merges the provided observer with the current observer instance.
      * Returns a new observer that emits values from both observers.
@@ -575,14 +575,14 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
      * @param observer - The observer to merge with the current observer.
      * @returns - A new observer that emits values from both observers.
      */
-    merge: <T = any>(observer: TObserver$1<T>) => TObserver$1<Data | T>;
+    merge<T = any>(observer: TObserver$1<T>): TObserver$1<Data | T>;
     /**
      * Subscribes to an event.
      *
      * @param callback - The callback function to be invoked when the event is triggered.
      * @returns - A function to unsubscribe from the event.
      */
-    subscribe: (callback: Function$1) => () => void;
+    subscribe(callback: Function$1): () => void;
     /**
      * Unsubscribes all event listeners.
      *
@@ -590,7 +590,7 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
      * @instance
      * @returns - No return value.
      */
-    unsubscribeAll: () => void;
+    unsubscribeAll(): void;
     /**
      * Executes the provided callback function only once.
      * The callback function will be invoked when the specified event occurs for the first time.
@@ -598,7 +598,7 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
      * @param callback - The function to be executed only once.
      * @returns - A function that removes the registered event listener.
      */
-    once: (callback: Function$1) => () => void;
+    once(callback: Function$1): () => void;
     /**
      * Calls the next method to emit the specified data using the SUBJECT_EVENT event.
      *
@@ -628,7 +628,7 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
      * @function
      * @returns The iterator context representing the current object.
      */
-    toIteratorContext: () => {
+    toIteratorContext(): {
         iterate(): AsyncGenerator<Data, void, unknown>;
         done(): void;
     };
@@ -1230,7 +1230,7 @@ declare class EventEmitter {
      * @param key - The event key to retrieve the listeners for.
      * @returns An array of listeners associated with the given event key.
      */
-    getListeners: (key: EventKey) => Function[];
+    getListeners(key: EventKey): Function[];
     /**
      * Subscribes a callback function to the specified event name.
      *
@@ -1238,7 +1238,7 @@ declare class EventEmitter {
      * @param callback - The callback function to be executed when the event is triggered.
      * @returns
      */
-    subscribe: (eventName: EventKey, callback: Function) => void;
+    subscribe(eventName: EventKey, callback: Function): void;
     /**
      * Removes a callback function from the list of event listeners for the specified event.
      *
@@ -1246,13 +1246,13 @@ declare class EventEmitter {
      * @param callback - The callback function to remove from the event listeners.
      * @returns
      */
-    unsubscribe: (eventName: EventKey, callback: Function) => void;
+    unsubscribe(eventName: EventKey, callback: Function): void;
     /**
      * Clears all event handlers registered for the current object.
      * @function
      * @returns
      */
-    unsubscribeAll: () => void;
+    unsubscribeAll(): void;
     /**
      * Subscribes a callback function to the given event name. The callback function will be triggered only once when the event is emitted.
      *
@@ -1260,7 +1260,7 @@ declare class EventEmitter {
      * @param callback - The callback function to be executed when the event is emitted.
      * @returns - A function that can be called to unsubscribe the callback function from the event.
      */
-    once: (eventName: EventKey, callback: Function) => () => void;
+    once(eventName: EventKey, callback: Function): () => void;
     /**
      * Emits the given event with the specified arguments.
      *
@@ -1268,7 +1268,7 @@ declare class EventEmitter {
      * @param args - The arguments to pass to the event listeners.
      * @returns - A promise that resolves when all event listeners have completed.
      */
-    emit: (eventName: EventKey, ...args: any[]) => Promise<void>;
+    emit(eventName: EventKey, ...args: any[]): Promise<void>;
 }
 
 interface ICounted<T> {

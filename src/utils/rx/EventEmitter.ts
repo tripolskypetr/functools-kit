@@ -26,7 +26,7 @@ export class EventEmitter {
      * @param key - The event key to retrieve the listeners for.
      * @returns An array of listeners associated with the given event key.
      */
-    public getListeners = (key: EventKey) => {
+    public getListeners(key: EventKey) {
         return this._events[key] || [];
     };
 
@@ -37,7 +37,7 @@ export class EventEmitter {
      * @param callback - The callback function to be executed when the event is triggered.
      * @returns
      */
-    public subscribe = (eventName: EventKey, callback: Function) => {
+    public subscribe(eventName: EventKey, callback: Function) {
         !this._events[eventName] && (this._events[eventName] = []);
         this._events[eventName].push(callback);
     };
@@ -49,7 +49,7 @@ export class EventEmitter {
      * @param callback - The callback function to remove from the event listeners.
      * @returns
      */
-    public unsubscribe = (eventName: EventKey, callback: Function) => {
+    public unsubscribe(eventName: EventKey, callback: Function) {
         !this._events[eventName] && (this._events[eventName] = []);
         this._events[eventName] = this._events[eventName].filter(eventCallback => callback !== eventCallback);
     };
@@ -59,7 +59,7 @@ export class EventEmitter {
      * @function
      * @returns
      */
-    public unsubscribeAll = () => {
+    public unsubscribeAll() {
         this._events = {};
     };
 
@@ -70,7 +70,7 @@ export class EventEmitter {
      * @param callback - The callback function to be executed when the event is emitted.
      * @returns - A function that can be called to unsubscribe the callback function from the event.
      */
-    public once = (eventName: EventKey, callback: Function) => {
+    public once(eventName: EventKey, callback: Function) {
         const subscriber = async (...args: any[]) => {
             await callback(...args);
             this.unsubscribe(eventName, subscriber);
@@ -88,7 +88,7 @@ export class EventEmitter {
      * @param args - The arguments to pass to the event listeners.
      * @returns - A promise that resolves when all event listeners have completed.
      */
-    public emit = async (eventName: EventKey, ...args: any[]) => {
+    public async emit(eventName: EventKey, ...args: any[]) {
         const event = [...this._events && this._events[eventName] || []];
         for (let i = 0; i !== event.length; i++) {
             await event[i](...args);
