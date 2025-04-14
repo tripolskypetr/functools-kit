@@ -1858,6 +1858,7 @@ declare class ToolRegistry<T extends Record<string, unknown> = {}> {
     private tools;
     constructor(registryName: string, tools?: T);
     register: <K extends string, U>(name: K, tool: U) => ToolRegistry<T & Record<K, U>>;
+    override: <K extends string, U>(name: K, tool: Partial<U>) => ToolRegistry<T>;
     get: <K extends keyof T>(name: K) => T[K];
     init: () => void;
 }

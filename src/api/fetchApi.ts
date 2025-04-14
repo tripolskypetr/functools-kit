@@ -1,4 +1,4 @@
-import trycatch, { CATCH_SYMBOL } from "src/utils/hof/trycatch";
+import trycatch, { CATCH_SYMBOL } from "../utils/hof/trycatch";
 
 type RequestInfo = string | URL | Request;
 
