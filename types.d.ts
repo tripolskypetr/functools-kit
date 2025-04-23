@@ -826,7 +826,7 @@ interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
  * @param count - The maximum number of retries (default is 5).
  * @returns - The wrapped function that can be canceled.
  */
-declare const retry: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count?: number, delay?: number) => IWrappedRetryFn<T, P>;
+declare const retry: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count?: number, delay?: number, condition?: (error: Error) => boolean) => IWrappedRetryFn<T, P>;
 
 /**
  * Interface for objects that can be cleared.

@@ -19,7 +19,7 @@ export interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
  * @param count - The maximum number of retries (default is 5).
  * @returns - The wrapped function that can be canceled.
  */
-export const retry = <T extends any = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count = 5, delay = 1_000): IWrappedRetryFn<T, P> => {
+export const retry = <T extends any = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count = 5, delay = 1_000, condition = (error: Error) => true): IWrappedRetryFn<T, P> => {
     const wrappedFn = queued(async (...args: any) => {
         let total = count;        
         /**
@@ -33,6 +33,9 @@ export const retry = <T extends any = any, P extends any[] = any[]>(run: (...arg
             try {
                 return await run(...args);
             } catch (error) {
+                if (!condition(error)) {
+                    throw error;
+                }
                 await sleep(delay);
                 if (--total === 0) {
                     throw error;
