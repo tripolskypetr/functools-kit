@@ -100,7 +100,9 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
                 await Promise.race(execSet);
             }
             if (execSet.size >= maxExec) {
-                await sleep(delay);
+                if (delay) {
+                    await sleep(delay);
+                }
                 continue;
             }
             const { args, awaiter } = execStack.pop()!;
