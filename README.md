@@ -2,6 +2,9 @@
 
 > A library with helpers for [react-declarative](https://github.com/react-declarative/react-declarative) app backend development
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/tripolskypetr/functools-kit)
+[![npm](https://img.shields.io/npm/v/functools-kit.svg?style=flat-square)](https://npmjs.org/package/functools-kit)
+
 ## What inside
 
 The complete description is available [by this link](https://github.com/react-declarative/react-declarative/blob/master/docs/code/UTILS.md). This npm module exports the following TypeScript definitions:
