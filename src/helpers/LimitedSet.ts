@@ -1,10 +1,10 @@
-export class LimitedSet extends Set {
+export class LimitedSet<T> extends Set<T> {
 
     constructor(private _maxSize = 20) {
         super();
     }
 
-    add(value) {
+    add(value: T) {
         if (this.size >= this._maxSize) {
             const lastElement = Array.from(this).pop();
             this.delete(lastElement);

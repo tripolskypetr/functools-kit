@@ -1,10 +1,10 @@
-export class LimitedMap extends Map {
+export class LimitedMap<K, V> extends Map<K, V> {
 
     constructor(private _maxSize = 20) {
         super();
     }
 
-    set(key, value) {
+    set(key: K, value: V) {
         if (this.size >= this._maxSize) {
             const lastKey = Array.from(this.keys()).pop();
             this.delete(lastKey);

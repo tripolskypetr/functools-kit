@@ -1885,16 +1885,16 @@ declare class SortedArray<T = any> {
     get length(): number;
 }
 
-declare class LimitedSet extends Set {
+declare class LimitedSet<T> extends Set<T> {
     private _maxSize;
     constructor(_maxSize?: number);
-    add(value: any): this;
+    add(value: T): this;
 }
 
-declare class LimitedMap extends Map {
+declare class LimitedMap<K, V> extends Map<K, V> {
     private _maxSize;
     constructor(_maxSize?: number);
-    set(key: any, value: any): this;
+    set(key: K, value: V): this;
 }
 
 type TSubject<Data = void> = TSubject$1<Data>;
