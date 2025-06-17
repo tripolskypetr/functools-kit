@@ -6,7 +6,7 @@ export class LimitedMap<K, V> extends Map<K, V> {
 
     set(key: K, value: V) {
         if (this.size >= this._maxSize) {
-            const lastKey = Array.from(this.keys()).pop();
+            const lastKey = Array.from(this.keys()).shift();
             this.delete(lastKey);
         }
         return super.set(key, value);
