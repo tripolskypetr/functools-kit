@@ -122,3 +122,5 @@ export type { TResponse } from './model/TResponse';
 
 export { ToolRegistry } from './helpers/ToolRegistry';
 export { SortedArray } from './helpers/SortedArray';
+export { LimitedSet } from './helpers/LimitedSet';
+export { LimitedMap } from './helpers/LimitedMap';
