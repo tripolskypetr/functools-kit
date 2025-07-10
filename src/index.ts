@@ -124,3 +124,7 @@ export { ToolRegistry } from './helpers/ToolRegistry';
 export { SortedArray } from './helpers/SortedArray';
 export { LimitedSet } from './helpers/LimitedSet';
 export { LimitedMap } from './helpers/LimitedMap';
+
+import * as typoInternal from './utils/typo';
+
+export const typo = { ...typoInternal };
