@@ -20,6 +20,7 @@ const NEVER_VALUE = Symbol('never');
  */
 export interface IClearableTtl<K = string> extends IClearableTtlInternal<K> {
     gc: () => void;
+    setTimeout: (key: K, timeout: number) => void;
 }
 
 /**
@@ -97,6 +98,13 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
             if (currentTtl - item.current.ttl > timeout) {
                 wrappedFn.clear(key as string);
             }
+        }
+    };
+
+    executeFn.setTimeout = (key: K, timeout: number) => {
+        const prevValue = wrappedFn.get(key as string);
+        if (prevValue) {
+            prevValue.ttl = Date.now() + timeout;
         }
     };
 

@@ -42,6 +42,14 @@ export interface IControlMemoize<K, V> {
      * @returns true if ok
      */
     has: (key: K) => boolean;
+
+    /**
+     * Gets the value using key
+     * @param key The key to read.
+     * @return value The value to associate with the key or undefined if not found.
+     */
+    get: (key: K) => V | undefined;
+
 }
 
 /**
@@ -145,6 +153,15 @@ export const memoize = <T extends (...args: any[]) => any, K = string>(key: (arg
         }
         valueMap.set(key, ref as unknown as IRefMemoize<ReturnType<T>>);
     };
+
+    executeFn.get = (key: K): ReturnType<T> => {
+        const ref = valueMap.get(key);
+        if (ref) {
+            return ref.current;
+        }
+        return undefined
+    };
+
 
     executeFn.remove = (key: K) => {
         return valueMap.delete(key);

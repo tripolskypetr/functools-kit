@@ -886,6 +886,12 @@ interface IControlMemoize<K, V> {
      * @returns true if ok
      */
     has: (key: K) => boolean;
+    /**
+     * Gets the value using key
+     * @param key The key to read.
+     * @return value The value to associate with the key or undefined if not found.
+     */
+    get: (key: K) => V | undefined;
 }
 /**
  * A memoization function that caches the result of a function based on its arguments.
@@ -939,6 +945,7 @@ declare const trycatch: <T extends (...args: any[]) => any, V, D = typeof CATCH_
  */
 interface IClearableTtl<K = string> extends IClearableMemoize<K> {
     gc: () => void;
+    setTimeout: (key: K, timeout: number) => void;
 }
 /**
  * Wrap a function with time-to-live (TTL) caching.
