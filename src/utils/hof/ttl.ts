@@ -43,6 +43,8 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
     timeout?: number;
 } = {}): T & IClearableTtl<K> & IControl<K, ReturnType<T>> => {
 
+    const timeoutOverride = new Map<K, number>();
+
     /**
      * Creates a memoized function that caches the result of the
      * original function based on the provided key.
@@ -63,11 +65,13 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
      */
     const executeFn = (...args: Parameters<T>): ReturnType<T> => {
         const currentTtl = Date.now();
+        const k = key(args);
         const { value, ttl } = wrappedFn(...args);
-        if (currentTtl - ttl > timeout) {
-            const k = key(args);
+        const targetTimeout = timeoutOverride.get(k) ?? timeout;
+        if (currentTtl - ttl > targetTimeout) {
             wrappedFn.clear(k as string);
-            return executeFn(...args);
+            timeoutOverride.delete(k);
+            return wrappedFn(...args).value;
         }
         return value;
     };
@@ -82,6 +86,11 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
      * @returns
      */
     executeFn.clear = (key?: K) => {
+        if (key) {
+            timeoutOverride.delete(key);
+        } else {
+            timeoutOverride.clear();
+        }
         wrappedFn.clear(key as string);
     };
 
@@ -95,16 +104,17 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
         const valueMap: Map<K, IRef<{ ttl: number }>> = wrappedFn[GET_VALUE_MAP]();
         for (const [key, item] of valueMap.entries()) {
             const currentTtl = Date.now();
-            if (currentTtl - item.current.ttl > timeout) {
+            const targetTimeout = timeoutOverride.get(key) ?? timeout;
+            if (currentTtl - item.current.ttl > targetTimeout) {
                 wrappedFn.clear(key as string);
+                timeoutOverride.delete(key);
             }
         }
     };
 
     executeFn.setTimeout = (key: K, nextTimeout: number) => {
-        const prevValue = wrappedFn.get(key as string);
-        if (prevValue) {
-            prevValue.ttl = Date.now() - timeout + nextTimeout;
+        if (wrappedFn.has(key as string)) {
+            timeoutOverride.set(key, nextTimeout);
         }
     };
 
