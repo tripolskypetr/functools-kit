@@ -101,10 +101,10 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
         }
     };
 
-    executeFn.setTimeout = (key: K, timeout: number) => {
+    executeFn.setTimeout = (key: K, nextTimeout: number) => {
         const prevValue = wrappedFn.get(key as string);
         if (prevValue) {
-            prevValue.ttl = Date.now() + timeout;
+            prevValue.ttl = Date.now() - timeout + nextTimeout;
         }
     };
 
