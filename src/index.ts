@@ -22,6 +22,7 @@ export { cached, IClearableCached } from './utils/hof/cached';
 export { memoize, IClearableMemoize, IControlMemoize, IRefMemoize } from './utils/hof/memoize';
 export { trycatch, IControllTrycatch, IErrorTrycatch, CATCH_SYMBOL } from './utils/hof/trycatch';
 export { ttl, IClearableTtl } from './utils/hof/ttl';
+export { router, IClearableRouter } from './utils/hof/router';
 export { rate, RateError, IClearableRate } from './utils/hof/rate';
 export { throttle, IClearableThrottle } from './utils/hof/throttle';
 export { schedule, IScheduleParams, IWrappedScheduleFn } from './utils/hof/schedule';

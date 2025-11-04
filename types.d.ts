@@ -964,6 +964,36 @@ declare const ttl: <T extends (...args: any[]) => any, K = string>(run: T, { key
     timeout?: number;
 }) => T & IClearableTtl<K> & IControlMemoize<K, ReturnType<T>>;
 
+/**
+ * Interface for objects that can be cleared by key.
+ * @template K - The type of the key.
+ */
+interface IClearableRouter<K = string> {
+    clear: (key?: K) => void;
+}
+/**
+ * Combines memoization with caching for each key.
+ * Creates a separate cache state for each unique key, allowing
+ * independent change tracking per key without memory leaks.
+ *
+ * @template T - The function type to be memoized and cached
+ * @template K - The key type used for memoization routing
+ * @param key - Function that generates a unique key from arguments (for routing)
+ * @param changed - Function to determine if arguments have changed (for caching within each key)
+ * @param run - The function to be memoized and cached
+ * @returns - A function with per-key caching and clear methods
+ *
+ * @example
+ * const fn = memoize<(cameraId: number, cacheId: string) => Promise<void>, number>(
+ *   ([cameraId]) => cameraId,
+ *   ([, cacheIdA], [, cacheIdB]) => cacheIdA !== cacheIdB,
+ *   async (cameraId, cacheId) => {
+ *     await processCamera(cameraId);
+ *   }
+ * );
+ */
+declare const router: <T extends (...args: any[]) => any, K = string>(key: (args: Parameters<T>) => K, changed: (prevArgs: Parameters<T>, currentArgs: Parameters<T>) => boolean, run: T) => T & IClearableRouter<K>;
+
 interface IClearableRate<K = string> extends IClearableMemoize<K> {
     gc: () => void;
 }
@@ -1929,4 +1959,4 @@ declare const typo: {
     bullet: "•";
 };
 
-export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type IScheduleParams, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, type IWrappedScheduleFn, LimitedMap, LimitedSet, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, SortedArray, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, ToolRegistry, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, makeExtendable, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, schedule, singlerun, singleshot, singletick, sleep, split, str, throttle, timeout, truely, trycatch, ttl, typo, waitForNext };
+export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableRouter, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type IScheduleParams, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, type IWrappedScheduleFn, LimitedMap, LimitedSet, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, SortedArray, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, ToolRegistry, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, makeExtendable, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, router, schedule, singlerun, singleshot, singletick, sleep, split, str, throttle, timeout, truely, trycatch, ttl, typo, waitForNext };
