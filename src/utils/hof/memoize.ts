@@ -37,6 +37,18 @@ export interface IControlMemoize<K, V> {
     remove: (key: K) => boolean;
 
     /**
+     * Returns value list from map
+     * @return The list of values in the map
+     */
+    values: () => V[];
+
+    /**
+     * Returns key list from map
+     * @return The list of keys in the map
+     */
+    keys: () => K[];
+    
+    /**
      * Check if key is exist
      * @param key The key to remove.
      * @returns true if ok
@@ -170,6 +182,15 @@ export const memoize = <T extends (...args: any[]) => any, K = string>(key: (arg
     executeFn.has = (key: K) => {
         return valueMap.has(key);
     };
+
+    executeFn.values = () => {
+        return Array.from(valueMap.values())
+            .map(({ current }) => current);
+    }
+
+    executeFn.keys = () => {
+        return Array.from(valueMap.keys())
+    }
 
     return executeFn as T & IClearableMemoize<K> & IControlMemoize<K, ReturnType<T>>;
 };

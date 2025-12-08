@@ -881,6 +881,16 @@ interface IControlMemoize<K, V> {
      */
     remove: (key: K) => boolean;
     /**
+     * Returns value list from map
+     * @return The list of values in the map
+     */
+    values: () => V[];
+    /**
+     * Returns key list from map
+     * @return The list of keys in the map
+     */
+    keys: () => K[];
+    /**
      * Check if key is exist
      * @param key The key to remove.
      * @returns true if ok

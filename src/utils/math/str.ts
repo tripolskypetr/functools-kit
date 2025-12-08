@@ -1,4 +1,12 @@
-import join from "./join";
+const join = <T = string>(...arr: (T | T[] | null)[] | (T | T[] | null)[][]): T[] => {
+    arr = arr.flat(1) as typeof arr;
+    return arr.flatMap((item) => {
+        if (Array.isArray(item)) {
+            return join(item as T[]);
+        }
+        return item;
+    }).filter(Boolean) as T[];
+};
 
 /**
  * Joins an array of strings or arrays of strings into a single string, with each element separated by a space.
