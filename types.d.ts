@@ -650,6 +650,7 @@ declare const getErrorMessage: (error: any) => string;
  */
 interface ISingleshotClearable {
     clear: () => void;
+    hasValue: () => boolean;
 }
 /**
  * Creates a function that is only executed once, and then memoizes and returns the result.

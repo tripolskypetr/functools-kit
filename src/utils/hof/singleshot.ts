@@ -5,6 +5,7 @@
  */
 export interface ISingleshotClearable {
     clear: () => void;
+    hasValue: () => boolean;
 }
 
 /**
@@ -40,6 +41,12 @@ export const singleshot = <T extends (...args: any[]) => any>(run: T): T & ISing
     fn.clear = () => {
         hasRunned = false;
     };
+    /**
+     * Checks if the function has been executed and has a cached value.
+     *
+     * @returns - True if the function has been executed, false otherwise.
+     */
+    fn.hasValue = () => hasRunned;
     return fn as T & ISingleshotClearable;
 };
 
