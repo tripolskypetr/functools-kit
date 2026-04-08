@@ -125,6 +125,7 @@ export { ToolRegistry } from './helpers/ToolRegistry';
 export { SortedArray } from './helpers/SortedArray';
 export { LimitedSet } from './helpers/LimitedSet';
 export { LimitedMap } from './helpers/LimitedMap';
+export { Lock } from "./helpers/Lock";
 
 import * as typoInternal from './utils/typo';
 

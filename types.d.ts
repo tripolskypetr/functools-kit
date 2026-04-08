@@ -1,3 +1,5 @@
+import * as functools_kit from 'functools-kit';
+
 /**
  * Generates a random string using the UUID library.
  *
@@ -1951,6 +1953,66 @@ declare class LimitedMap<K, V> extends Map<K, V> {
     set(key: K, value: V): this;
 }
 
+declare const SET_BUSY_SYMBOL: unique symbol;
+declare const GET_BUSY_SYMBOL: unique symbol;
+declare const ACQUIRE_LOCK_SYMBOL: unique symbol;
+declare const RELEASE_LOCK_SYMBOL: unique symbol;
+/**
+ * Mutual exclusion primitive for async TypeScript code.
+ *
+ * Provides a reentrant-safe, queued lock that serializes access to a critical
+ * section across concurrent async callers. Internally tracks a busy counter so
+ * nested acquire/release pairs are detected and mis-matched releases throw
+ * immediately.
+ *
+ * Three usage styles are supported:
+ *
+ * **Manual acquire / release**
+ * ```ts
+ * await lock.acquireLock();
+ * try {
+ *   // critical section
+ * } finally {
+ *   await lock.releaseLock();
+ * }
+ * ```
+ *
+ * @see {@link acquireLock}
+ * @see {@link releaseLock}
+ */
+declare class Lock {
+    private _isBusy;
+    [SET_BUSY_SYMBOL](isBusy: boolean): void;
+    [GET_BUSY_SYMBOL](): boolean;
+    [ACQUIRE_LOCK_SYMBOL]: functools_kit.IWrappedQueuedFn<void, [self: Lock]>;
+    [RELEASE_LOCK_SYMBOL]: () => void;
+    /**
+     * Acquires the lock, suspending execution until it becomes available.
+     * Calls are automatically serialized via the internal queued scheduler —
+     * concurrent callers wait their turn without spinning.
+     *
+     * @returns {Promise<void>} Resolves once the lock has been acquired.
+     * @example
+     * await lock.acquireLock();
+     * try {
+     *   // critical section
+     * } finally {
+     *   await lock.releaseLock();
+     * }
+     */
+    acquireLock: () => Promise<void>;
+    /**
+     * Releases the lock previously acquired with {@link acquireLock}.
+     * Must be called exactly once per successful {@link acquireLock} call,
+     * typically inside a `finally` block. Throws if called more times
+     * than the lock was acquired.
+     *
+     * @returns {Promise<void>} Resolves once the lock has been released.
+     * @throws {Error} If the lock is released more times than it was acquired.
+     */
+    releaseLock: () => Promise<void>;
+}
+
 type TSubject<Data = void> = TSubject$1<Data>;
 type TObserver<Data = void> = TObserver$1<Data>;
 type TObservable<Data = void> = TObservable$1<Data>;
@@ -1970,4 +2032,4 @@ declare const typo: {
     bullet: "•";
 };
 
-export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableRouter, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type IScheduleParams, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, type IWrappedScheduleFn, LimitedMap, LimitedSet, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, SortedArray, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, ToolRegistry, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, makeExtendable, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, router, schedule, singlerun, singleshot, singletick, sleep, split, str, throttle, timeout, truely, trycatch, ttl, typo, waitForNext };
+export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableRouter, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type IScheduleParams, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, type IWrappedScheduleFn, LimitedMap, LimitedSet, Lock, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, SortedArray, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, ToolRegistry, afterinit, and, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, makeExtendable, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, router, schedule, singlerun, singleshot, singletick, sleep, split, str, throttle, timeout, truely, trycatch, ttl, typo, waitForNext };

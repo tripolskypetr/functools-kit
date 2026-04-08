@@ -78,7 +78,7 @@ fetchData.cancel(); // cancel any in-flight call
 **Observer / Reactive Stream**
 
 ```typescript
-import { Subject, Source, Operator } from "functools-kit";
+import { Subject } from "functools-kit";
 
 const subject = new Subject<number>();
 
@@ -93,6 +93,22 @@ subject.next(2); // logs 4
 subject.next(4); // logs 8
 ```
 
+**Operator: take, skip, distinct, group**
+
+```typescript
+import { Source, Operator } from "functools-kit";
+
+Source.fromArray([1, 2, 3, 2, 1, 4, 5])
+  .operator(Operator.distinct())        // remove duplicates: 1,2,3,4,5
+  .operator(Operator.skip(1))           // skip first: 2,3,4,5
+  .operator(Operator.take(3))           // take first 3: 2,3,4
+  .connect(value => console.log(value));
+
+Source.fromInterval(100)
+  .operator(Operator.group(3))          // emit batches of 3: [0,1,2], [3,4,5]...
+  .connect(batch => console.log(batch));
+```
+
 **Execution Pool**
 
 ```typescript
@@ -104,6 +120,27 @@ const processFile = execpool(
 );
 
 await Promise.all(files.map(f => processFile(f)));
+```
+
+**Lock: mutual exclusion for async code**
+
+```typescript
+import { Lock } from "functools-kit";
+
+const lock = new Lock();
+
+async function criticalSection() {
+  await lock.acquireLock();
+  try {
+    // only one caller runs here at a time
+    await writeToDatabase();
+  } finally {
+    await lock.releaseLock();
+  }
+}
+
+// concurrent calls are serialized automatically
+await Promise.all([criticalSection(), criticalSection(), criticalSection()]);
 ```
 
 **Per-Key Router Cache**
@@ -131,6 +168,7 @@ const loadCamera = router<(cameraId: number, cacheKey: string) => Promise<void>,
 - 🌐 **`fetchApi`**: Typed fetch wrapper with `FetchError` for structured HTTP error handling. 🌍
 - 📐 **`ToolRegistry`**: Generic type-safe registry for runtime tool/plugin registration. 🗃️
 - 📊 **`SortedArray` / `LimitedSet` / `LimitedMap`**: Specialized data structures with size and score constraints. 📦
+- 🔐 **`Lock`**: Class-based mutual exclusion primitive — `acquireLock` / `releaseLock` with mis-matched release detection. 🧱
 
 ---
 
@@ -185,6 +223,16 @@ const loadCamera = router<(cameraId: number, cacheKey: string) => Promise<void>,
 | `deepFlat` | Deep-flatten nested arrays |
 | `singleshot` | Run once with memoized result |
 
+### Data Structures
+
+| Class | Description |
+|---|---|
+| `Lock` | Class-based mutex: `acquireLock` / `releaseLock`, throws on extra release |
+| `SortedArray` | Array sorted by numeric score with `push`, `pop`, `take` |
+| `LimitedSet` | `Set` capped at a max size |
+| `LimitedMap` | `Map` capped at a max size |
+| `ToolRegistry` | Type-safe runtime registry with `register` / `get` |
+
 ### String & Array
 
 | Function | Description |
@@ -215,6 +263,7 @@ const loadCamera = router<(cameraId: number, cacheKey: string) => Promise<void>,
 
 functools-kit is used as a core dependency in:
 
+- **[backtest-kit](https://github.com/tripolskypetr/backtest-kit)** — TypeScript framework for backtesting trading strategies with clean architecture and real-time execution capabilities.
 - **[agent-swarm-kit](https://github.com/tripolskypetr/agent-swarm-kit)** — Multi-agent AI orchestration framework
 - **[react-declarative](https://github.com/react-declarative/react-declarative)** — Declarative React application framework
 
