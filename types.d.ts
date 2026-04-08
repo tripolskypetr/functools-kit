@@ -924,11 +924,11 @@ interface IErrorTrycatch extends Error {
  *
  * @interface
  */
-interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL> {
+interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL, Params extends unknown[] = any[]> {
     allowedErrors?: {
         new (): IErrorTrycatch;
     }[];
-    fallback?: (error: Error) => void;
+    fallback?: (error: Error, ...args: Params) => void;
     defaultValue: DefaultValue;
 }
 /**
@@ -947,7 +947,7 @@ interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL> {
  *
  * @returns - The wrapped function that handles errors and returns the result or the default value
  */
-declare const trycatch: <T extends (...args: any[]) => any, V, D = typeof CATCH_SYMBOL>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IControllTrycatch<D>>) => (...args: Parameters<T>) => ReturnType<T> | D;
+declare const trycatch: <T extends (...args: any[]) => any, V, D = typeof CATCH_SYMBOL>(run: T, { allowedErrors, fallback, defaultValue, }?: Partial<IControllTrycatch<D, Parameters<T>>>) => (...args: Parameters<T>) => ReturnType<T> | D;
 
 /**
  * Represents a clearable object that can be garbage collected.

@@ -7,9 +7,9 @@ export interface IErrorTrycatch extends Error {}
  *
  * @interface
  */
-export interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL> {
+export interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL, Params extends unknown[] = any[]> {
     allowedErrors?: { new (): IErrorTrycatch }[];
-    fallback?: (error: Error) => void;
+    fallback?: (error: Error, ...args: Params) => void;
     defaultValue: DefaultValue;
 }
 
@@ -61,7 +61,7 @@ export const trycatch = <
         allowedErrors,
         fallback,
         defaultValue = CATCH_SYMBOL as D,
-    }: Partial<IControllTrycatch<D>> = {}
+    }: Partial<IControllTrycatch<D, Parameters<T>>> = {}
 ): (...args: Parameters<T>) => ReturnType<T> | D => {
     return (...args) => {
         try {
@@ -71,7 +71,7 @@ export const trycatch = <
             }
             return result;
         } catch (error) {
-            fallback && fallback(error as Error);
+            fallback && fallback(error as Error, ...args);
             if (allowedErrors) {
                 for (const BaseError of allowedErrors) {
                     if (error instanceof BaseError) {
