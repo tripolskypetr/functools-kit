@@ -23,14 +23,15 @@ export interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL, Params ex
  * @returns - A promise that resolves to the resolved value of the input promise, or the defaultValue if an error occurs.
  *
  */
-const awaiter = async <V, D>(
+const awaiter = async <V, D, Params extends unknown[] = any[]>(
     value: Promise<V>,
+    params: Params,
     { fallback, defaultValue }: IControllTrycatch<D>
 ): Promise<V | D> => {
     try {
         return await value;
     } catch (error) {
-        fallback && fallback(error as Error);
+        fallback && fallback(error as Error, ...params);
         return defaultValue;
     }
 };
@@ -67,7 +68,7 @@ export const trycatch = <
         try {
             const result = run(...args);
             if (result instanceof Promise) {
-                return awaiter<V, D>(result, { fallback, defaultValue });
+                return awaiter<V, D>(result, args, { fallback, defaultValue });
             }
             return result;
         } catch (error) {
