@@ -13,6 +13,7 @@ export interface IPubsubConfig<Data = any> {
     onBegin?: (data: Data) => (Promise<void> | void);
     onProcess?: (data: Data) => (Promise<void> | void);
     onEnd?: (data: Data) => (Promise<void> | void);
+    onError?: (data: Data, error: unknown) => (Promise<void> | void);
     queue?: IPubsubArray<[string, Data]>;
     timeout?: number;
 }
@@ -140,6 +141,7 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
     onBegin,
     onProcess,
     onEnd,
+    onError,
     timeout = PUBSUB_TIMEOUT,
     queue: initialQueue = new PubsubArrayAdapter(),
 }: Partial<IPubsubConfig<Data>> = {}) => {
@@ -181,7 +183,10 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
             let success = false;
             try {
                 success = await emitter(data);
-            } catch {
+            } catch (e) {
+                if (onError) {
+                    await onError(data, e);
+                }
                 success = false;
             } finally {
                 await sleep(10);

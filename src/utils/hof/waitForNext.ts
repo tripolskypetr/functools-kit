@@ -8,7 +8,7 @@ import { TSubject } from "../rx/Subject";
 export const waitForNext = async <T = any>(subject: TSubject<T>, condition: (t: T) => boolean, delay = 0): Promise<T | typeof TIMEOUT_SYMBOL> => {
     let unsubscribeRef: Function | undefined;
     let isFinished = false;
-    const [promise, { resolve, reject }] = createAwaiter<T | typeof TIMEOUT_SYMBOL>();
+    const [promise, { resolve }] = createAwaiter<T | typeof TIMEOUT_SYMBOL>();
     unsubscribeRef = subject.subscribe((value) => {
         if (condition(value)) {
             unsubscribeRef && unsubscribeRef();

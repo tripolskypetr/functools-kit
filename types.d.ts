@@ -1066,6 +1066,7 @@ interface IPubsubConfig<Data = any> {
     onBegin?: (data: Data) => (Promise<void> | void);
     onProcess?: (data: Data) => (Promise<void> | void);
     onEnd?: (data: Data) => (Promise<void> | void);
+    onError?: (data: Data, error: unknown) => (Promise<void> | void);
     queue?: IPubsubArray<[string, Data]>;
     timeout?: number;
 }
@@ -1115,7 +1116,7 @@ declare class PubsubMapAdapter<T = any> implements IPubsubMap<T> {
     [Symbol.asyncIterator](): AsyncIterableIterator<[string, T]>;
 }
 declare const pubsub: {
-    <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onBegin, onProcess, onEnd, timeout, queue: initialQueue, }?: Partial<IPubsubConfig<Data>>): {
+    <Data = any>(emitter: (data: Data) => Promise<boolean>, { onDestroy, onBegin, onProcess, onEnd, onError, timeout, queue: initialQueue, }?: Partial<IPubsubConfig<Data>>): {
         (data: Data): Promise<void>;
         stop: () => Promise<void>;
     };

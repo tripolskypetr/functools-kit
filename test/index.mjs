@@ -6,6 +6,10 @@ import "./e2e/rx/operator-throw.test.mjs";
 import "./e2e/rx/operator-lib-throw.test.mjs";
 import "./e2e/rx/source-throw.test.mjs";
 
+import "./e2e/hof/execpool.test.mjs";
+import "./e2e/hof/pubsub.test.mjs";
+import "./e2e/hof/waitForNext.test.mjs";
+
 import "./spec/rx/EventEmitter.test.mjs";
 import "./spec/rx/Observer.test.mjs";
 import "./spec/rx/Subject.test.mjs";
