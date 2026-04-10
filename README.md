@@ -162,7 +162,7 @@ const loadCamera = router<(cameraId: number, cacheKey: string) => Promise<void>,
 - ⚙️ **`singleshot` / `singlerun`**: Execute a function exactly once; reset with `.clear()`. 🔒
 - 🔂 **`queued` / `lock`**: Serialize async calls — queue or mutex-style. 🚦
 - 🕐 **`singletick`**: Coalesce multiple synchronous calls into one per event loop tick. ⏱️
-- 📡 **`pubsub`**: Message queue with lifecycle hooks (`onBegin`, `onProcess`, `onEnd`, `onDestroy`). 📬
+- 📡 **`pubsub`**: Message queue with lifecycle hooks (`onBegin`, `onProcess`, `onEnd`, `onError`, `onDestroy`). 📬
 - 🏗️ **`Source`**: Factory for observers — `createHot`, `createCold`, `fromPromise`, `fromInterval`, `fromSubject`, `pipe`, `merge`, `join`. 🔧
 - 🎛️ **`Operator`**: Stream operators — `take`, `skip`, `distinct`, `group`, `pair`, `strideTricks`, `liveness`, `count`. 🎚️
 - 🌐 **`fetchApi`**: Typed fetch wrapper with `FetchError` for structured HTTP error handling. 🌍
@@ -268,6 +268,60 @@ functools-kit is used as a core dependency in:
 - **[react-declarative](https://github.com/react-declarative/react-declarative)** — Declarative React application framework
 
 ---
+
+## 🧪 Test Coverage
+
+The library ships with **223 tests** covering both correctness and async exception propagation.
+
+### Spec tests — functional correctness
+
+| Module | Tests |
+|---|---|
+| `EventEmitter` | subscribe/unsubscribe, once, emit order, hasListeners |
+| `Observer` | map, filter, tap, reduce, flatMap, split, mapAsync, merge, once, toPromise, debounce, delay, repeat, connect/unsubscribe |
+| `Subject` | next, subscribe, unsubscribeAll, once, map, filter, toObserver, toPromise |
+| `BehaviorSubject` | initial value replay, late subscriber, subscribe vs toObserver |
+| `Source` | fromValue, fromArray, fromPromise, fromDelay, fromInterval, createHot, createCold, merge, join, fromSubject, fromBehaviorSubject, unicast, multicast, pipe |
+| `Operator` | take, skip, pair, group, distinct, count, strideTricks, retry |
+| `awaiter` | sync/async resolve and reject, argument passthrough |
+| `afterinit` | skips first call, runs subsequent |
+| `cached` | hit/miss, argument change detection |
+| `cancelable` | cancels in-flight, CANCELED_PROMISE_SYMBOL |
+| `debounce` | fires last value after quiet period |
+| `execpool` | resolve, concurrent limit, reject propagation |
+| `lock` | serialization, extra release throws |
+| `memoize` | key function caching |
+| `obsolete` | deprecation warning passthrough |
+| `pubsub` | commit, retry on false, stop, onBegin/onEnd hooks |
+| `queued` | sequential ordering |
+| `rate` | rate limiting by key |
+| `retry` | retries N times then throws |
+| `router` | per-key cache, invalidation |
+| `schedule` | deferred execution |
+| `singlerun` | once until clear |
+| `singleshot` | once with memoized result |
+| `singletick` | coalesces per tick |
+| `throttle` | leading-edge rate limit |
+| `timeout` | TIMEOUT_SYMBOL on expiry |
+| `trycatch` | sync/async throw and fallback |
+| `ttl` | time-to-live expiry |
+| `waitForNext` | condition match, timeout, no-delay |
+
+### E2E tests — async exception propagation
+
+| Scope | What is verified |
+|---|---|
+| `Subject` | `await subject.next()` propagates async subscriber throws |
+| `Observer` operators | Every operator (`map`, `filter`, `tap`, `reduce`, `flatMap`, `split`, `merge`, `debounce`, `repeat`, `mapAsync`, `delay`) propagates throws through the chain |
+| Operator chains | Multi-step chains (`filter→map`, `map→tap→filter`, `flatMap→filter`, `merge→filter`, deep 4-level chains) propagate throws end-to-end |
+| `Operator` library | `take`, `skip`, `pair`, `group`, `distinct`, `count`, `strideTricks`, `retry` — all propagate throws; `retry` exhausts attempts before throwing |
+| `Source.fromArray` | Async throw in `connect` propagates; async throw via `toPromise` propagates |
+| `Source.fromPromise` | `callbackfn` reject propagates via `toPromise`; async throw in `connect` propagates; async throw via `toPromise` propagates |
+| `Source.fromDelay` | Async throw in `connect` and via `toPromise` propagates |
+| `Source.fromInterval` | Async throw in `connect` and via `toPromise` propagates |
+| `execpool` | Reject propagates to direct caller; reject propagates to queued caller |
+| `pubsub` | Emitter throw treated as failure and retried; `onError` callback invoked with data and error |
+| `waitForNext` | Timeout resolves to `TIMEOUT_SYMBOL` without throwing |
 
 ## 🤝 Contribute
 
