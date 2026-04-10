@@ -27,6 +27,13 @@ test("throw: Source.fromArray → async throw in connect propagates", async (t) 
 
 // ─── fromPromise ──────────────────────────────────────────────────────────────
 
+test("throw: Source.fromPromise → callbackfn rejects, propagates via toPromise", async (t) => {
+    await throwsVia(t,
+        Source.fromPromise(async () => { await sleep(10); throw new Error("fp-reject"); }).toPromise(),
+        "fp-reject"
+    );
+});
+
 test("throw: Source.fromPromise → async throw in connect propagates", async (t) => {
     const [promise, awaiter] = createAwaiter();
     Source.fromPromise(async () => { await sleep(10); return 42; })
