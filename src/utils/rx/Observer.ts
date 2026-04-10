@@ -428,12 +428,16 @@ export class Observer<Data = any> implements TObserver<Data> {
      * @returns - A function that can be called to unsubscribe from further executions of the callback.
      */
     public once = (callbackfn: (value: Data) => void) => {
-        let unsubscribeRef: Fn;
+        let fired = false;
+        let unsubscribeRef: Fn = () => undefined;
         const handler = (value: Data) => {
+            if (fired) return;
+            fired = true;
             callbackfn(value);
             unsubscribeRef();
         };
         unsubscribeRef = this.connect(handler);
+        if (fired) unsubscribeRef();
         return unsubscribeRef;
     };
 
