@@ -237,6 +237,29 @@ test("throw: repeat → connect, async throw propagates", async (t) => {
 });
 
 
+test("throw: mapAsync → connect, async throw in mapAsync callback propagates", async (t) => {
+    noUnhandled(t);
+    const s = new Subject();
+    s.mapAsync(async (v) => { await sleep(5); throw new Error(String(v)); }).connect(() => {});
+    await throws(t, () => s.next(55), "55");
+});
+
+test("throw: mapAsync → connect, async throw in connect propagates", async (t) => {
+    noUnhandled(t);
+    const s = new Subject();
+    s.mapAsync(async (v) => { await sleep(5); return v * 2; }).connect(async (v) => { await sleep(5); throw new Error(String(v)); });
+    await throws(t, () => s.next(3), "6");
+});
+
+test("throw: delay → connect, async throw propagates", async (t) => {
+    noUnhandled(t);
+    const s = new Subject();
+    const [promise, awaiter] = createAwaiter();
+    s.delay(30).connect(async (v) => { await sleep(5); throw new Error(String(v)); });
+    s.next(77).catch((e) => awaiter.reject(e));
+    await throws(t, () => promise, "77");
+});
+
 test("throw: deep chain filter→map→filter→map→connect, async throw propagates", async (t) => {
     noUnhandled(t);
     const s = new Subject();
