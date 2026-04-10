@@ -32,7 +32,8 @@
     "url": "https://github.com/react-declarative/react-declarative/issues"
   },
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "test": "npm run build && node ./test/index.mjs"
   },
   "main": "build/index.cjs",
   "module": "build/index.mjs",
@@ -46,10 +47,12 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "11.1.6",
+    "@types/tape": "5.8.1",
     "@types/node": "22.9.0",
     "rollup": "^3.29.5",
     "rollup-plugin-dts": "6.1.1",
     "rollup-plugin-peer-deps-external": "2.2.4",
+    "tape": "5.9.0",
     "tslib": "2.7.0"
   },
   "peerDependencies": {
