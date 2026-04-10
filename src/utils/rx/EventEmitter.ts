@@ -71,9 +71,11 @@ export class EventEmitter {
      * @returns - A function that can be called to unsubscribe the callback function from the event.
      */
     public once(eventName: EventKey, callback: Function) {
-        const subscriber = async (...args: any[]) => {
-            await callback(...args);
+        const subscriber = (...args: any[]) => {
             this.unsubscribe(eventName, subscriber);
+            const result = callback(...args) as any;
+            if (result instanceof Promise) return result;
+            return result;
         };
         this.subscribe(eventName, subscriber);
         return () => {

@@ -42,7 +42,7 @@ export const debounce = <T extends (...args: any[]) => any>(run: T, delay = 1_00
       const exec = () => {
         lastRun = null;
         timeout = null;
-        run(...args);
+        return run(...args);
       };
       lastRun = exec;
       timeout = on(exec, delay);

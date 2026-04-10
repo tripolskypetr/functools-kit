@@ -133,10 +133,8 @@ test("Observer: debounce emits last value after quiet", async (t) => {
     const s = new Subject();
     const results = [];
     const unsub = s.toObserver().debounce(40).connect((v) => results.push(v));
-    await s.next(1);
-    await s.next(2);
-    await s.next(3);
-    await new Promise((r) => setTimeout(r, 80));
+    s.next(1); s.next(2); s.next(3);
+    await new Promise((r) => setTimeout(r, 200));
     unsub();
     if (results.length === 1 && results[0] === 3) {
         t.pass();

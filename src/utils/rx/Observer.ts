@@ -6,10 +6,10 @@ import compose from '../compose';
 import sleep from "../sleep";
 
 import queued from "../hof/queued";
-import debounce from "../hof/debounce";
 
 import { CANCELED_PROMISE_SYMBOL } from "../hof/cancelable";
 import singlerun from "../hof/singlerun";
+import createAwaiter from "../createAwaiter";
 
 const OBSERVER_EVENT = Symbol('observer-subscribe');
 
@@ -20,6 +20,7 @@ export const LISTEN_CONNECT = Symbol('observer-connect-listen');
 export const LISTEN_DISCONNECT = Symbol('observer-disconnect-listen');
 
 declare var setTimeout: any;
+declare var clearTimeout: any;
 
 type Fn = (...args: any[]) => void;
 
@@ -258,7 +259,7 @@ export class Observer<Data = any> implements TObserver<Data> {
             try {
                 const pendingValue = await iteraction(value);
                 if (pendingValue !== CANCELED_PROMISE_SYMBOL) {
-                    observer.emit(pendingValue);
+                    await observer.emit(pendingValue);
                 }
             } catch (e: any) {
                 if (fallbackfn) {
@@ -328,19 +329,38 @@ export class Observer<Data = any> implements TObserver<Data> {
      * @param delay - The delay (in milliseconds) between value emissions.
      * @returns The debounced observer.
      */
-    public debounce = (delay?: number): Observer<Data> => {
+    public debounce = (delay = 1_000): Observer<Data> => {
         let unsubscribeRef: Fn;
         const dispose = compose(
             () => this.tryDispose(),
             () => unsubscribeRef(),
         );
         const observer = new Observer<Data>(dispose);
-        const handler = debounce((value: Data) => {
-            observer.emit(value);
-        }, delay);
+        let token: symbol | null = null;
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+        let prevAwaiter: ReturnType<typeof createAwaiter>[1] | null = null;
+        const handler = (value: Data): Promise<void> => {
+            if (timeout !== null) { clearTimeout(timeout); timeout = null; }
+            if (prevAwaiter) { prevAwaiter.resolve(undefined as any); prevAwaiter = null; }
+            const current = token = Symbol();
+            const [promise, awaiter] = createAwaiter<void>();
+            prevAwaiter = awaiter;
+            timeout = setTimeout(() => {
+                timeout = null;
+                prevAwaiter = null;
+                if (token !== current) { awaiter.resolve(undefined as any); return; }
+                const result = observer.emit(value) as any;
+                if (result instanceof Promise) {
+                    result.then(awaiter.resolve, awaiter.reject);
+                } else {
+                    awaiter.resolve(result);
+                }
+            }, delay);
+            return promise;
+        };
         this._subscribe(observer, handler);
         unsubscribeRef = compose(
-            () => handler.clear(),
+            () => { if (timeout !== null) { clearTimeout(timeout); timeout = null; } },
             () => this._unsubscribe(handler),
         );
         return observer;

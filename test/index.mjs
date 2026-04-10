@@ -2,6 +2,7 @@ import "./config/setup.mjs";
 import { run } from 'worker-testbed';
 
 import "./e2e/subject-throw.test.mjs";
+import "./e2e/operator-throw.test.mjs";
 
 import "./spec/awaiter.test.mjs";
 import "./spec/rx/EventEmitter.test.mjs";
