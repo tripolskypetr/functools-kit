@@ -1355,6 +1355,7 @@ declare class Operator {
     static distinct: <T = any, V = any>(getCompareValue?: (value: T) => V) => (target: TObserver$1<T>) => TObserver$1<T>;
     static liveness: <T = any>(fallbackfn: () => void, waitFor?: number) => (target: TObserver$1<T>) => TObserver$1<T>;
     static count: <T = any>() => (target: TObserver$1<T>) => TObserver$1<ICounted<T>>;
+    static retry: <T = any>(attempts: number) => (target: TObserver$1<T>) => TObserver$1<T>;
 }
 
 /**

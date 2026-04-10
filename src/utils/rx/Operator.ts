@@ -3,6 +3,7 @@ import distinct from "./lib/distinct";
 import group from "./lib/group";
 import liveness from "./lib/liveness";
 import pair from "./lib/pair";
+import retry from "./lib/retry";
 import skip from "./lib/skip";
 import strideTricks from "./lib/strideTricks";
 import take from "./lib/take";
@@ -19,6 +20,7 @@ export class Operator {
   public static distinct = distinct;
   public static liveness = liveness;
   public static count = count;
+  public static retry = retry;
 };
 
 export default Operator;

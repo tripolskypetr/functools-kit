@@ -130,6 +130,97 @@ test("Operator.count: counts consecutive equal values", async (t) => {
     }
 });
 
+test("Operator.retry: succeeds on first try", async (t) => {
+    const s = new Subject();
+    const results = [];
+    const unsub = s.toObserver().operator(Operator.retry(3)).connect((v) => results.push(v));
+    await s.next(1);
+    unsub();
+    if (results.length === 1 && results[0] === 1) {
+        t.pass();
+    } else {
+        t.fail(`expected [1], got ${JSON.stringify(results)}`);
+    }
+});
+
+test("Operator.retry: retries and succeeds before exhaustion", async (t) => {
+    const s = new Subject();
+    const results = [];
+    let attempts = 0;
+    const unsub = s.toObserver().operator(Operator.retry(3)).connect((v) => {
+        attempts++;
+        if (attempts < 3) throw new Error("fail");
+        results.push(v);
+    });
+    await s.next(42);
+    unsub();
+    if (results.length === 1 && results[0] === 42 && attempts === 3) {
+        t.pass();
+    } else {
+        t.fail(`attempts=${attempts} results=${JSON.stringify(results)}`);
+    }
+});
+
+test("Operator.retry: throws after exhausting attempts", async (t) => {
+    const s = new Subject();
+    let attempts = 0;
+    const unsub = s.toObserver().operator(Operator.retry(2)).connect(() => {
+        attempts++;
+        throw new Error("always fails");
+    });
+    try {
+        await s.next(7);
+        unsub();
+        t.fail("should have thrown");
+    } catch (e) {
+        unsub();
+        if (e instanceof Error && e.message === "always fails" && attempts === 3) {
+            t.pass();
+        } else {
+            t.fail(`attempts=${attempts} error=${e}`);
+        }
+    }
+});
+
+test("Operator.retry: async subscriber retries and succeeds", async (t) => {
+    const s = new Subject();
+    const results = [];
+    let attempts = 0;
+    const unsub = s.toObserver().operator(Operator.retry(3)).connect(async (v) => {
+        attempts++;
+        if (attempts < 2) throw new Error("async fail");
+        results.push(v);
+    });
+    await s.next(99);
+    unsub();
+    if (results.length === 1 && results[0] === 99 && attempts === 2) {
+        t.pass();
+    } else {
+        t.fail(`attempts=${attempts} results=${JSON.stringify(results)}`);
+    }
+});
+
+test("Operator.retry: async subscriber throws after exhaustion", async (t) => {
+    const s = new Subject();
+    let attempts = 0;
+    const unsub = s.toObserver().operator(Operator.retry(1)).connect(async () => {
+        attempts++;
+        throw new Error("async always fails");
+    });
+    try {
+        await s.next(5);
+        unsub();
+        t.fail("should have thrown");
+    } catch (e) {
+        unsub();
+        if (e instanceof Error && e.message === "async always fails" && attempts === 2) {
+            t.pass();
+        } else {
+            t.fail(`attempts=${attempts} error=${e}`);
+        }
+    }
+});
+
 test("Operator.strideTricks: non-overlapping strides", async (t) => {
     const s = new Subject();
     const results = [];

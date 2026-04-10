@@ -16,8 +16,8 @@ export const fromInterval = (delay: number): TObserver<number> => {
             clearTimeout(timeout);
         }
     });
-    const process = () => {
-        observer.emit(iterationIdx);
+    const process = async () => {
+        await observer.emit(iterationIdx);
         iterationIdx++;
         timeout = setTimeout(process, delay);
     };

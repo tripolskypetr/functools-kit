@@ -3,6 +3,8 @@ import { run } from 'worker-testbed';
 
 import "./e2e/subject-throw.test.mjs";
 import "./e2e/operator-throw.test.mjs";
+import "./e2e/operator-lib-throw.test.mjs";
+import "./e2e/source-throw.test.mjs";
 
 import "./spec/awaiter.test.mjs";
 import "./spec/rx/EventEmitter.test.mjs";

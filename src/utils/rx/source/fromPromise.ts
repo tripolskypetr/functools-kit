@@ -18,7 +18,7 @@ export const fromPromise = <Data = any>(callbackfn: () => Promise<Data>, fallbac
         try {
             const result = await callbackfn();
             if (!isCanceled) {
-                observer.emit(result);
+                await observer.emit(result);
             }
         } catch (e: any) {
             if (fallbackfn) {

@@ -15,9 +15,9 @@ export const fromDelay = (delay: number): TObserver<void> => {
             clearTimeout(timeout);
         }
     });
-    const process = () => {
+    const process = async () => {
         timeout = undefined;
-        observer.emit();
+        await observer.emit();
     };
     observer[LISTEN_CONNECT](() => {
         setTimeout(process, delay);
