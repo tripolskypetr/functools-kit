@@ -1,5 +1,5 @@
 import { test } from "worker-testbed";
-import { Subject, sleep } from "../../build/index.mjs";
+import { Subject, sleep } from "../../../build/index.mjs";
 
 test("Subject: exception from async subscriber propagates to next()", async (t) => {
     const subject = new Subject();

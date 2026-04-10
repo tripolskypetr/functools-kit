@@ -1,5 +1,5 @@
 import { test } from "worker-testbed";
-import { Subject, sleep, Operator, createAwaiter } from "../../build/index.mjs";
+import { Subject, sleep, Operator, createAwaiter } from "../../../build/index.mjs";
 
 const noUnhandled = (t) => {
     process.on("unhandledRejection", (reason) => {

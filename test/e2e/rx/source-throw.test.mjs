@@ -1,5 +1,5 @@
 import { test } from "worker-testbed";
-import { sleep, Source, createAwaiter } from "../../build/index.mjs";
+import { sleep, Source, createAwaiter } from "../../../build/index.mjs";
 
 const throwsVia = async (t, promise, expectedMsg) => {
     try {

@@ -1,5 +1,5 @@
 import { test } from "worker-testbed";
-import { Subject, sleep, createAwaiter } from "../../build/index.mjs";
+import { Subject, sleep, createAwaiter } from "../../../build/index.mjs";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
