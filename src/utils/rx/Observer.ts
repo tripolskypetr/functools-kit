@@ -127,7 +127,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const observer = new Observer<T>(dispose);
         const handler = (value: Data) => {
             const pendingValue = callbackfn(value);
-            observer.emit(pendingValue);
+            return observer.emit(pendingValue);
         };
         this._subscribe(observer, handler);
         unsubscribeRef = () => this._unsubscribe(handler);
@@ -150,18 +150,22 @@ export class Observer<Data = any> implements TObserver<Data> {
             () => unsubscribeRef(),
         );
         const observer = new Observer<T>(dispose);
-        const handler = (value: Data) => {
+        const process = queued(async (value: Data) => {
             const pendingValue = callbackfn(value);
             if (Array.isArray(pendingValue)) {
-                pendingValue.forEach((value) => {
-                    observer.emit(value);
-                });
+                for (const v of pendingValue) {
+                    await observer.emit(v);
+                }
             } else {
-                observer.emit(pendingValue);
+                await observer.emit(pendingValue);
             }
-        };
+        });
+        const handler = (value: Data) => process(value);
         this._subscribe(observer, handler);
-        unsubscribeRef = () => this._unsubscribe(handler);
+        unsubscribeRef = compose(
+            () => this._unsubscribe(handler),
+            () => process.clear(),
+        );
         return observer;
     };
 
@@ -196,7 +200,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const handler = (value: Data) => {
             const pendingValue = callbackfn(acm, value);
             acm = pendingValue;
-            observer.emit(pendingValue);
+            return observer.emit(pendingValue);
         };
         this._subscribe(observer, handler);
         unsubscribeRef = () => this._unsubscribe(handler);
@@ -216,17 +220,21 @@ export class Observer<Data = any> implements TObserver<Data> {
             () => unsubscribeRef(),
         );
         const observer = new Observer(dispose);
-        const handler = (data: Data) => {
+        const process = queued(async (data: Data) => {
             if (Array.isArray(data)) {
-                data.flat(Number.POSITIVE_INFINITY).forEach((item) => {
-                    observer.emit(item);
-                });
+                for (const item of data.flat(Number.POSITIVE_INFINITY)) {
+                    await observer.emit(item);
+                }
             } else {
-                observer.emit(data);
+                await observer.emit(data);
             }
-        };
+        });
+        const handler = (data: Data) => process(data);
         this._subscribe(observer, handler);
-        unsubscribeRef = () => this._unsubscribe(handler);
+        unsubscribeRef = compose(
+            () => this._unsubscribe(handler),
+            () => process.clear(),
+        );
         return observer;
     };
 
@@ -284,7 +292,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const handler = (value: Data) => {
             const delegate = callbackfn(value);
             if (delegate) {
-                observer.emit(value);
+                return observer.emit(value);
             }
         };
         this._subscribe(observer, handler);
@@ -307,7 +315,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const observer = new Observer<Data>(dispose);
         const handler = (value: Data) => {
             callbackfn(value);
-            observer.emit(value);
+            return observer.emit(value);
         };
         this._subscribe(observer, handler);
         unsubscribeRef = () => this._unsubscribe(handler);
@@ -437,10 +445,11 @@ export class Observer<Data = any> implements TObserver<Data> {
             if (timeout !== undefined) {
                 clearTimeout(timeout);
             }
-            observer.emit(value);
+            const result = observer.emit(value);
             if (this.hasListeners) {
                 timeout = setTimeout(handler, interval, value);
             }
+            return result;
         };
         this._subscribe(observer, handler);
         unsubscribeRef = () => this._unsubscribe(handler);
@@ -462,7 +471,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         );
         const merged = new Observer<Data | T>(dispose);
         const handler = (value: Data | T) => {
-            merged.emit(value);
+            return merged.emit(value);
         };
         this._subscribe(merged, handler);
         let unsubscribe: Fn = () => undefined;

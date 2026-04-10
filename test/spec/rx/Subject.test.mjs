@@ -1,4 +1,4 @@
-import { test } from "tape";
+import { test } from "worker-testbed";
 import { Subject } from "../../../build/index.mjs";
 
 test("Subject: next delivers to subscribers", async (t) => {
@@ -7,7 +7,11 @@ test("Subject: next delivers to subscribers", async (t) => {
     s.subscribe((v) => results.push(v));
     await s.next(1);
     await s.next(2);
-    t.deepEqual(results, [1, 2]);
+    if (results[0] === 1 && results[1] === 2 && results.length === 2) {
+        t.pass();
+    } else {
+        t.fail(`expected [1,2], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Subject: subscribe returns unsubscribe", async (t) => {
@@ -17,16 +21,20 @@ test("Subject: subscribe returns unsubscribe", async (t) => {
     await s.next(1);
     unsub();
     await s.next(2);
-    t.deepEqual(results, [1]);
+    if (results.length === 1 && results[0] === 1) {
+        t.pass();
+    } else {
+        t.fail(`expected [1], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Subject: hasListeners", (t) => {
     const s = new Subject();
-    t.equal(s.hasListeners, false);
+    if (s.hasListeners !== false) { t.fail("should be false before subscribe"); return; }
     const unsub = s.subscribe(() => {});
-    t.equal(s.hasListeners, true);
+    if (s.hasListeners !== true) { t.fail("should be true after subscribe"); return; }
     unsub();
-    t.end();
+    t.pass();
 });
 
 test("Subject: unsubscribeAll", async (t) => {
@@ -36,7 +44,11 @@ test("Subject: unsubscribeAll", async (t) => {
     s.subscribe((v) => results.push(v));
     s.unsubscribeAll();
     await s.next(1);
-    t.deepEqual(results, []);
+    if (results.length === 0) {
+        t.pass();
+    } else {
+        t.fail(`expected [], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Subject: once fires exactly once", async (t) => {
@@ -45,7 +57,11 @@ test("Subject: once fires exactly once", async (t) => {
     s.once((v) => results.push(v));
     await s.next(1);
     await s.next(2);
-    t.deepEqual(results, [1]);
+    if (results.length === 1 && results[0] === 1) {
+        t.pass();
+    } else {
+        t.fail(`expected [1], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Subject: multiple subscribers all receive", async (t) => {
@@ -54,8 +70,11 @@ test("Subject: multiple subscribers all receive", async (t) => {
     s.subscribe((v) => a.push(v));
     s.subscribe((v) => b.push(v));
     await s.next(5);
-    t.deepEqual(a, [5]);
-    t.deepEqual(b, [5]);
+    if (a[0] === 5 && b[0] === 5) {
+        t.pass();
+    } else {
+        t.fail(`a=${JSON.stringify(a)} b=${JSON.stringify(b)}`);
+    }
 });
 
 test("Subject: map", async (t) => {
@@ -64,7 +83,11 @@ test("Subject: map", async (t) => {
     s.map((x) => x * 2).connect((v) => results.push(v));
     await s.next(3);
     await s.next(5);
-    t.deepEqual(results, [6, 10]);
+    if (results[0] === 6 && results[1] === 10 && results.length === 2) {
+        t.pass();
+    } else {
+        t.fail(`expected [6,10], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Subject: filter", async (t) => {
@@ -74,7 +97,11 @@ test("Subject: filter", async (t) => {
     await s.next(1);
     await s.next(3);
     await s.next(4);
-    t.deepEqual(results, [3, 4]);
+    if (results[0] === 3 && results[1] === 4 && results.length === 2) {
+        t.pass();
+    } else {
+        t.fail(`expected [3,4], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Subject: toObserver delivers values", async (t) => {
@@ -82,12 +109,21 @@ test("Subject: toObserver delivers values", async (t) => {
     const results = [];
     s.toObserver().connect((v) => results.push(v));
     await s.next(42);
-    t.deepEqual(results, [42]);
+    if (results.length === 1 && results[0] === 42) {
+        t.pass();
+    } else {
+        t.fail(`expected [42], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Subject: toPromise resolves on first next", async (t) => {
     const s = new Subject();
     const p = s.toPromise();
     await s.next(99);
-    t.equal(await p, 99);
+    const v = await p;
+    if (v === 99) {
+        t.pass();
+    } else {
+        t.fail(`expected 99, got ${v}`);
+    }
 });

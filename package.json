@@ -47,13 +47,14 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "11.1.6",
-    "@types/tape": "5.8.1",
     "@types/node": "22.9.0",
+    "@types/tape": "5.8.1",
     "rollup": "^3.29.5",
     "rollup-plugin-dts": "6.1.1",
     "rollup-plugin-peer-deps-external": "2.2.4",
     "tape": "5.9.0",
-    "tslib": "2.7.0"
+    "tslib": "2.7.0",
+    "worker-testbed": "1.0.12"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

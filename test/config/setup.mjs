@@ -1,3 +1,4 @@
+/*
 import { test } from "tape";
 
 let failed = false;
@@ -14,3 +15,6 @@ test.onFinish(() => {
 test.onFailure(() => {
     failed = true;
 })
+*/
+
+export {}

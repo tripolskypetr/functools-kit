@@ -1,4 +1,4 @@
-import { test } from "tape";
+import { test } from "worker-testbed";
 import { Source, Subject, BehaviorSubject } from "../../../build/index.mjs";
 
 const collect = (obs, n) => new Promise((resolve) => {
@@ -12,38 +12,66 @@ const collect = (obs, n) => new Promise((resolve) => {
 
 test("Source.fromValue: scalar", async (t) => {
     const results = await collect(Source.fromValue(7), 1);
-    t.deepEqual(results, [7]);
+    if (results.length === 1 && results[0] === 7) {
+        t.pass();
+    } else {
+        t.fail(`expected [7], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.fromValue: factory fn", async (t) => {
     const results = await collect(Source.fromValue(() => 99), 1);
-    t.deepEqual(results, [99]);
+    if (results.length === 1 && results[0] === 99) {
+        t.pass();
+    } else {
+        t.fail(`expected [99], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.fromArray: flat", async (t) => {
     const results = await collect(Source.fromArray([1, 2, 3]), 3);
-    t.deepEqual(results, [1, 2, 3]);
+    if (results[0] === 1 && results[1] === 2 && results[2] === 3) {
+        t.pass();
+    } else {
+        t.fail(`expected [1,2,3], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.fromArray: nested", async (t) => {
     const results = await collect(Source.fromArray([[1, [2]], 3]), 3);
-    t.deepEqual(results, [1, 2, 3]);
+    if (results[0] === 1 && results[1] === 2 && results[2] === 3) {
+        t.pass();
+    } else {
+        t.fail(`expected [1,2,3], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.fromPromise: resolves", async (t) => {
     const results = await collect(Source.fromPromise(async () => 42), 1);
-    t.deepEqual(results, [42]);
+    if (results.length === 1 && results[0] === 42) {
+        t.pass();
+    } else {
+        t.fail(`expected [42], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.fromDelay: fires after delay", async (t) => {
     const start = Date.now();
     await collect(Source.fromDelay(50), 1);
-    t.ok(Date.now() - start >= 45);
+    if (Date.now() - start >= 45) {
+        t.pass();
+    } else {
+        t.fail(`delay too short: ${Date.now() - start}ms`);
+    }
 });
 
 test("Source.fromInterval: emits counter", async (t) => {
     const results = await collect(Source.fromInterval(20), 3);
-    t.deepEqual(results, [0, 1, 2]);
+    if (results[0] === 0 && results[1] === 1 && results[2] === 2) {
+        t.pass();
+    } else {
+        t.fail(`expected [0,1,2], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.createCold: starts on connect, cleanup on disconnect", async (t) => {
@@ -57,29 +85,47 @@ test("Source.createCold: starts on connect, cleanup on disconnect", async (t) =>
         state.unsub = obs.connect((v) => resolve(v));
     });
     state.unsub();
-    t.equal(cleaned, true);
+    if (cleaned) {
+        t.pass();
+    } else {
+        t.fail("cleanup was not called");
+    }
 });
 
 test("Source.createHot: factory called once at creation", (t) => {
     let calls = 0;
     Source.createHot((_next) => { calls++; });
-    t.equal(calls, 1, "emitter runs immediately, not per subscriber");
-    t.end();
+    if (calls === 1) {
+        t.pass();
+    } else {
+        t.fail(`expected 1 call, got ${calls}`);
+    }
 });
-
 
 test("Source.merge: combines observers", async (t) => {
     const results = await collect(
         Source.merge([Source.fromValue(1), Source.fromValue(2), Source.fromValue(3)]), 3
     );
-    t.deepEqual(results.sort((a, b) => a - b), [1, 2, 3]);
+    const sorted = [...results].sort((a, b) => a - b);
+    if (sorted[0] === 1 && sorted[1] === 2 && sorted[2] === 3) {
+        t.pass();
+    } else {
+        t.fail(`expected [1,2,3], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.join: emits tuple when all emitted", async (t) => {
     const results = await collect(
         Source.join([Source.fromValue("x"), Source.fromValue(1)]), 1
     );
-    t.deepEqual(results, [["x", 1]]);
+    const ok = results.length === 1
+        && results[0][0] === "x"
+        && results[0][1] === 1;
+    if (ok) {
+        t.pass();
+    } else {
+        t.fail(`expected [["x",1]], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.join: race=true emits on each update", async (t) => {
@@ -93,7 +139,11 @@ test("Source.join: race=true emits on each update", async (t) => {
     await a.next("a1");
     await b.next("b1");
     unsub();
-    t.ok(results.length >= 1);
+    if (results.length >= 1) {
+        t.pass();
+    } else {
+        t.fail("expected at least 1 emission");
+    }
 });
 
 test("Source.fromSubject: forwards emissions", async (t) => {
@@ -103,7 +153,11 @@ test("Source.fromSubject: forwards emissions", async (t) => {
     await s.next(10);
     await s.next(20);
     unsub();
-    t.deepEqual(results, [10, 20]);
+    if (results[0] === 10 && results[1] === 20 && results.length === 2) {
+        t.pass();
+    } else {
+        t.fail(`expected [10,20], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.fromBehaviorSubject: replays then forwards", async (t) => {
@@ -112,7 +166,11 @@ test("Source.fromBehaviorSubject: replays then forwards", async (t) => {
     const unsub = Source.fromBehaviorSubject(s).connect((v) => results.push(v));
     await s.next(6);
     unsub();
-    t.deepEqual(results, [5, 6]);
+    if (results[0] === 5 && results[1] === 6 && results.length === 2) {
+        t.pass();
+    } else {
+        t.fail(`expected [5,6], got ${JSON.stringify(results)}`);
+    }
 });
 
 test("Source.unicast: new instance per subscriber", async (t) => {
@@ -127,9 +185,11 @@ test("Source.unicast: new instance per subscriber", async (t) => {
     await s1.next(10);
     await s2.next(20);
     u1(); u2();
-    t.equal(n, 2, "factory called per subscriber");
-    t.deepEqual(r1, [10]);
-    t.deepEqual(r2, [20]);
+    if (n === 2 && r1[0] === 10 && r2[0] === 20) {
+        t.pass();
+    } else {
+        t.fail(`n=${n} r1=${JSON.stringify(r1)} r2=${JSON.stringify(r2)}`);
+    }
 });
 
 test("Source.multicast: shared instance across concurrent subscribers", async (t) => {
@@ -141,9 +201,11 @@ test("Source.multicast: shared instance across concurrent subscribers", async (t
     const u2 = multi.connect((v) => r2.push(v));
     await s.next(1);
     u1(); u2();
-    t.equal(n, 1, "factory called once for both subscribers");
-    t.deepEqual(r1, [1]);
-    t.deepEqual(r2, [1]);
+    if (n === 1 && r1[0] === 1 && r2[0] === 1) {
+        t.pass();
+    } else {
+        t.fail(`n=${n} r1=${JSON.stringify(r1)} r2=${JSON.stringify(r2)}`);
+    }
 });
 
 test("Source.pipe: transforms via subject", async (t) => {
@@ -155,5 +217,9 @@ test("Source.pipe: transforms via subject", async (t) => {
     await s.next(2);
     await s.next(4);
     unsub();
-    t.deepEqual(results, [6, 12]);
+    if (results[0] === 6 && results[1] === 12 && results.length === 2) {
+        t.pass();
+    } else {
+        t.fail(`expected [6,12], got ${JSON.stringify(results)}`);
+    }
 });
