@@ -1,7 +1,6 @@
 import "./config/setup.mjs";
 import { run } from 'worker-testbed';
 
-/*
 import "./e2e/rx/subject-throw.test.mjs";
 import "./e2e/rx/operator-throw.test.mjs";
 import "./e2e/rx/operator-lib-throw.test.mjs";
@@ -44,7 +43,6 @@ import "./spec/hof/timeout.test.mjs";
 import "./spec/hof/trycatch.test.mjs";
 import "./spec/hof/ttl.test.mjs";
 import "./spec/hof/waitForNext.test.mjs";
-*/
 
 import "./spec/rx/integration-chain-throws.test.mjs";
 import "./spec/rx/fromDelay-fromInterval-throws.test.mjs";
