@@ -12,6 +12,7 @@ import singlerun from "../hof/singlerun";
 import createAwaiter from "../createAwaiter";
 
 const OBSERVER_EVENT = Symbol('observer-subscribe');
+const ERROR_EVENT = Symbol('observer-error');
 
 const CONNECT_EVENT = Symbol('observer-connect');
 const DISCONNECT_EVENT = Symbol('observer-disconnect');
@@ -55,6 +56,14 @@ export class Observer<Data = any> implements TObserver<Data> {
     constructor(private readonly dispose: Fn) { }
 
     /**
+     * Emits an error downstream through the error channel.
+     * Sources use this to propagate async process errors through the chain.
+     */
+    public emitError = (error: unknown) => {
+        this.broadcast.emit(ERROR_EVENT, error);
+    };
+
+    /**
      * Sets up a listener for the connect event on the broadcast channel.
      *
      * @param fn - The callback function to be executed once the connect event is triggered.
@@ -82,11 +91,14 @@ export class Observer<Data = any> implements TObserver<Data> {
      */
     private _subscribe = <T = any>(observer: TObserver<T>, callback: Fn) => {
         this.broadcast.subscribe(OBSERVER_EVENT, callback);
+        const errorForwarder = (error: unknown) => (observer as Observer<T>).emitError(error);
+        this.broadcast.subscribe(ERROR_EVENT, errorForwarder);
         observer[LISTEN_CONNECT](() => {
             this.broadcast.emit(CONNECT_EVENT);
         });
         observer[LISTEN_DISCONNECT](() => {
             if (!this.hasListeners) {
+                this.broadcast.unsubscribe(ERROR_EVENT, errorForwarder);
                 this.broadcast.emit(DISCONNECT_EVENT);
             }
         });
@@ -535,10 +547,18 @@ export class Observer<Data = any> implements TObserver<Data> {
     public toPromise = singlerun(() => {
         const [promise, awaiter] = createAwaiter<Data>();
         let isDisposed = false;
+        const errorHandler = (error: unknown) => {
+            if (isDisposed) return;
+            isDisposed = true;
+            this.broadcast.unsubscribe(ERROR_EVENT, errorHandler);
+            awaiter.reject(error);
+        };
+        this.broadcast.subscribe(ERROR_EVENT, errorHandler);
         let unsub: Fn;
         unsub = this.connect((value) => {
             if (isDisposed) return;
             isDisposed = true;
+            this.broadcast.unsubscribe(ERROR_EVENT, errorHandler);
             unsub && unsub();
             awaiter.resolve(value);
         });

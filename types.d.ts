@@ -254,6 +254,11 @@ declare class Observer<Data = any> implements TObserver$1<Data> {
     get hasListeners(): boolean;
     constructor(dispose: Fn);
     /**
+     * Emits an error downstream through the error channel.
+     * Sources use this to propagate async process errors through the chain.
+     */
+    emitError: (error: unknown) => void;
+    /**
      * Sets up a listener for the connect event on the broadcast channel.
      *
      * @param fn - The callback function to be executed once the connect event is triggered.

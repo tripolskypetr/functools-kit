@@ -1,6 +1,4 @@
 import Observer, { TObserver, LISTEN_CONNECT } from "../Observer";
-import createAwaiter from "../../createAwaiter";
-import singlerun from "../../hof/singlerun";
 
 /**
  * Creates an observable that emits the result of a given promise callback function.
@@ -13,7 +11,6 @@ import singlerun from "../../hof/singlerun";
  */
 export const fromPromise = <Data = any>(callbackfn: () => Promise<Data>, fallbackfn?: (e: Error) => void): TObserver<Data> => {
     let isCanceled = false;
-    let processPromise: Promise<void> | null = null;
     const observer = new Observer<Data>(() => {
         isCanceled = true;
     });
@@ -32,16 +29,7 @@ export const fromPromise = <Data = any>(callbackfn: () => Promise<Data>, fallbac
         }
     };
     observer[LISTEN_CONNECT](() => {
-        processPromise = process();
-    });
-    observer.toPromise = singlerun(() => {
-        const [promise, awaiter] = createAwaiter<Data>();
-        const unsub = observer.connect((value) => {
-            unsub();
-            awaiter.resolve(value);
-        });
-        processPromise!.catch(awaiter.reject);
-        return promise;
+        process().catch((e) => observer.emitError(e));
     });
     return observer;
 };

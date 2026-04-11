@@ -19,7 +19,7 @@ export const fromArray = <Data = any>(data: Data): TObserver<ReadonlyArray<FlatA
         }
     };
     observer[LISTEN_CONNECT](() => {
-        process();
+        process().catch((e) => observer.emitError(e));
     });
     return observer;
 };

@@ -10,7 +10,6 @@ import fromDelay from './source/fromDelay';
 import fromArray from './source/fromArray';
 
 import createObserver from "./helpers/createObserver";
-
 import compose from "../compose";
 
 type Function = (...args: any[]) => void;
@@ -280,11 +279,8 @@ export class Source {
     public static fromValue = <Data = any>(data: Data | (() => Data)): TObserver<Data> => {
         const observer = new Observer<Data>(() => undefined);
         observer[LISTEN_CONNECT](() => {
-            if (typeof data === 'function') {
-                observer.emit((data as () => Data)());
-            } else {
-                observer.emit(data);
-            }
+            const value = typeof data === 'function' ? (data as () => Data)() : data;
+            observer.emit(value).catch((e) => observer.emitError(e));
         });
         return observer;
     };
