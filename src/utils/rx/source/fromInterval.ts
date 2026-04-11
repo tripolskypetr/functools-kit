@@ -19,10 +19,12 @@ export const fromInterval = (delay: number): TObserver<number> => {
     const process = async () => {
         await observer.emit(iterationIdx);
         iterationIdx++;
-        timeout = setTimeout(process, delay);
+        timeout = setTimeout(() => {
+            process().catch((e) => observer.emitError(e));
+        }, delay);
     };
     observer[LISTEN_CONNECT](() => {
-        process();
+        process().catch((e) => observer.emitError(e));
     });
     return observer;
 };

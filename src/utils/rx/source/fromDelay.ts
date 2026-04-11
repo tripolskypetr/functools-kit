@@ -20,7 +20,9 @@ export const fromDelay = (delay: number): TObserver<void> => {
         await observer.emit();
     };
     observer[LISTEN_CONNECT](() => {
-        setTimeout(process, delay);
+        timeout = setTimeout(() => {
+            process().catch((e) => observer.emitError(e));
+        }, delay);
     });
     return observer;
 };
