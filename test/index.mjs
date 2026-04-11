@@ -1,6 +1,8 @@
 import "./config/setup.mjs";
 import { run } from 'worker-testbed';
 
+import "./spec/api/api.test.mjs";
+
 import "./e2e/rx/subject-throw.test.mjs";
 import "./e2e/rx/operator-throw.test.mjs";
 import "./e2e/rx/operator-lib-throw.test.mjs";
