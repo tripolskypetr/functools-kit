@@ -48,6 +48,7 @@ import "./spec/hof/waitForNext.test.mjs";
 
 import "./spec/rx/integration-chain-throws.test.mjs";
 import "./spec/rx/fromDelay-fromInterval-throws.test.mjs";
+import "./spec/rx/from-chain-throws.test.mjs";
 
 run(import.meta.url, () => {
     console.log("All tests are finished");
