@@ -29,6 +29,8 @@ export const createObserver = <Data = any>(factory: () => TObserver<Data>): TObs
     share: () => factory().share(),
     toPromise: () => factory().toPromise(),
     toIteratorContext: () => factory().toIteratorContext(),
+    onError: (fn: (error: unknown) => void) => factory().onError(fn),
+    emitError: (error: unknown) =>  factory().emitError(error),
 });
 
 export default createObserver;
