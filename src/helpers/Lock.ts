@@ -1,4 +1,5 @@
-import { queued, sleep } from "functools-kit";
+import queued from "../utils/hof/queued";
+import sleep from "../utils/sleep";
 
 const BUSY_DELAY = 100;
 

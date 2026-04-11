@@ -1,5 +1,3 @@
-import * as functools_kit from 'functools-kit';
-
 /**
  * Generates a random string using the UUID library.
  *
@@ -2090,7 +2088,7 @@ declare class Lock {
     private _isBusy;
     [SET_BUSY_SYMBOL](isBusy: boolean): void;
     [GET_BUSY_SYMBOL](): boolean;
-    [ACQUIRE_LOCK_SYMBOL]: functools_kit.IWrappedQueuedFn<void, [self: Lock]>;
+    [ACQUIRE_LOCK_SYMBOL]: IWrappedQueuedFn<void, [self: Lock]>;
     [RELEASE_LOCK_SYMBOL]: () => void;
     /**
      * Acquires the lock, suspending execution until it becomes available.
