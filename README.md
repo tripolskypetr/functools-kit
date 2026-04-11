@@ -323,6 +323,18 @@ The library ships with **515 tests** covering both correctness and async excepti
 | `pubsub` | Emitter throw treated as failure and retried; `onError` callback invoked with data and error |
 | `waitForNext` | Timeout resolves to `TIMEOUT_SYMBOL` without throwing |
 
+### Spec tests — integration chain throw propagation
+
+All tests use `.toPromise()` + `try/catch` — no `throws()` helper, no side-channel assertions.
+
+| Suite | What is verified |
+|---|---|
+| `integration-chain-throws` | 40 Subject-based and Source-based pipelines: `filter→map`, `mapAsync→distinct→take`, `group→mapAsync→tap`, `skip→group→connect`, ETL, ML feature pipelines, IoT, event-sourcing, auth/user flows — sync and async throws at every operator position |
+| `integration-chain-throws-scoped` | Same 40 pipelines repeated with `process.on("unhandledRejection")` and `process.on("error")` guards per test — verifies no unhandled rejections leak out of any chain |
+| `from-chain-throws` | `fromArray`, `fromPromise`, `fromValue`, `fromDelay`, `fromInterval` each chained with `map`, `mapAsync`, `tap`, `filter` — throw propagates via `toPromise` |
+| `fromDelay-fromInterval-throws` | `fromDelay` and `fromInterval` with multi-hop chains including `mapAsync` and `tap` — async throw propagates |
+| `error-propagation-extra` | `merge`, `flatMap`, `split`, `reduce`, `repeat`, `retry`, `operator(distinct/skip/take/pair/group/count/strideTricks)` — error propagation via `toPromise`; `once()` basic behavior; two independent subjects reject independently |
+
 ## 🤝 Contribute
 
 Fork the repo, submit a PR, or open an issue on **[GitHub](https://github.com/tripolskypetr/functools-kit)**. 🙌
