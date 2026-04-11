@@ -615,18 +615,40 @@ export class Observer<Data = any> implements TObserver<Data> {
      * @property done - Marks the iteration as complete.
      */
     public toIteratorContext = () => {
-        const self = this;
+        const buffer: Data[] = [];
         let isDone = false;
+        let awaiter: ReturnType<typeof createAwaiter<void>>[1] | null = null;
+        const unsub = this.connect((value) => {
+            buffer.push(value);
+            if (awaiter) {
+                const a = awaiter;
+                awaiter = null;
+                a.resolve();
+            }
+        });
         const iterate = async function* () {
             while (!isDone) {
-                const next = await self.toPromise();
-                yield next as Data;
+                if (buffer.length === 0) {
+                    const [promise, a] = createAwaiter<void>();
+                    awaiter = a;
+                    await promise;
+                }
+                while (buffer.length > 0) {
+                    yield buffer.shift() as Data;
+                }
             }
+            unsub();
         };
         return {
             iterate,
             done() {
                 isDone = true;
+                if (awaiter) {
+                    const a = awaiter;
+                    awaiter = null;
+                    a.resolve();
+                }
+                unsub();
             },
         }
     };
