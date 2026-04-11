@@ -1,0 +1,2 @@
+* linguist-language=TypeScript
+*.test.mjs linguist-vendored
