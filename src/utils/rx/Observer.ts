@@ -126,8 +126,9 @@ export class Observer<Data = any> implements TObserver<Data> {
             () => unsubscribeRef(),
         );
         const observer = new Observer<T>(dispose);
-        const handler = (value: Data) => {
-            const pendingValue = callbackfn(value);
+        const handler = async (value: Data): Promise<void> => {
+            const raw = callbackfn(value) as any;
+            const pendingValue: T = raw instanceof Promise ? await raw : raw;
             return observer.emit(pendingValue);
         };
         this._subscribe(observer, handler);
@@ -198,8 +199,9 @@ export class Observer<Data = any> implements TObserver<Data> {
             () => unsubscribeRef(),
         );
         const observer = new Observer<T>(dispose);
-        const handler = (value: Data) => {
-            const pendingValue = callbackfn(acm, value);
+        const handler = async (value: Data): Promise<void> => {
+            const raw = callbackfn(acm, value) as any;
+            const pendingValue: T = raw instanceof Promise ? await raw : raw;
             acm = pendingValue;
             return observer.emit(pendingValue);
         };
@@ -290,11 +292,10 @@ export class Observer<Data = any> implements TObserver<Data> {
             () => unsubscribeRef(),
         );
         const observer = new Observer<Data>(dispose);
-        const handler = (value: Data) => {
-            const delegate = callbackfn(value);
-            if (delegate) {
-                return observer.emit(value);
-            }
+        const handler = async (value: Data): Promise<void> => {
+            const raw = callbackfn(value) as any;
+            const delegate: boolean = raw instanceof Promise ? await raw : raw;
+            if (delegate) return observer.emit(value);
         };
         this._subscribe(observer, handler);
         unsubscribeRef = () => this._unsubscribe(handler);
@@ -314,8 +315,9 @@ export class Observer<Data = any> implements TObserver<Data> {
             () => unsubscribeRef(),
         );
         const observer = new Observer<Data>(dispose);
-        const handler = (value: Data) => {
-            callbackfn(value);
+        const handler = async (value: Data): Promise<void> => {
+            const r = callbackfn(value) as any;
+            if (r instanceof Promise) await r;
             return observer.emit(value);
         };
         this._subscribe(observer, handler);
@@ -430,11 +432,12 @@ export class Observer<Data = any> implements TObserver<Data> {
     public once = (callbackfn: (value: Data) => void) => {
         let fired = false;
         let unsubscribeRef: Fn = () => undefined;
-        const handler = (value: Data) => {
+        const handler = async (value: Data) => {
             if (fired) return;
             fired = true;
-            callbackfn(value);
             unsubscribeRef();
+            const r = callbackfn(value) as any;
+            if (r instanceof Promise) await r;
         };
         unsubscribeRef = this.connect(handler);
         if (fired) unsubscribeRef();
@@ -529,9 +532,14 @@ export class Observer<Data = any> implements TObserver<Data> {
      *
      * @returns A Promise that resolves with the data.
      */
-    public toPromise = singlerun(() => new Promise<Data>((res) => {
-        this.once((data) => res(data));
-    }));
+    public toPromise = singlerun(() => {
+        const [promise, awaiter] = createAwaiter<Data>();
+        const unsub = this.connect(async (value) => {
+            unsub();
+            awaiter.resolve(value);
+        });
+        return promise;
+    });
 
     /**
      * Creates a context for iterating asynchronously using a generator function.

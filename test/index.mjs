@@ -5,6 +5,7 @@ import "./e2e/rx/subject-throw.test.mjs";
 import "./e2e/rx/operator-throw.test.mjs";
 import "./e2e/rx/operator-lib-throw.test.mjs";
 import "./e2e/rx/source-throw.test.mjs";
+import "./e2e/rx/toPromise-throw.test.mjs";
 
 import "./e2e/hof/execpool.test.mjs";
 import "./e2e/hof/pubsub.test.mjs";
