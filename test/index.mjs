@@ -1,6 +1,9 @@
 import "./config/setup.mjs";
 import { run } from 'worker-testbed';
 
+
+import "./spec/math/math.test.mjs";
+
 import "./spec/api/api.test.mjs";
 
 import "./e2e/rx/subject-throw.test.mjs";
@@ -51,7 +54,7 @@ import "./spec/rx/integration-chain-throws.test.mjs";
 import "./spec/rx/fromDelay-fromInterval-throws.test.mjs";
 import "./spec/rx/from-chain-throws.test.mjs";
 import "./spec/rx/error-propagation-extra.test.mjs";
-import "./spec/rx/toIteratorContext.test.mjs"
+import "./spec/rx/toIteratorContext.test.mjs";
 
 run(import.meta.url, () => {
     console.log("All tests are finished");
