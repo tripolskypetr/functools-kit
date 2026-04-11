@@ -111,3 +111,134 @@ test("toIteratorContext: operator(take) — stops after N elements, none dropped
     if (results.join(',') === '1,2,3') t.pass();
     else t.fail(`got ${results}`);
 });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// error propagation
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test("toIteratorContext: throw in map propagates to for-await", async (t) => {
+    const s = new Subject();
+    const { iterate } = s.map(() => { throw new Error("iter-map-error"); }).toIteratorContext();
+    const consumer = (async () => {
+        for await (const _ of iterate()) { }
+    })();
+    await sleep(5);
+    s.next(1).catch(() => {});
+    try {
+        await consumer;
+        t.fail("should have thrown");
+    } catch (e) {
+        if (e instanceof Error && e.message === "iter-map-error") t.pass();
+        else t.fail(`unexpected: ${e}`);
+    }
+});
+
+test("toIteratorContext: throw in mapAsync propagates to for-await", async (t) => {
+    const s = new Subject();
+    const { iterate } = s.mapAsync(async () => { await sleep(5); throw new Error("iter-mapAsync-error"); }).toIteratorContext();
+    const consumer = (async () => {
+        for await (const _ of iterate()) { }
+    })();
+    await sleep(5);
+    s.next(1).catch(() => {});
+    try {
+        await consumer;
+        t.fail("should have thrown");
+    } catch (e) {
+        if (e instanceof Error && e.message === "iter-mapAsync-error") t.pass();
+        else t.fail(`unexpected: ${e}`);
+    }
+});
+
+test("toIteratorContext: throw in tap propagates to for-await", async (t) => {
+    const s = new Subject();
+    const { iterate } = s.tap(() => { throw new Error("iter-tap-error"); }).toIteratorContext();
+    const consumer = (async () => {
+        for await (const _ of iterate()) { }
+    })();
+    await sleep(5);
+    s.next(1).catch(() => {});
+    try {
+        await consumer;
+        t.fail("should have thrown");
+    } catch (e) {
+        if (e instanceof Error && e.message === "iter-tap-error") t.pass();
+        else t.fail(`unexpected: ${e}`);
+    }
+});
+
+test("toIteratorContext: throw in filter propagates to for-await", async (t) => {
+    const s = new Subject();
+    const { iterate } = s.filter(() => { throw new Error("iter-filter-error"); }).toIteratorContext();
+    const consumer = (async () => {
+        for await (const _ of iterate()) { }
+    })();
+    await sleep(5);
+    s.next(1).catch(() => {});
+    try {
+        await consumer;
+        t.fail("should have thrown");
+    } catch (e) {
+        if (e instanceof Error && e.message === "iter-filter-error") t.pass();
+        else t.fail(`unexpected: ${e}`);
+    }
+});
+
+test("toIteratorContext: values before error are yielded, then throws", async (t) => {
+    const s = new Subject();
+    let count = 0;
+    const { iterate } = s.map(v => {
+        if (v === 3) throw new Error("iter-mid-error");
+        return v;
+    }).toIteratorContext();
+    const results = [];
+    const nexts = async () => {
+        await s.next(1);
+        await s.next(2);
+        s.next(3).catch(() => {});
+    };
+    nexts();
+    try {
+        for await (const v of iterate()) {
+            results.push(v);
+        }
+        t.fail("should have thrown");
+    } catch (e) {
+        if (e instanceof Error && e.message === "iter-mid-error" && results.join(',') === '1,2') t.pass();
+        else t.fail(`unexpected: ${e}, results=${results}`);
+    }
+});
+
+test("toIteratorContext: fromPromise reject propagates to for-await", async (t) => {
+    const { iterate } = Source.fromPromise(async () => { throw new Error("iter-promise-error"); })
+        .map(v => v)
+        .toIteratorContext();
+    try {
+        for await (const _ of iterate()) { }
+        t.fail("should have thrown");
+    } catch (e) {
+        if (e instanceof Error && e.message === "iter-promise-error") t.pass();
+        else t.fail(`unexpected: ${e}`);
+    }
+});
+
+test("toIteratorContext: multi-hop chain throw propagates to for-await", async (t) => {
+    const s = new Subject();
+    const { iterate } = s
+        .filter(v => v > 0)
+        .map(v => v * 2)
+        .mapAsync(async () => { await sleep(3); throw new Error("iter-chain-error"); })
+        .toIteratorContext();
+    const consumer = (async () => {
+        for await (const _ of iterate()) { }
+    })();
+    await sleep(5);
+    s.next(1).catch(() => {});
+    try {
+        await consumer;
+        t.fail("should have thrown");
+    } catch (e) {
+        if (e instanceof Error && e.message === "iter-chain-error") t.pass();
+        else t.fail(`unexpected: ${e}`);
+    }
+});

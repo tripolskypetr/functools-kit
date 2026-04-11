@@ -277,7 +277,6 @@ declare class Observer<Data = any> implements TObserver$1<Data> {
      * Sets up a listener for the connect event on the broadcast channel.
      *
      * @param fn - The callback function to be executed once the connect event is triggered.
-     * @returns
      */
     [LISTEN_CONNECT](fn: () => void): void;
     /**
@@ -291,14 +290,12 @@ declare class Observer<Data = any> implements TObserver$1<Data> {
      *
      * @param observer - The observer subscribing to the event.
      * @param callback - The callback function to be executed when the event is triggered.
-     * @returns
      */
     private _subscribe;
     /**
      * Unsubscribes a callback function from the observer event.
      *
      * @param callback - The callback function to unsubscribe.
-     * @returns
      */
     private _unsubscribe;
     /**
@@ -317,9 +314,7 @@ declare class Observer<Data = any> implements TObserver$1<Data> {
      * Applies a callback function to each value emitted by the Observable and flattens the resulting values into a new Observable.
      *
      * @template T - The type of values emitted by the Observable.
-     *
      * @param callbackfn - A callback function that accepts a value emitted by the Observable and returns an array of values or a single value.
-     *
      * @returns - A new Observer that emits the flattened values.
      */
     flatMap: <T = any>(callbackfn: (value: Data) => T[]) => Observer<T>;
@@ -429,12 +424,6 @@ declare class Observer<Data = any> implements TObserver$1<Data> {
     merge: <T = any>(observer: TObserver$1<T>) => Observer<Data | T>;
     /**
      * Unsubscribes from all events and performs cleanup.
-     *
-     * @function
-     * @name unsubscribe
-     * @memberOf undefined
-     *
-     * @returns
      */
     unsubscribe: () => void;
     /**
@@ -506,6 +495,8 @@ type Function$1 = (...args: any[]) => void;
  */
 declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Data> {
     private _emitter;
+    private _rootObservers;
+    private _subscribeObserver;
     constructor();
     get hasListeners(): boolean;
     waitForListener(): Promise<void>;
@@ -623,11 +614,17 @@ declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Dat
     once(callback: Function$1): () => void;
     /**
      * Calls the next method to emit the specified data using the SUBJECT_EVENT event.
+     * Collects errors from all root observers and throws the first one after emit.
      *
      * @param data - The data to be emitted.
      * @return - Resolves when the emission is complete.
      */
     next(data: Data): Promise<void>;
+    /**
+     * Subscribes to errors emitted by any observer chain rooted in this subject.
+     * Returns an unsubscribe function.
+     */
+    onError(fn: (error: unknown) => void): () => void;
     /**
      * Creates a new observer to observe the data emitted by a source.
      *

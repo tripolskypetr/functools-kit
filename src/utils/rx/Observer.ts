@@ -617,6 +617,8 @@ export class Observer<Data = any> implements TObserver<Data> {
     public toIteratorContext = () => {
         const buffer: Data[] = [];
         let isDone = false;
+        let pendingError: unknown = undefined;
+        let hasError = false;
         let awaiter: ReturnType<typeof createAwaiter<void>>[1] | null = null;
         const unsub = this.connect((value) => {
             buffer.push(value);
@@ -626,18 +628,33 @@ export class Observer<Data = any> implements TObserver<Data> {
                 a.resolve();
             }
         });
-        const iterate = async function* () {
-            while (!isDone) {
-                if (buffer.length === 0) {
-                    const [promise, a] = createAwaiter<void>();
-                    awaiter = a;
-                    await promise;
-                }
-                while (buffer.length > 0) {
-                    yield buffer.shift() as Data;
-                }
+        const unsubError = this.onError((error) => {
+            hasError = true;
+            pendingError = error;
+            isDone = true;
+            if (awaiter) {
+                const a = awaiter;
+                awaiter = null;
+                a.resolve();
             }
-            unsub();
+        });
+        const iterate = async function* () {
+            try {
+                while (!isDone || buffer.length > 0) {
+                    if (buffer.length === 0) {
+                        const [promise, a] = createAwaiter<void>();
+                        awaiter = a;
+                        await promise;
+                    }
+                    while (buffer.length > 0) {
+                        yield buffer.shift() as Data;
+                    }
+                    if (hasError) throw pendingError;
+                }
+            } finally {
+                unsub();
+                unsubError();
+            }
         };
         return {
             iterate,
@@ -649,6 +666,7 @@ export class Observer<Data = any> implements TObserver<Data> {
                     a.resolve();
                 }
                 unsub();
+                unsubError();
             },
         }
     };
