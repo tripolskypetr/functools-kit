@@ -19,6 +19,7 @@ import "./spec/rx/Source.test.mjs";
 import "./spec/rx/Operator.test.mjs";
 import "./spec/rx/ObserverOnceToPromise.test.mjs";
 import "./spec/rx/integration-chains.test.mjs";
+import "./spec/rx/integration-chain-throws-scoped.test.mjs";
 
 import "./spec/hof/afterinit.test.mjs";
 import "./spec/hof/awaiter.test.mjs";

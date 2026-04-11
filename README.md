@@ -271,7 +271,7 @@ functools-kit is used as a core dependency in:
 
 ## 🧪 Test Coverage
 
-The library ships with **223 tests** covering both correctness and async exception propagation.
+The library ships with **515 tests** covering both correctness and async exception propagation.
 
 ### Spec tests — functional correctness
 

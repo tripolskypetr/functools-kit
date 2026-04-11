@@ -274,7 +274,7 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      */
     public onError(fn: (error: unknown) => void): () => void {
         const observer = new Observer<Data>(() => unsubscribeRef());
-        let unsubscribeRef: Function = this.subscribe(observer.emit);
+        let unsubscribeRef: Function = this._subscribeObserver(observer);
         const unsubscribeError = observer.onError(fn);
         return () => {
             unsubscribeError();
