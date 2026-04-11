@@ -534,8 +534,12 @@ export class Observer<Data = any> implements TObserver<Data> {
      */
     public toPromise = singlerun(() => {
         const [promise, awaiter] = createAwaiter<Data>();
-        const unsub = this.connect(async (value) => {
-            unsub();
+        let isDisposed = false;
+        let unsub: Fn;
+        unsub = this.connect((value) => {
+            if (isDisposed) return;
+            isDisposed = true;
+            unsub && unsub();
             awaiter.resolve(value);
         });
         return promise;
