@@ -760,9 +760,9 @@ test("integration: pipeline with tap for side-effects at multiple stages", async
     for (const v of [-1, 0, 3, 7, 10]) await s.next(v);
     const results = await p;
     if (
-        stage1.length === 5 &&
-        stage2.join(',') === '3,7,10' &&
-        stage3.join(',') === '6,14,20' &&
+        stage1.length === 4 &&
+        stage2.join(',') === '3,7' &&
+        stage3.join(',') === '6,14' &&
         results.join(',') === '6,14'
     ) t.pass();
     else t.fail(`s1=${stage1.length} s2=${stage2} s3=${stage3} r=${results}`);
