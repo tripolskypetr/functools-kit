@@ -64,6 +64,14 @@ export class Observer<Data = any> implements TObserver<Data> {
     };
 
     /**
+     * Subscribes to upstream errors forwarded via ERROR_EVENT.
+     */
+    public onError = (fn: (error: unknown) => void) => {
+        this.broadcast.subscribe(ERROR_EVENT, fn);
+        return () => this.broadcast.unsubscribe(ERROR_EVENT, fn);
+    };
+
+    /**
      * Sets up a listener for the connect event on the broadcast channel.
      *
      * @param fn - The callback function to be executed once the connect event is triggered.
@@ -415,7 +423,12 @@ export class Observer<Data = any> implements TObserver<Data> {
      * @param data - The data to be emitted.
      */
     public emit = async (data: Data) => {
-        await this.broadcast.emit(OBSERVER_EVENT, data);
+        try {
+            await this.broadcast.emit(OBSERVER_EVENT, data);
+        } catch (e) {
+            this.broadcast.emit(ERROR_EVENT, e);
+            throw e;
+        }
     };
 
     /**
@@ -514,12 +527,17 @@ export class Observer<Data = any> implements TObserver<Data> {
         };
         this._subscribe(merged, handler);
         let unsubscribe: Fn = () => undefined;
+        let unsubscribeRightError: Fn = () => undefined;
         merged[LISTEN_CONNECT](() => {
+            if (observer instanceof Observer) {
+                unsubscribeRightError = observer.onError((e) => merged.emitError(e));
+            }
             unsubscribe = observer.connect(handler) || (() => undefined);
         });
         unsubscribeRef = compose(
             () => this._unsubscribe(handler),
             () => unsubscribe(),
+            () => unsubscribeRightError(),
         );
         return merged;
     };

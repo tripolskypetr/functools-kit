@@ -208,6 +208,15 @@ interface TObserver$1<Data = unknown> {
      */
     toPromise: () => Promise<Data>;
     /**
+     * Subscribes to upstream errors forwarded via the error channel.
+     * Returns an unsubscribe function.
+     */
+    onError: (fn: (error: unknown) => void) => () => void;
+    /**
+     * Emits an error downstream through the error channel.
+     */
+    emitError: (error: unknown) => void;
+    /**
      * Represents an iterator context.
      *
      * @interface
@@ -226,6 +235,8 @@ type TObservable$1<Data = unknown> = Omit<TObserver$1<Data>, keyof {
     connect: never;
     once: never;
     share: never;
+    onError: never;
+    emitError: never;
 }>;
 
 declare const LISTEN_CONNECT: unique symbol;
@@ -258,6 +269,10 @@ declare class Observer<Data = any> implements TObserver$1<Data> {
      * Sources use this to propagate async process errors through the chain.
      */
     emitError: (error: unknown) => void;
+    /**
+     * Subscribes to upstream errors forwarded via ERROR_EVENT.
+     */
+    onError: (fn: (error: unknown) => void) => () => void;
     /**
      * Sets up a listener for the connect event on the broadcast channel.
      *

@@ -135,6 +135,15 @@ export interface TObserver<Data = unknown> {
      */
     toPromise: () => Promise<Data>;
     /**
+     * Subscribes to upstream errors forwarded via the error channel.
+     * Returns an unsubscribe function.
+     */
+    onError: (fn: (error: unknown) => void) => () => void;
+    /**
+     * Emits an error downstream through the error channel.
+     */
+    emitError: (error: unknown) => void;
+    /**
      * Represents an iterator context.
      *
      * @interface
@@ -154,6 +163,8 @@ export type TObservable<Data = unknown> = Omit<TObserver<Data>, keyof {
     connect: never;
     once: never;
     share: never;
+    onError: never;
+    emitError: never;
 }>;
 
 export default TObserver;
