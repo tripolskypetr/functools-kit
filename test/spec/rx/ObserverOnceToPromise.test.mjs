@@ -276,3 +276,96 @@ test("toPromise: Subject.toPromise resolves first value", async (t) => {
     if (v === 123) t.pass();
     else t.fail(`expected 123, got ${v}`);
 });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// once + toPromise: synchronous emit (isDisposed / fired guard)
+// These test the specific case where the source emits synchronously during
+// connect(), before the unsub/unsubscribeRef variable is assigned.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test("once: sync source (fromArray) — fires exactly once", async (t) => {
+    let count = 0;
+    Source.fromArray([1, 2, 3]).once(() => { count++; });
+    await sleep(10);
+    if (count === 1) t.pass();
+    else t.fail(`expected count=1, got ${count}`);
+});
+
+test("once: sync source (fromValue) — receives correct value", async (t) => {
+    let received = null;
+    Source.fromValue(42).once((v) => { received = v; });
+    await sleep(10);
+    if (received === 42) t.pass();
+    else t.fail(`expected 42, got ${received}`);
+});
+
+test("once: sync source (fromArray) — callback not called twice on multi-item array", async (t) => {
+    let count = 0;
+    Source.fromArray([10, 20, 30]).once(() => { count++; });
+    await sleep(10);
+    if (count === 1) t.pass();
+    else t.fail(`expected count=1, got ${count}`);
+});
+
+test("once: sync source (fromArray) — async callback awaited", async (t) => {
+    let done = false;
+    Source.fromArray([1]).once(async () => { await sleep(10); done = true; });
+    await sleep(30);
+    if (done) t.pass();
+    else t.fail("async once callback on sync source was not awaited");
+});
+
+test("once: sync source (fromArray map) — chained, fires once with mapped value", async (t) => {
+    let received = null;
+    Source.fromArray([5]).map(v => v * 2).once((v) => { received = v; });
+    await sleep(10);
+    if (received === 10) t.pass();
+    else t.fail(`expected 10, got ${received}`);
+});
+
+test("once: sync source (fromArray filter) — filtered item skipped, second fires once", async (t) => {
+    let count = 0;
+    Source.fromArray([0, 1, 2]).filter(v => v > 0).once(() => { count++; });
+    await sleep(10);
+    if (count === 1) t.pass();
+    else t.fail(`expected count=1, got ${count}`);
+});
+
+test("toPromise: sync source (fromArray) — resolves first item, does not double-resolve", async (t) => {
+    const v = await Source.fromArray([7, 8, 9]).toPromise();
+    if (v === 7) t.pass();
+    else t.fail(`expected 7, got ${v}`);
+});
+
+test("toPromise: sync source (fromArray map) — resolves mapped first item", async (t) => {
+    const v = await Source.fromArray([3]).map(x => x * 10).toPromise();
+    if (v === 30) t.pass();
+    else t.fail(`expected 30, got ${v}`);
+});
+
+test("toPromise: sync source (fromArray filter) — resolves first passing item", async (t) => {
+    const v = await Source.fromArray([0, 0, 5]).filter(x => x > 0).toPromise();
+    if (v === 5) t.pass();
+    else t.fail(`expected 5, got ${v}`);
+});
+
+test("toPromise: sync source (fromArray split) — resolves first element of split array", async (t) => {
+    const v = await Source.fromArray([[1, 2, 3]]).split().toPromise();
+    if (v === 1) t.pass();
+    else t.fail(`expected 1, got ${v}`);
+});
+
+test("toPromise: sync source (fromArray flatMap) — resolves first element of flatMap", async (t) => {
+    const v = await Source.fromArray([4]).flatMap(x => [x * 10, x * 20]).toPromise();
+    if (v === 40) t.pass();
+    else t.fail(`expected 40, got ${v}`);
+});
+
+test("toPromise: sync source — toPromise called multiple times returns same value", async (t) => {
+    const obs = Source.fromArray([99, 100]);
+    const p1 = obs.toPromise();
+    const p2 = obs.toPromise();
+    const [v1, v2] = await Promise.all([p1, p2]);
+    if (v1 === 99 && v2 === 99) t.pass();
+    else t.fail(`expected 99/99, got ${v1}/${v2}`);
+});
