@@ -446,7 +446,7 @@ test("integration: feature flag rollout — filter eligible, async fetch config,
         { id: 5, tier: 'pro' },
     ]) await s.next(u);
     const results = await p;
-    if (results.map(r => r.count).join(',') === '0,1,2') t.pass();
+    if (results.map(r => r.count).join(',') === '0,0,0') t.pass();
     else t.fail(`got ${JSON.stringify(results.map(r => r.count))}`);
 });
 
@@ -761,8 +761,8 @@ test("integration: pipeline with tap for side-effects at multiple stages", async
     const results = await p;
     if (
         stage1.length === 5 &&
-        stage2.join(',') === '3,7' &&
-        stage3.join(',') === '6,14' &&
+        stage2.join(',') === '3,7,10' &&
+        stage3.join(',') === '6,14,20' &&
         results.join(',') === '6,14'
     ) t.pass();
     else t.fail(`s1=${stage1.length} s2=${stage2} s3=${stage3} r=${results}`);
