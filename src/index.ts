@@ -117,6 +117,15 @@ export { split } from './utils/math/split';
 export { compose } from './utils/compose';
 export { errorData } from './utils/errorData';
 
+export { get } from './utils/get';
+export { set } from './utils/set';
+export { create } from './utils/create';
+export { deepClone } from './utils/deepClone';
+export { deepCompare } from './utils/deepCompare';
+export { deepMerge } from './utils/deepMerge';
+export { isEmpty } from './utils/isEmpty';
+export { isUndefined } from './utils/isUndefined';
+
 export { fetchApi, FetchError } from './api/fetchApi';
 
 export type { TRequest } from './model/TRequest';

@@ -1854,6 +1854,76 @@ declare const split: (...arr: (string | string[] | null)[] | (string | string[] 
  */
 declare const errorData: (error: any) => {};
 
+/**
+ * Retrieves a value from an object using a given path.
+ *
+ * @param object - The object from which to retrieve the value.
+ * @param path - The path to the desired value, either as an array or dot-separated string.
+ * @returns - The value at the specified path, or undefined if it does not exist.
+ */
+declare const get: (object: any, path: any) => any;
+
+/**
+ * Updates the value of a nested object property using a specific path.
+ *
+ * @param object - The object to update.
+ * @param path - The path to the property. Can be either a dot-separated string or an array of strings.
+ * @param value - The new value to set for the property.
+ * @returns - Returns true if the property was successfully updated, false otherwise.
+ */
+declare const set: (object: any, path: any, value: any) => boolean;
+
+/**
+ * Creates a nested object property based on the provided path.
+ *
+ * @param object - The object to add the property to.
+ * @param path - The path to the desired property.
+ *                     Can be either an array of keys or a string with keys separated by dots.
+ */
+declare const create: (object: any, path: any) => void;
+
+/**
+ * Creates a deep clone of the given object.
+ *
+ * @param src - The source object to be cloned.
+ * @returns The deep cloned object.
+ */
+declare const deepClone: (src: any) => any;
+
+/**
+ * Compares two objects deeply to determine if they are equal.
+ *
+ * @param obj1 - The first object to compare.
+ * @param obj2 - The second object to compare.
+ * @returns - Returns true if the objects are equal, false otherwise.
+ */
+declare const deepCompare: (obj1: any, obj2: any) => boolean;
+
+/**
+ * Merges multiple objects into a single object recursively.
+ *
+ * @param target - The target object to merge into.
+ * @param sources - The source objects to merge from.
+ * @returns - The merged object.
+ */
+declare const deepMerge: (target: any, ...sources: any[]) => any;
+
+/**
+ * Checks if an object is empty.
+ *
+ * @param obj - The object to check for emptiness.
+ * @returns - Returns true if the object is empty, otherwise returns false.
+ */
+declare function isEmpty(obj: Record<string | symbol, any>): boolean;
+
+/**
+ * Checks if a given object is undefined.
+ *
+ * @param obj - The object to check.
+ * @return Returns true if the object is undefined, otherwise returns false.
+ */
+declare const isUndefined: (obj: any) => obj is undefined;
+
 type RequestInfo = string | URL | Request;
 interface Request {
     method?: string;
@@ -2068,4 +2138,4 @@ declare const typo: {
     bullet: "•";
 };
 
-export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableRouter, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type IScheduleParams, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, type IWrappedScheduleFn, LimitedMap, LimitedSet, Lock, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, SortedArray, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, ToolRegistry, afterinit, and, awaiter, cached, cancelable, compareArray, compareFulltext, compose, createAwaiter, debounce, deepFlat, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, getErrorMessage, has, isObject, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, makeExtendable, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, router, schedule, singlerun, singleshot, singletick, sleep, split, str, throttle, timeout, truely, trycatch, ttl, typo, waitForNext };
+export { BehaviorSubject, CANCELED_PROMISE_SYMBOL, CATCH_SYMBOL, EventEmitter, FetchError, type IAwaiter, type IClearableCached, type IClearableMemoize, type IClearableRate, type IClearableRouter, type IClearableSingletick, type IClearableThrottle, type IClearableTtl, type IControlMemoize, type IControllTrycatch, type IDebounceClearable, type IErrorTrycatch, type IPubsubArray, type IPubsubConfig, type IPubsubMap, type IPubsubWrappedFn, type IRefMemoize, type IRowData, type IScheduleParams, type ISinglerunClearable, type ISingleshotClearable, type ITaskStatus, type IWrappedAfterInitFn, type IWrappedCancelableFn, type IWrappedExecpoolFn, type IWrappedLockFn, type IWrappedQueuedFn, type IWrappedRetryFn, type IWrappedScheduleFn, LimitedMap, LimitedSet, Lock, Observer, Operator, PubsubArrayAdapter, PubsubMapAdapter, RateError, type RowId, SortedArray, Source, Subject, type TBasePaginator, type TBehaviorSubject, type TCursorPaginator, TIMEOUT_SYMBOL, type TObservable, type TObserver, type TOffsetPaginator, type TPaginator, type TRequest, type TResponse, type TSubject, Task, ToolRegistry, afterinit, and, awaiter, cached, cancelable, compareArray, compareFulltext, compose, create, createAwaiter, debounce, deepClone, deepCompare, deepFlat, deepMerge, distinctDocuments, errorData, execpool, fetchApi, filterDocuments, first, formatText, get, getErrorMessage, has, isEmpty, isObject, isUndefined, iterateDocuments, iterateList, iteratePromise, iterateUnion, join, last, lock, makeExtendable, mapDocuments, match, memoize, not, obsolete, or, paginateDocuments, pickDocuments, pubsub, queued, randomString, rate, resolveDocuments, retry, router, schedule, set, singlerun, singleshot, singletick, sleep, split, str, throttle, timeout, truely, trycatch, ttl, typo, waitForNext };
