@@ -271,7 +271,7 @@ functools-kit is used as a core dependency in:
 
 ## 🧪 Test Coverage
 
-The library ships with **515 tests** covering both correctness and async exception propagation.
+The library ships with **761 tests** covering both correctness and async exception propagation.
 
 ### Spec tests — functional correctness
 
@@ -306,6 +306,69 @@ The library ships with **515 tests** covering both correctness and async excepti
 | `trycatch` | sync/async throw and fallback |
 | `ttl` | time-to-live expiry |
 | `waitForNext` | condition match, timeout, no-delay |
+
+### Spec tests — math utilities
+
+| Module | Tests | What is verified |
+|---|---|---|
+| `and` / `or` / `not` | 21 | sync values, numeric coercion, async Promise paths, rejection propagation |
+| `match` | 9 | condition/run/not as values and functions, async promises, rejection |
+| `first` / `last` | 10 | normal arrays, single element, null/undefined input, empty array |
+| `has` | 10 | Array, Set, Map, scalar, null, multi-value any-match |
+| `join` | 5 | dedup, null filter, nested flatten, single items, string dedup |
+| `split` | 6 | underscore/dash/space separators, lowercase, no-separator passthrough |
+| `str` | 9 | space/newline/comma/dot/semicolon/table/space variants, null filter |
+| `truely` | 5 | null removal, all-non-null, all-null, empty, object identity |
+
+### Spec tests — utility functions
+
+| Module | Tests | What is verified |
+|---|---|---|
+| `compareArray` | 7 | equal/unequal, length mismatch, strings, booleans, empty, non-array |
+| `compareFulltext` | 6 | key match, no match, multi-word, partial, multi-key, empty search |
+| `compose` | 4 | two/three functions, zero functions (identity), single function |
+| `create` | 3 | nested path creation, no overwrite, array path |
+| `createAwaiter` | 3 | resolve, reject, chained promise |
+| `deepClone` | 4 | independence, primitives, shallow arrays, nested objects |
+| `deepCompare` | 6 | flat equal/unequal, key count, nested equal/unequal, same reference |
+| `deepFlat` | 4 | child chain, fields array, flat list, empty |
+| `deepMerge` | 5 | flat, nested, override, array replace, no sources |
+| `errorData` | 3 | Error properties, null, plain object |
+| `formatText` | 5 | phone template, no template, no raw, allowed regex, replace fn |
+| `get` | 4 | dot path, array path, missing path, top-level |
+| `getErrorMessage` | 7 | Error, string, message, error.message, data.message, null, undefined |
+| `isEmpty` | 3 | empty object, non-empty, symbol key |
+| `isObject` | 5 | plain object, class instance, array, null, primitive |
+| `isUndefined` | 4 | undefined, null, 0, empty string |
+| `randomString` | 3 | non-empty, uniqueness, UUID-like format |
+| `set` | 4 | nested value, top-level, array path, invalid path returns false |
+| `sleep` | 2 | timing, void resolve |
+| `typo` | 6 | thinsp, nbsp, emdash, endash, bullet, terminator |
+
+### Spec tests — helpers
+
+| Class | Tests | What is verified |
+|---|---|---|
+| `LimitedMap` | 6 | get/set, LRU eviction at max size, no evict under limit, overwrite, default size 20, delete |
+| `LimitedSet` | 6 | add/has, LRU eviction, no evict under limit, duplicate no-op, default size 20, delete |
+| `Lock` | 4 | acquire/release, serialized sections, extra release throws, re-acquirable |
+| `SortedArray` | 9 | descending order, pop by reference, pop missing, take with minScore, minScore filter, default Infinity, getEntries, length, for-of, equal scores |
+| `ToolRegistry` | 9 | register/get, duplicate register throws, get unregistered throws, override merges, override new registers, override non-object replaces, init calls init(), init skips missing, immutability |
+
+### Spec tests — API functions
+
+| Function | Tests | What is verified |
+|---|---|---|
+| `resolveDocuments` | 3 | array chunks, single items, empty |
+| `distinctDocuments` | 4 | dedup by id, custom getId, array chunks, all unique |
+| `filterDocuments` | 4 | sync predicate, async predicate, array chunks, none pass |
+| `mapDocuments` | 3 | sync transform, async transform, array chunks |
+| `pickDocuments` | 4 | limit/offset, offset skip, done flag, incremental chunks |
+| `paginateDocuments` | 4 | limit/offset, first page, offset beyond data, chunked generator |
+| `iterateList` | 3 | yields items, async map, empty |
+| `iteratePromise` | 2 | yields from promise, empty |
+| `iterateUnion` | 4 | merge + dedup, limit, offset, custom getId |
+| `iterateDocuments` | 4 | paginate until partial, stop at totalDocuments, lastId threading, throws on response > limit |
 
 ### E2E tests — async exception propagation
 
