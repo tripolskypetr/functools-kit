@@ -5,7 +5,7 @@ const join = <T = string>(...arr: (T | T[] | null)[] | (T | T[] | null)[][]): T[
             return join(item as T[]);
         }
         return item;
-    }).filter(Boolean) as T[];
+    }).filter((v) => typeof v === "string" || !!v) as T[];
 };
 
 /**
