@@ -36,6 +36,20 @@ test("singleshot: clear allows re-run", (t) => {
     }
 });
 
+test("singleshot: rejected promise resets hasRunned and allows retry", async (t) => {
+    let calls = 0;
+    const fn = singleshot(async () => { calls++; if (calls === 1) throw new Error("fail"); return 42; });
+    try { await fn(); } catch (_) {}
+    await new Promise((r) => setTimeout(r, 0));
+    let result;
+    try { result = await fn(); } catch (_) {}
+    if (result === 42 && calls === 2) {
+        t.pass();
+    } else {
+        t.fail(`calls=${calls} result=${result}`);
+    }
+});
+
 test("singleshot: hasValue reflects state", (t) => {
     const fn = singleshot(() => 1);
     if (fn.hasValue() !== false) { t.fail("should be false before run"); return; }

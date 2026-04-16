@@ -71,7 +71,14 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
         if (currentTtl - ttl > targetTimeout) {
             wrappedFn.clear(k as string);
             timeoutOverride.delete(k);
-            return wrappedFn(...args).value;
+            const value = wrappedFn(...args).value;
+            if (value instanceof Promise) {
+                value.catch(() => executeFn.clear(k));
+            }
+            return value;
+        }
+        if (value instanceof Promise) {
+            value.catch(() => executeFn.clear(k));
         }
         return value;
     };

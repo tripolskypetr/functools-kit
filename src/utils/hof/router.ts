@@ -1,3 +1,4 @@
+
 /**
  * Interface for objects that can be cleared by key.
  * @template K - The type of the key.
@@ -75,6 +76,10 @@ export const router = <T extends (...args: any[]) => any, K = string>(
                 lastArgs: args,
                 lastValue: value,
             });
+            // @ts-ignore
+            if (value instanceof Promise) {
+                value.catch(() => cacheMap.delete(k));
+            }
             return value;
         }
 
@@ -86,6 +91,10 @@ export const router = <T extends (...args: any[]) => any, K = string>(
         // Arguments changed, re-execute
         entry.lastArgs = args;
         entry.lastValue = run(...args);
+        // @ts-ignore
+        if (entry.lastValue instanceof Promise) {
+            entry.lastValue.catch(() => cacheMap.delete(k));
+        }
         return entry.lastValue;
     };
 

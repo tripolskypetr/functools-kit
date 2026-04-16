@@ -1,3 +1,4 @@
+
 /**
  * Interface representing a clearable object.
  * @template K - The type of the key.
@@ -136,6 +137,10 @@ export const memoize = <T extends (...args: any[]) => any, K = string>(key: (arg
             const ref = { current: undefined };
             valueMap.set(k, ref as unknown as IRefMemoize<ReturnType<T>>);
             value = ref.current = run(...args);
+            // @ts-ignore
+            if (value instanceof Promise) {
+                value.catch(() => clear(k));
+            }
         }
         return value;
     };

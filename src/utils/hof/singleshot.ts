@@ -28,6 +28,10 @@ export const singleshot = <T extends (...args: any[]) => any>(run: T): T & ISing
         if (!hasRunned) {
             hasRunned = true;
             result = run(...args);
+            // @ts-ignore
+            if (result instanceof Promise) {
+                result.catch(() => { hasRunned = false; });
+            }
         }
         return result;
     };

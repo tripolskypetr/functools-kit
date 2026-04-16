@@ -1,3 +1,4 @@
+
 /**
  * Interface for objects that can be cleared.
  *
@@ -29,6 +30,7 @@ export const cached = <T extends (...args: any[]) => any>(changed: (prevArgs: Pa
      */
     const clear = () => {
         lastArgs = null;
+        initial = true;
     };
 
     /**
@@ -45,7 +47,12 @@ export const cached = <T extends (...args: any[]) => any>(changed: (prevArgs: Pa
         }
         lastArgs = args;
         initial = false;
-        return lastValue = run(...args);
+        lastValue = run(...args);
+        // @ts-ignore
+        if (lastValue instanceof Promise) {
+            lastValue.catch(() => clear());
+        }
+        return lastValue;
     };
 
     executeFn.clear = clear;

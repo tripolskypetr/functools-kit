@@ -81,6 +81,43 @@ test("router: clear by key removes that key only", (t) => {
     }
 });
 
+test("router: rejected promise on first call clears cache and allows retry", async (t) => {
+    let calls = 0;
+    const fn = router(
+        ([id]) => id,
+        ([, a], [, b]) => a !== b,
+        async (id, val) => { calls++; if (calls === 1) throw new Error("fail"); return val * 2; }
+    );
+    try { await fn(1, 5); } catch (_) {}
+    await new Promise((r) => setTimeout(r, 0));
+    let result;
+    try { result = await fn(1, 5); } catch (_) {}
+    if (result === 10 && calls === 2) {
+        t.pass();
+    } else {
+        t.fail(`calls=${calls} result=${result}`);
+    }
+});
+
+test("router: rejected promise on changed args clears cache and allows retry", async (t) => {
+    let calls = 0;
+    const fn = router(
+        ([id]) => id,
+        ([, a], [, b]) => a !== b,
+        async (id, val) => { calls++; if (calls === 2) throw new Error("fail"); return val * 2; }
+    );
+    try { await fn(1, 5); } catch (_) {}
+    try { await fn(1, 7); } catch (_) {}
+    await new Promise((r) => setTimeout(r, 0));
+    let result;
+    try { result = await fn(1, 7); } catch (_) {}
+    if (result === 14 && calls === 3) {
+        t.pass();
+    } else {
+        t.fail(`calls=${calls} result=${result}`);
+    }
+});
+
 test("router: clear all resets all keys", (t) => {
     let calls = 0;
     const fn = router(

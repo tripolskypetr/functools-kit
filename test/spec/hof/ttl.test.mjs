@@ -52,6 +52,20 @@ test("ttl: gc removes expired entries", async (t) => {
     }
 });
 
+test("ttl: rejected promise clears cache and allows retry", async (t) => {
+    let calls = 0;
+    const fn = ttl(async (x) => { calls++; if (calls === 1) throw new Error("fail"); return x * 2; }, { key: ([x]) => x, timeout: 5000 });
+    try { await fn(3); } catch (_) {}
+    await new Promise((r) => setTimeout(r, 0));
+    let result;
+    try { result = await fn(3); } catch (_) {}
+    if (result === 6 && calls === 2) {
+        t.pass();
+    } else {
+        t.fail(`calls=${calls} result=${result}`);
+    }
+});
+
 test("ttl: setTimeout overrides timeout for a key", async (t) => {
     let calls = 0;
     const fn = ttl((x) => { calls++; return x; }, { key: ([x]) => x, timeout: 5000 });

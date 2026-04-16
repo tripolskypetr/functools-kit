@@ -50,6 +50,20 @@ test("memoize: clear by key removes only that key", (t) => {
     }
 });
 
+test("memoize: rejected promise clears cache and allows retry", async (t) => {
+    let calls = 0;
+    const fn = memoize(([x]) => x, async (x) => { calls++; if (calls === 1) throw new Error("fail"); return x * 2; });
+    try { await fn(3); } catch (_) {}
+    await new Promise((r) => setTimeout(r, 0));
+    let result;
+    try { result = await fn(3); } catch (_) {}
+    if (result === 6 && calls === 2) {
+        t.pass();
+    } else {
+        t.fail(`calls=${calls} result=${result}`);
+    }
+});
+
 test("memoize: has/get/add/remove/values/keys", (t) => {
     const fn = memoize(([x]) => x, (x) => x * 10);
     fn(1); fn(2);
