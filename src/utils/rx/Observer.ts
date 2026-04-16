@@ -146,7 +146,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const handler = async (value: Data): Promise<void> => {
             try {
                 const raw = callbackfn(value) as any;
-                const pendingValue: T = raw instanceof Promise ? await raw : raw;
+                const pendingValue: T = raw && raw instanceof Promise ? await raw : raw;
                 await observer.emit(pendingValue);
             } catch (e) {
                 observer.emitError(e);
@@ -227,7 +227,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const handler = async (value: Data): Promise<void> => {
             try {
                 const raw = callbackfn(acm, value) as any;
-                const pendingValue: T = raw instanceof Promise ? await raw : raw;
+                const pendingValue: T = raw && raw instanceof Promise ? await raw : raw;
                 acm = pendingValue;
                 await observer.emit(pendingValue);
             } catch (e) {
@@ -331,7 +331,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const handler = async (value: Data): Promise<void> => {
             try {
                 const raw = callbackfn(value) as any;
-                const delegate: boolean = raw instanceof Promise ? await raw : raw;
+                const delegate: boolean = raw && raw instanceof Promise ? await raw : raw;
                 if (delegate) await observer.emit(value);
             } catch (e) {
                 observer.emitError(e);
@@ -359,7 +359,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const handler = async (value: Data): Promise<void> => {
             try {
                 const r = callbackfn(value) as any;
-                if (r instanceof Promise) await r;
+                if (r && r instanceof Promise) await r;
                 await observer.emit(value);
             } catch (e) {
                 observer.emitError(e);
@@ -398,7 +398,7 @@ export class Observer<Data = any> implements TObserver<Data> {
                 prevAwaiter = null;
                 if (token !== current) { awaiter.resolve(undefined as any); return; }
                 const result = observer.emit(value) as any;
-                if (result instanceof Promise) {
+                if (result && result instanceof Promise) {
                     result.then(awaiter.resolve, awaiter.reject);
                 } else {
                     awaiter.resolve(result);
@@ -464,7 +464,7 @@ export class Observer<Data = any> implements TObserver<Data> {
         const handler = async (value: Data) => {
             try {
                 const r = callbackfn(value) as any;
-                if (r instanceof Promise) await r;
+                if (r && r instanceof Promise) await r;
             } catch (e) {
                 this.emitError(e);
                 throw e;
@@ -492,7 +492,7 @@ export class Observer<Data = any> implements TObserver<Data> {
             fired = true;
             unsubscribeRef();
             const r = callbackfn(value) as any;
-            if (r instanceof Promise) await r;
+            if (r && r instanceof Promise) await r;
         };
         unsubscribeRef = this.connect(handler);
         if (fired) unsubscribeRef();

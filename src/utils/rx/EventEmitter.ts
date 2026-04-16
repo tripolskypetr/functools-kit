@@ -73,9 +73,7 @@ export class EventEmitter {
     public once(eventName: EventKey, callback: Function) {
         const subscriber = (...args: any[]) => {
             this.unsubscribe(eventName, subscriber);
-            const result = callback(...args) as any;
-            if (result instanceof Promise) return result;
-            return result;
+            return callback(...args);
         };
         this.subscribe(eventName, subscriber);
         return () => {
@@ -94,7 +92,7 @@ export class EventEmitter {
         const event = [...this._events && this._events[eventName] || []];
         for (let i = 0; i !== event.length; i++) {
             const result = event[i](...args) as any;
-            if (result instanceof Promise) await result;
+            if (result && result instanceof Promise) await result;
         }
     };
 
