@@ -3,9 +3,10 @@
  * @interface ISingleshotClearable
  * @description An interface representing an object that can be cleared.
  */
-export interface ISingleshotClearable {
+export interface ISingleshotClearable<T extends (...args: any[]) => any> {
     clear: () => void;
     hasValue: () => boolean;
+    setValue: (value: ReturnType<T>) => void;
 }
 
 /**
@@ -15,7 +16,7 @@ export interface ISingleshotClearable {
  * @param run - The function to be executed once.
  * @returns - The executed function with additional "clear" method to reset the execution state.
  */
-export const singleshot = <T extends (...args: any[]) => any>(run: T): T & ISingleshotClearable => {
+export const singleshot = <T extends (...args: any[]) => any>(run: T): T & ISingleshotClearable<T> => {
     let hasRunned = false;
     let result: ReturnType<T> = null as never;
     /**
@@ -51,7 +52,18 @@ export const singleshot = <T extends (...args: any[]) => any>(run: T): T & ISing
      * @returns - True if the function has been executed, false otherwise.
      */
     fn.hasValue = () => hasRunned;
-    return fn as T & ISingleshotClearable;
+
+    /**
+     * Sets the value of the function's result and marks it as executed.
+     *
+     * @param value - The value to be set as the function's result.
+     */
+    fn.setValue = (value: ReturnType<T>) => {
+        hasRunned = true;
+        result = value;
+    };
+
+    return fn as T & ISingleshotClearable<T>;
 };
 
 export default singleshot;

@@ -665,9 +665,10 @@ declare const getErrorMessage: (error: any) => string;
  * @interface ISingleshotClearable
  * @description An interface representing an object that can be cleared.
  */
-interface ISingleshotClearable {
+interface ISingleshotClearable<T extends (...args: any[]) => any> {
     clear: () => void;
     hasValue: () => boolean;
+    setValue: (value: ReturnType<T>) => void;
 }
 /**
  * Creates a function that is only executed once, and then memoizes and returns the result.
@@ -676,7 +677,7 @@ interface ISingleshotClearable {
  * @param run - The function to be executed once.
  * @returns - The executed function with additional "clear" method to reset the execution state.
  */
-declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & ISingleshotClearable;
+declare const singleshot: <T extends (...args: any[]) => any>(run: T) => T & ISingleshotClearable<T>;
 
 /**
  * Interface for classes that can be cleared.
