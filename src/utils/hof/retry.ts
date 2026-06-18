@@ -1,4 +1,3 @@
-import queued, { CANCELED_PROMISE_SYMBOL } from "./queued";
 import sleep from '../sleep';
 
 /**
@@ -7,9 +6,7 @@ import sleep from '../sleep';
  * @template P - The type of the function's arguments.
  */
 export interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_PROMISE_SYMBOL>;
-    cancel(): void;
-    clear(): void;
+    (...args: P): Promise<T>;
 };
 
 /**
@@ -20,8 +17,8 @@ export interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
  * @returns - The wrapped function that can be canceled.
  */
 export const retry = <T extends any = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count = 5, delay = 1_000, condition = (error: Error) => true): IWrappedRetryFn<T, P> => {
-    const wrappedFn = queued(async (...args: any) => {
-        let total = count;        
+    const wrappedFn = async (...args: any) => {
+        let total = count;
         /**
          * Calls the function `run` repeatedly until it successfully completes or `total` reattempts have been made.
          *
@@ -44,7 +41,7 @@ export const retry = <T extends any = any, P extends any[] = any[]>(run: (...arg
             }
         };
         return await call();
-    });
+    };
     return wrappedFn as unknown as IWrappedRetryFn<T, P>;
 };
 

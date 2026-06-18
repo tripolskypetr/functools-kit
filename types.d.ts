@@ -834,9 +834,7 @@ declare const execpool: <T extends unknown = any, P extends any[] = any[]>(run: 
  * @template P - The type of the function's arguments.
  */
 interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
-    (...args: P): Promise<T | typeof CANCELED_PROMISE_SYMBOL>;
-    cancel(): void;
-    clear(): void;
+    (...args: P): Promise<T>;
 }
 /**
  * Retries a function multiple times until it succeeds or reaches the maximum number of retries.
