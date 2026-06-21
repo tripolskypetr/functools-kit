@@ -1965,7 +1965,7 @@ type TRequest<Data extends object = {}, Payload extends object | undefined = und
     clientId: string;
     userId: string;
     requestId: string;
-    token: string;
+    token?: string;
     data: Data;
     payload?: Payload;
 } : {
@@ -1973,7 +1973,7 @@ type TRequest<Data extends object = {}, Payload extends object | undefined = und
     clientId: string;
     userId: string;
     requestId: string;
-    token: string;
+    token?: string;
     data: Data;
     payload: Payload;
 };

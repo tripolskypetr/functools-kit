@@ -5,7 +5,7 @@ export type TRequest<Data extends object = {}, Payload extends object | undefine
             clientId: string;
             userId: string;
             requestId: string;
-            token: string;
+            token?: string;
             data: Data;
             payload?: Payload;
         }
@@ -14,7 +14,7 @@ export type TRequest<Data extends object = {}, Payload extends object | undefine
             clientId: string;
             userId: string;
             requestId: string;
-            token: string;
+            token?: string;
             data: Data;
             payload: Payload;
         };
