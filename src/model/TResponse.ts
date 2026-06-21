@@ -16,6 +16,7 @@ export type TResponse<Data extends object | null = {}, Payload extends object | 
             userId: string;
             requestId: string;
             error: string;
+            errorCode?: string;
             payload?: Payload;
           }
     : {
@@ -34,6 +35,7 @@ export type TResponse<Data extends object | null = {}, Payload extends object | 
             userId: string;
             requestId: string;
             error: string;
+            errorCode?: string;
             payload: Payload;
           };
 

@@ -1993,6 +1993,7 @@ type TResponse<Data extends object | null = {}, Payload extends object | undefin
     userId: string;
     requestId: string;
     error: string;
+    errorCode?: string;
     payload?: Payload;
 } : {
     status: "ok";
@@ -2009,6 +2010,7 @@ type TResponse<Data extends object | null = {}, Payload extends object | undefin
     userId: string;
     requestId: string;
     error: string;
+    errorCode?: string;
     payload: Payload;
 };
 
