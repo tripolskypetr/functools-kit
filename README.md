@@ -271,7 +271,7 @@ functools-kit is used as a core dependency in:
 
 ## 🧪 Test Coverage
 
-The library ships with **794 tests** covering correctness, async exception propagation, and subscription-lifecycle (leak) safety.
+The library ships with **802 tests** covering correctness, async exception propagation, and subscription-lifecycle (leak) safety.
 
 ### Spec tests — functional correctness
 
@@ -366,7 +366,7 @@ Assert the **exact number of subscribers**, not just the boolean `hasListeners`.
 |---|---|---|
 | `LimitedMap` | 6 | get/set, LRU eviction at max size, no evict under limit, overwrite, default size 20, delete |
 | `LimitedSet` | 6 | add/has, LRU eviction, no evict under limit, duplicate no-op, default size 20, delete |
-| `Lock` | 4 | acquire/release, serialized sections, extra release throws, re-acquirable |
+| `Lock` | 12 | acquire/release, serialized sections, extra release throws, re-acquirable; event-driven wake-up: FIFO waiter order, prompt (non-polling) wake-up, no leaked `_tick` subscribers (idle / parked / drained), mutual exclusion under 50 concurrent acquirers, no interleaving across awaits |
 | `SortedArray` | 9 | descending order, pop by reference, pop missing, take with minScore, minScore filter, default Infinity, getEntries, length, for-of, equal scores |
 | `ToolRegistry` | 9 | register/get, duplicate register throws, get unregistered throws, override merges, override new registers, override non-object replaces, init calls init(), init skips missing, immutability |
 

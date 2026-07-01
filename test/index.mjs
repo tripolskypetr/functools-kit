@@ -5,6 +5,7 @@ import { run } from 'worker-testbed';
 import "./spec/math/math.test.mjs";
 import "./spec/utils/utils.test.mjs";
 import "./spec/helpers/helpers.test.mjs";
+import "./spec/helpers/lock.test.mjs";
 import "./spec/api/api.test.mjs";
 
 import "./e2e/rx/subject-throw.test.mjs";

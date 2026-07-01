@@ -2065,14 +2065,15 @@ declare const RELEASE_LOCK_SYMBOL: unique symbol;
 /**
  * Mutual exclusion primitive for async TypeScript code.
  *
- * Provides a reentrant-safe, queued lock that serializes access to a critical
- * section across concurrent async callers. Internally tracks a busy counter so
- * nested acquire/release pairs are detected and mis-matched releases throw
- * immediately.
+ * Provides a queued lock that serializes access to a critical section across
+ * concurrent async callers. Wake-ups are event-driven (via an internal
+ * `_tick` subject emitted on every `releaseLock`) rather than polling,
+ * so contention does not incur a fixed delay.
  *
- * Three usage styles are supported:
+ * The busy counter detects mis-matched releases and throws immediately on
+ * extra `releaseLock` calls.
  *
- * **Manual acquire / release**
+ * **Usage**
  * ```ts
  * await lock.acquireLock();
  * try {
@@ -2086,7 +2087,18 @@ declare const RELEASE_LOCK_SYMBOL: unique symbol;
  * @see {@link releaseLock}
  */
 declare class Lock {
+    /**
+     * Outstanding acquires that have not yet been released.
+     * Incremented in `[SET_BUSY_SYMBOL](true)`, decremented in `[SET_BUSY_SYMBOL](false)`.
+     * A negative value indicates an extra `releaseLock` and throws on detection.
+     */
     private _isBusy;
+    /**
+     * Wake-up channel for {@link ACQUIRE_LOCK_FN}.
+     * Every {@link releaseLock} emits a single tick that unblocks the next
+     * queued acquirer parked on `toPromise()`.
+     */
+    private _tick;
     [SET_BUSY_SYMBOL](isBusy: boolean): void;
     [GET_BUSY_SYMBOL](): boolean;
     [ACQUIRE_LOCK_SYMBOL]: IWrappedQueuedFn<void, [self: Lock]>;
@@ -2107,10 +2119,12 @@ declare class Lock {
      */
     acquireLock: () => Promise<void>;
     /**
-     * Releases the lock previously acquired with {@link acquireLock}.
+     * Releases the lock previously acquired with {@link acquireLock} and emits
+     * on the internal `_tick` subject to wake the next queued acquirer.
+     *
      * Must be called exactly once per successful {@link acquireLock} call,
-     * typically inside a `finally` block. Throws if called more times
-     * than the lock was acquired.
+     * typically inside a `finally` block. Throws if called more times than
+     * the lock was acquired.
      *
      * @returns {Promise<void>} Resolves once the lock has been released.
      * @throws {Error} If the lock is released more times than it was acquired.
