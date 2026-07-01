@@ -1,5 +1,3 @@
-import isEmpty from "../isEmpty";
-
 type EventKey = string | symbol;
 type Function = (...args: any[]) => void;
 
@@ -17,7 +15,12 @@ export class EventEmitter {
      * @return True if the object has listeners, false otherwise.
      */
     get hasListeners() {
-        return !isEmpty(this._events);
+        for (const key of Reflect.ownKeys(this._events)) {
+            if (this._events[key as EventKey].length !== 0) {
+                return true;
+            }
+        }
+        return false;
     };
 
     /**
@@ -50,7 +53,9 @@ export class EventEmitter {
      * @returns
      */
     public unsubscribe(eventName: EventKey, callback: Function) {
-        !this._events[eventName] && (this._events[eventName] = []);
+        if (!this._events[eventName]) {
+            return;
+        }
         this._events[eventName] = this._events[eventName].filter(eventCallback => callback !== eventCallback);
     };
 

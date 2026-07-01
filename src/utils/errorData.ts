@@ -14,6 +14,12 @@ export const errorData = (error: any) => {
         const descriptor = Object.getOwnPropertyDescriptor(error, property) || {};
         if ('value' in descriptor) {
             result[property] = descriptor.value;
+        } else if (typeof descriptor.get === 'function') {
+            try {
+                result[property] = descriptor.get.call(error);
+            } catch {
+                void 0;
+            }
         }
     })
     return result;

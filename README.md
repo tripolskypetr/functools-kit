@@ -271,13 +271,13 @@ functools-kit is used as a core dependency in:
 
 ## 🧪 Test Coverage
 
-The library ships with **761 tests** covering both correctness and async exception propagation.
+The library ships with **794 tests** covering correctness, async exception propagation, and subscription-lifecycle (leak) safety.
 
 ### Spec tests — functional correctness
 
 | Module | Tests |
 |---|---|
-| `EventEmitter` | subscribe/unsubscribe, once, emit order, hasListeners |
+| `EventEmitter` | subscribe/unsubscribe, once, emit order, hasListeners returns false after last unsubscribe, getListeners count, unsubscribe of unknown key is a no-op |
 | `Observer` | map, filter, tap, reduce, flatMap, split, mapAsync, merge, once, toPromise, debounce, delay, repeat, connect/unsubscribe |
 | `Subject` | next, subscribe, unsubscribeAll, once, map, filter, toObserver, toPromise |
 | `BehaviorSubject` | initial value replay, late subscriber, subscribe vs toObserver |
@@ -307,6 +307,21 @@ The library ships with **761 tests** covering both correctness and async excepti
 | `ttl` | time-to-live expiry |
 | `waitForNext` | condition match, timeout, no-delay |
 
+### Spec tests — subscription lifecycle (leak safety)
+
+Assert the **exact number of subscribers**, not just the boolean `hasListeners`. The root count is read from the subject's internal emitter (catches every subscription, including raw `subscribe()` and `BehaviorSubject` replay); intermediate operator links are checked on each `Observer`'s data channel, so a chain that tears down its outer link but leaks an inner one is caught.
+
+| Suite | What is verified |
+|---|---|
+| `EventEmitter` counts | `getListeners(key).length` grows/shrinks with sub/unsub; `hasListeners` false after last unsubscribe; unsubscribe of unknown key registers nothing; `once` holds exactly one listener, gone after emit |
+| Root subscriber count | Fresh subject is 0; `filter→map→once` returns to 0 after its single fire; `connect`/`toObserver`/`once` + unsub → 0; raw `subscribe()` is an emitter listener but not a root Observer; `unsubscribeAll` → 0 |
+| Multiple subscribers | N chains → count is exactly N; unsub decrements one at a time down to 0; independent chains unsubscribe without touching each other |
+| Operator chains — root | A whole `distinct→skip→take` chain is exactly **1** root subscription → 0 on unsub; `take(2)` stays subscribed after exhaustion (manual unsub required) |
+| Operator chains — every link | `distinct→skip→take`, `filter→map→tap`, `group→map` — each intermediate `Observer` link is 1 while live and **0 after unsub**; rebuilding a chain repeatedly never accumulates subs |
+| `merge` | Both upstream subjects and the intermediate arm link are 1 while live; a single unsub drops **all** of them (and both roots) to 0; no delivery after unsub |
+| `BehaviorSubject` | The replay `connect` is a real root listener (1 → 0 on unsub) |
+| `toPromise` / `toIteratorContext` | Internal subscriptions self-clean: root returns to 0 after the promise resolves / after `done()` |
+
 ### Spec tests — math utilities
 
 | Module | Tests | What is verified |
@@ -333,7 +348,7 @@ The library ships with **761 tests** covering both correctness and async excepti
 | `deepCompare` | 6 | flat equal/unequal, key count, nested equal/unequal, same reference |
 | `deepFlat` | 4 | child chain, fields array, flat list, empty |
 | `deepMerge` | 5 | flat, nested, override, array replace, no sources |
-| `errorData` | 3 | Error properties, null, plain object |
+| `errorData` | 3 | Error data + accessor properties (message, stack), null, plain object |
 | `formatText` | 5 | phone template, no template, no raw, allowed regex, replace fn |
 | `get` | 4 | dot path, array path, missing path, top-level |
 | `getErrorMessage` | 7 | Error, string, message, error.message, data.message, null, undefined |
