@@ -83,7 +83,7 @@ test("scoped chain-throw: count → filter → map → toPromise, throw in final
     process.on("error", (reason) => { t.fail("unhandled error: " + reason); });
     const s = new Subject();
     const p = s.operator(Operator.count())
-               .filter(({ count }) => count >= 2)
+               .filter(({ count }) => count >= 3)
                .map(() => { throw new Error("streak-error"); })
                .toPromise();
     await s.next(20);
@@ -334,7 +334,7 @@ test("scoped chain-throw: map → distinct → count → filter → map → toPr
     const p = s.map(n => n.type)
                .operator(Operator.distinct())
                .operator(Operator.count())
-               .filter(({ count }) => count === 0)
+               .filter(({ count }) => count === 1)
                .map(() => { throw new Error("notif-error"); })
                .toPromise();
     s.next({ type: 'email' }).catch(() => {});

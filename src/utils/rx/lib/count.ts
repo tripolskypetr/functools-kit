@@ -8,7 +8,9 @@ export interface ICounted<T> {
 }
 
 /**
- * Counts the occurrences of each value emitted by the target observer.
+ * Counts consecutive occurrences of each value emitted by the target observer.
+ * The first occurrence of a value emits `count: 1`, each consecutive repeat
+ * increments the count; a different value resets the count back to 1.
  *
  * @template T - The type of values emitted by the target observer.
  * @param target - The target observer to count the occurrences for.
@@ -28,7 +30,7 @@ export const count = <T = any>() => (target: TObserver<T>): TObserver<ICounted<T
     }
     return {
       value: cur,
-      count: 0,
+      count: 1,
     };
   }, {
     value: NEVER_VALUE as never,

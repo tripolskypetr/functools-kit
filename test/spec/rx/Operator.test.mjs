@@ -121,7 +121,7 @@ test("Operator.count: counts consecutive equal values", async (t) => {
     unsub();
     const counts = results.map((r) => r.count);
     const values = results.map((r) => r.value);
-    const okCounts = JSON.stringify(counts) === JSON.stringify([0, 1, 2, 0]);
+    const okCounts = JSON.stringify(counts) === JSON.stringify([1, 2, 3, 1]);
     const okValues = JSON.stringify(values) === JSON.stringify([1, 1, 1, 2]);
     if (okCounts && okValues) {
         t.pass();

@@ -73,7 +73,7 @@ test("chain-throw: filter → pair → map → toPromise, throw in pair map prop
 test("chain-throw: count → filter → map → toPromise, throw in final map propagates", async (t) => {
     const s = new Subject();
     const p = s.operator(Operator.count())
-               .filter(({ count }) => count >= 2)
+               .filter(({ count }) => count >= 3)
                .map(() => { throw new Error("streak-error"); })
                .toPromise();
     await s.next(20);
@@ -298,7 +298,7 @@ test("chain-throw: map → distinct → count → filter → map → toPromise, 
     const p = s.map(n => n.type)
                .operator(Operator.distinct())
                .operator(Operator.count())
-               .filter(({ count }) => count === 0)
+               .filter(({ count }) => count === 1)
                .map(() => { throw new Error("notif-error"); })
                .toPromise();
     s.next({ type: 'email' }).catch(() => {});

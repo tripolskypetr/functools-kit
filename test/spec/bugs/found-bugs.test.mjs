@@ -19,6 +19,8 @@ import {
     retry,
     memoize,
     split,
+    Subject,
+    Operator,
     sleep,
 } from "../../../build/index.mjs";
 
@@ -388,4 +390,22 @@ test("regression: split: handles mixed separators in one string", (t) => {
     const result = split("a_b-c d");
     if (JSON.stringify(result) === '["a","b","c","d"]') t.pass();
     else t.fail(`got ${JSON.stringify(result)}`);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Operator.count (src/utils/rx/lib/count.ts)
+// Counting was zero-based: the first occurrence of a value emitted count: 0,
+// so "number of occurrences" was always off by one.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test("regression: Operator.count: first occurrence counts as 1", async (t) => {
+    const s = new Subject();
+    const results = [];
+    const unsub = s.toObserver().operator(Operator.count()).connect((v) => results.push(v.count));
+    await s.next("a");
+    await s.next("a");
+    await s.next("b");
+    unsub();
+    if (JSON.stringify(results) === "[1,2,1]") t.pass();
+    else t.fail(`expected [1,2,1], got ${JSON.stringify(results)}`);
 });

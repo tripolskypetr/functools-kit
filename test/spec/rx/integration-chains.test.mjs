@@ -86,12 +86,12 @@ test("integration: sensor stream — count consecutive equal readings, alert on 
         s
             .operator(Operator.count())
             .filter(({ count }) => count >= 2)
-            .map(({ value, count }) => `${value} repeated ${count + 1}x`),
+            .map(({ value, count }) => `${value} repeated ${count}x`),
         1
     );
     for (const v of [20, 20, 20, 25]) await s.next(v);
     const alerts = await p;
-    if (alerts[0] === '20 repeated 3x') t.pass();
+    if (alerts[0] === '20 repeated 2x') t.pass();
     else t.fail(`got ${alerts[0]}`);
 });
 
@@ -188,8 +188,8 @@ test("integration: analytics — map to category, distinct, count occurrences, t
         { type: 'purchase' }, { type: 'view' }, { type: 'exit' }
     ]) await s.next(e);
     const results = await p;
-    // distinct sequence: click,view,purchase,exit → counts 0,0,0,0
-    if (results.length === 4 && results.every(r => r.count === 0)) t.pass();
+    // distinct sequence: click,view,purchase,exit → counts 1,1,1,1
+    if (results.length === 4 && results.every(r => r.count === 1)) t.pass();
     else t.fail(`got ${JSON.stringify(results)}`);
 });
 
@@ -298,7 +298,7 @@ test("integration: notification dedup — map to key, distinct, count, filter st
         .map(n => n.type)
         .operator(Operator.distinct())
         .operator(Operator.count())
-        .filter(({ count }) => count === 0)  // first of each type
+        .filter(({ count }) => count === 1)  // first of each type
         .map(({ value }) => value)
         .toPromise();
     await s.next({ type: 'email' });
@@ -446,7 +446,7 @@ test("integration: feature flag rollout — filter eligible, async fetch config,
         { id: 5, tier: 'pro' },
     ]) await s.next(u);
     const results = await p;
-    if (results.map(r => r.count).join(',') === '0,0,0') t.pass();
+    if (results.map(r => r.count).join(',') === '1,1,1') t.pass();
     else t.fail(`got ${JSON.stringify(results.map(r => r.count))}`);
 });
 
@@ -557,8 +557,8 @@ test("integration: fromArray — distinct by parity, count, take 2", async (t) =
             .operator(Operator.take(2)),
         2
     );
-    // distinct by parity: 1(odd),2(even) → counts 0,0
-    if (results[0].count === 0 && results[1].count === 0) t.pass();
+    // distinct by parity: 1(odd),2(even) → counts 1,1
+    if (results[0].count === 1 && results[1].count === 1) t.pass();
     else t.fail(`got ${JSON.stringify(results)}`);
 });
 
