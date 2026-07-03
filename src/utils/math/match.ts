@@ -24,25 +24,25 @@ export const match = <A = Promise<Value>, T = Promise<Value>, E = false>({
     not?: E | (() => E);
 }): A | T | E => {
     const check = typeof condition === 'function' ? (condition as Function)() : condition;
-    const result = typeof run === 'function' ? (run as Function)() : run;
-    const fallback = typeof not === 'function' ? (not as Function) : not;
-    if (result instanceof Promise || check instanceof Promise || fallback instanceof Promise) {
+    const getRun = () => typeof run === 'function' ? (run as Function)() : run;
+    const getNot = () => typeof not === 'function' ? (not as Function)() : not;
+    if (check instanceof Promise) {
         return new Promise(async (res, rej) => {
             try {
                 if (await check) {
-                    res(await result);
+                    res(await getRun());
                     return;
                 }
-                res(await fallback);
+                res(await getNot());
             } catch (error) {
                 rej(error);
             }
         }) as unknown as T;
     }
     if (check) {
-        return result as unknown as T;
+        return getRun() as unknown as T;
     }
-    return fallback as unknown as T;
+    return getNot() as unknown as T;
 }
 
 export default match;

@@ -67,8 +67,7 @@ export class PubsubArrayAdapter<T = any> implements IPubsubArray<T> {
     shift = () => Promise.resolve(this._array.shift());
 
     getFirst(): Promise<T> {
-        const [first] = this._array;
-        return Promise.resolve(first || null);
+        return Promise.resolve(this._array.length ? this._array[0] : null);
     };
 
     clear = () => {

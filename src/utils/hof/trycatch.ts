@@ -26,12 +26,20 @@ export interface IControllTrycatch<DefaultValue = typeof CATCH_SYMBOL, Params ex
 const awaiter = async <V, D, Params extends unknown[] = any[]>(
     value: Promise<V>,
     params: Params,
-    { fallback, defaultValue }: IControllTrycatch<D>
+    { allowedErrors, fallback, defaultValue }: IControllTrycatch<D>
 ): Promise<V | D> => {
     try {
         return await value;
     } catch (error) {
         fallback && fallback(error as Error, ...params);
+        if (allowedErrors) {
+            for (const BaseError of allowedErrors) {
+                if (error instanceof BaseError) {
+                    return defaultValue;
+                }
+            }
+            throw error;
+        }
         return defaultValue;
     }
 };
@@ -68,7 +76,7 @@ export const trycatch = <
         try {
             const result = run(...args);
             if (result instanceof Promise) {
-                return awaiter<V, D>(result, args, { fallback, defaultValue });
+                return awaiter<V, D>(result, args, { allowedErrors, fallback, defaultValue });
             }
             return result;
         } catch (error) {

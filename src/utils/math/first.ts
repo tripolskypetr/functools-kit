@@ -7,8 +7,7 @@
  */
 export const first = <T = any>(arr: T[] | null | undefined): T | null => {
     if (Array.isArray(arr)) {
-        const [first] = arr;
-        return first || null;
+        return arr.length ? arr[0] : null;
     }
     return null;
 }

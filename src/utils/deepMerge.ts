@@ -15,7 +15,7 @@ export const deepMerge = (target: any, ...sources: any[]): any => {
             if (Array.isArray(source[key])) {
                 target[key] = source[key].slice(0);
             } else if (isObject(source[key])) {
-                if (!target[key]) Object.assign(target, { [key]: {} });
+                if (!isObject(target[key])) Object.assign(target, { [key]: {} });
                 deepMerge(target[key], source[key]);
             } else {
                 Object.assign(target, { [key]: source[key] });

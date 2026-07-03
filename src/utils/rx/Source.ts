@@ -310,7 +310,9 @@ export class Source {
         let unsubscribeRef: Function;
         const observer = new Observer<Data>(() => unsubscribeRef());
         observer[LISTEN_CONNECT](() => {
-            subject.data && observer.emit(subject.data);
+            if (subject.data !== null && subject.data !== undefined) {
+                observer.emit(subject.data);
+            }
         });
         unsubscribeRef = subject.subscribe(observer.emit);
         return observer;

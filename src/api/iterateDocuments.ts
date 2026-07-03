@@ -90,7 +90,7 @@ export const iterateDocuments = async function* <Data = IRowData>({
     if (response.length > limit) {
       throw new Error('functool-kit iterateDocuments response.length > limit');
     }
-    lastId = getId(response[response.length - 1]) || null;
+    lastId = getId(response[response.length - 1]) ?? null;
     counter += limit;
     /**
      * Represents the last query made by the user.
