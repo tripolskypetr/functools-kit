@@ -5,9 +5,9 @@ export class LimitedSet<T> extends Set<T> {
     }
 
     add(value: T) {
-        if (this.size >= this._maxSize) {
-            const lastElement = Array.from(this).shift();
-            this.delete(lastElement);
+        if (!this.has(value) && this.size >= this._maxSize) {
+            const oldestElement = this.values().next().value;
+            this.delete(oldestElement);
         }
         return super.add(value);
     }

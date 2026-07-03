@@ -71,10 +71,10 @@ export const rate = <T extends (...args: any[]) => any, K = string>(run: T, {
      * @returns
      */
     executeFn.gc = () => {
-        const valueMap: Map<K, IRef<{ ttl: number }>> = wrappedFn[GET_VALUE_MAP]();
+        const valueMap: Map<K, IRef<{ when: number }>> = wrappedFn[GET_VALUE_MAP]();
         for (const [key, item] of valueMap.entries()) {
             const currentRate = Date.now();
-            if (currentRate - item.current.ttl > delay) {
+            if (currentRate - item.current.when > delay) {
                 wrappedFn.clear(key);
             }
         }

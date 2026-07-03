@@ -44,13 +44,16 @@ export const throttle = <T extends (...args: any[]) => any>(run: T, delay = 1_00
 			lastExec = Date.now();
 			run(...args);
 		};
-		if (!timeoutID) {
-			exec();
-		}
 		clearExistingTimeout();
+		timeoutID = null;
 		if (elapsed > delay) {
 			exec();
+			return;
 		}
+		timeoutID = setTimeout(() => {
+			timeoutID = null;
+			exec();
+		}, delay - elapsed);
 	};
 	/**
 	 * Clears the wrapped function.
@@ -59,7 +62,10 @@ export const throttle = <T extends (...args: any[]) => any>(run: T, delay = 1_00
 	 * @memberof wrappedFn
 	 * @function clear
 	 */
-	wrappedFn.clear = clearExistingTimeout;
+	wrappedFn.clear = () => {
+		clearExistingTimeout();
+		timeoutID = null;
+	};
     return wrappedFn as T & IClearableThrottle;
 };
 

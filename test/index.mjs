@@ -7,6 +7,7 @@ import "./spec/utils/utils.test.mjs";
 import "./spec/helpers/helpers.test.mjs";
 import "./spec/helpers/lock.test.mjs";
 import "./spec/api/api.test.mjs";
+import "./spec/bugs/found-bugs.test.mjs";
 
 import "./e2e/rx/subject-throw.test.mjs";
 import "./e2e/rx/operator-throw.test.mjs";

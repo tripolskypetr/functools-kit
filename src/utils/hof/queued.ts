@@ -37,7 +37,7 @@ export const queued = <T extends any = any, P extends any[] = any[]>(promise: (.
         let isCanceled = false;
         const cancel: Function = () => { isCanceled = true };
         cancelFn = cancelFn ? compose(cancelFn, cancel) : cancel;
-        lastPromise = lastPromise
+        const currentPromise: Promise<any> = lastPromise
             .then(async () => {
                 if (!isCanceled) {
                     return await promise(...args)
@@ -45,10 +45,12 @@ export const queued = <T extends any = any, P extends any[] = any[]>(promise: (.
                 return CANCELED_PROMISE_SYMBOL;
             })
             .finally(() => {
-                wrappedFn.clear();
-                cancelFn = undefined;
+                if (lastPromise === currentPromise) {
+                    wrappedFn.clear();
+                }
             });
-        return lastPromise;
+        lastPromise = currentPromise;
+        return currentPromise;
     };
 
     /**

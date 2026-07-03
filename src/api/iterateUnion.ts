@@ -12,6 +12,7 @@ export const iterateUnion = <Data = IRowData>(iterators: AsyncGenerator<Data | D
                         continue;
                     }
                     if (offset > 0) {
+                        duplicateSet.add(id);
                         offset -= 1;
                         continue;
                     }
