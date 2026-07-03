@@ -114,7 +114,7 @@ export const memoize = <T extends (...args: any[]) => any, K = string>(key: (arg
      * @returns
      */
     const clear = (key?: K) => {
-        if (key) {
+        if (key !== undefined) {
             valueMap.delete(key);
             return;
         }
@@ -132,15 +132,16 @@ export const memoize = <T extends (...args: any[]) => any, K = string>(key: (arg
      */
     const executeFn: Function & IClearableMemoize<any> & IControlMemoize<K, ReturnType<T>> = (...args: Parameters<T>) => {
         const k = key(args);
-        let value = valueMap.get(k)?.current;
-        if (value === undefined) {
-            const ref = { current: undefined };
-            valueMap.set(k, ref as unknown as IRefMemoize<ReturnType<T>>);
-            value = ref.current = run(...args);
-            // @ts-ignore
-            if (value instanceof Promise) {
-                value.catch(() => clear(k));
-            }
+        const existingRef = valueMap.get(k);
+        if (existingRef) {
+            return existingRef.current;
+        }
+        const ref = { current: undefined };
+        valueMap.set(k, ref as unknown as IRefMemoize<ReturnType<T>>);
+        const value = ref.current = run(...args);
+        // @ts-ignore
+        if (value instanceof Promise) {
+            value.catch(() => clear(k));
         }
         return value;
     };

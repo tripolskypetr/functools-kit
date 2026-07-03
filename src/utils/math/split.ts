@@ -7,13 +7,10 @@ export const split = (
 ): string[] => {
   return join(...arr)
     .flatMap((c) => c)
-    .flatMap((c) => {
-      const separator = SPLIT_CHARS.find((s) => c.includes(s));
-      if (separator) {
-        return c.split(separator).map((c) => c.toLowerCase());
-      }
-      return c.toLowerCase();
-    });
+    .flatMap((c) => SPLIT_CHARS.reduce<string[]>(
+      (parts, separator) => parts.flatMap((part) => part.split(separator)),
+      [c],
+    ).map((part) => part.toLowerCase()));
 };
 
 export default split;

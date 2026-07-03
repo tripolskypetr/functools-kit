@@ -33,10 +33,10 @@ export const retry = <T extends any = any, P extends any[] = any[]>(run: (...arg
                 if (!condition(error)) {
                     throw error;
                 }
-                await sleep(delay);
-                if (--total === 0) {
+                if (--total <= 0) {
                     throw error;
                 }
+                await sleep(delay);
                 return await call();
             }
         };

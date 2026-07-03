@@ -177,6 +177,7 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
             const awaiter = awaiterMap.get(id);
             if (!awaiter) {
                 console.error("functools-kit pubsub missing awaiter", { id, data });
+                await queue.shift();
                 continue;
             }
             let success = false;

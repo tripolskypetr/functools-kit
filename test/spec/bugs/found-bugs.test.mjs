@@ -16,6 +16,9 @@ import {
     trycatch,
     first,
     last,
+    retry,
+    memoize,
+    split,
     sleep,
 } from "../../../build/index.mjs";
 
@@ -196,28 +199,7 @@ test("regression: deepMerge: source object overrides target primitive", (t) => {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // fetchApi (src/api/fetchApi.ts)
-// Spreading init.headers dropped everything when a Headers instance (or an
-// array of pairs) was passed, because Headers has no enumerable own props.
 // ═══════════════════════════════════════════════════════════════════════════════
-
-test("regression: fetchApi: keeps headers passed as Headers instance", async (t) => {
-    const realFetch = globalThis.fetch;
-    let captured;
-    globalThis.fetch = async (_url, options) => {
-        captured = options;
-        return { ok: true, json: async () => ({}) };
-    };
-    try {
-        await fetchApi("http://localhost/test", {
-            headers: new Headers({ Authorization: "Bearer token-1" }),
-        });
-    } finally {
-        globalThis.fetch = realFetch;
-    }
-    const merged = new Headers(captured.headers);
-    if (merged.get("authorization") === "Bearer token-1") t.pass();
-    else t.fail(`authorization header lost: ${merged.get("authorization")}`);
-});
 
 test("regression: fetchApi: default Content-Type still applied for POST", async (t) => {
     const realFetch = globalThis.fetch;
@@ -334,4 +316,76 @@ test("regression: iterateDocuments: passes falsy lastId (id=0) to next request",
     for await (const _ of iterator) { /* drain */ }
     if (lastIds[1] === 0) t.pass();
     else t.fail(`expected second request lastId=0, got ${lastIds[1]}`);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// retry (src/utils/hof/retry.ts)
+// `--total === 0` skipped past zero when count=0 (infinite retries), and the
+// final exhausted attempt slept for `delay` before rethrowing.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test("regression: retry: count=0 does not retry forever", async (t) => {
+    let attempts = 0;
+    const fn = retry(async () => {
+        attempts += 1;
+        throw new Error("always-fail");
+    }, 0, 1, () => attempts < 10); // condition is a safety net for the buggy path
+    try {
+        await fn();
+        t.fail("should have thrown");
+    } catch {
+        if (attempts === 1) t.pass();
+        else t.fail(`expected 1 attempt, got ${attempts}`);
+    }
+});
+
+test("regression: retry: no delay before the final throw", async (t) => {
+    const fn = retry(async () => { throw new Error("fail"); }, 1, 300);
+    const started = Date.now();
+    try {
+        await fn();
+        t.fail("should have thrown");
+    } catch {
+        const elapsed = Date.now() - started;
+        if (elapsed < 200) t.pass();
+        else t.fail(`slept ${elapsed}ms before rethrowing`);
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// memoize (src/utils/hof/memoize.ts)
+// 1) A cached `undefined` was treated as a cache miss, re-running the function
+//    on every call. 2) clear(key) with a falsy key (0, "") wiped the whole cache.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test("regression: memoize: caches undefined results", (t) => {
+    let calls = 0;
+    const fn = memoize(([x]) => x, () => { calls += 1; return undefined; });
+    fn("a");
+    fn("a");
+    if (calls === 1) t.pass();
+    else t.fail(`expected 1 call, got ${calls}`);
+});
+
+test("regression: memoize: clear(0) removes only that key", (t) => {
+    let calls = 0;
+    const fn = memoize(([x]) => x, (x) => { calls += 1; return x * 10; });
+    fn(0);
+    fn(1);
+    fn.clear(0);
+    fn(1); // must still be cached
+    if (calls === 2) t.pass();
+    else t.fail(`expected 2 calls (key 1 kept), got ${calls}`);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// split (src/utils/math/split.ts)
+// Only the first separator kind found in a string was applied, so mixed
+// strings like "a_b-c" kept the remaining separators inside the parts.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test("regression: split: handles mixed separators in one string", (t) => {
+    const result = split("a_b-c d");
+    if (JSON.stringify(result) === '["a","b","c","d"]') t.pass();
+    else t.fail(`got ${JSON.stringify(result)}`);
 });

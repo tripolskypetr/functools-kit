@@ -221,12 +221,13 @@ test("SortedArray: take minScore filters out low scores", (t) => {
     else t.fail(`got ${result}`);
 });
 
-test("SortedArray: take default minScore=+Infinity yields nothing", (t) => {
+test("SortedArray: take without minScore returns top N", (t) => {
     const sa = new SortedArray();
     sa.push("a", 100);
-    // no score equals +Infinity, so take returns empty
-    const result = sa.take(10);
-    if (result.length === 0) t.pass();
+    sa.push("b", 50);
+    sa.push("c", 10);
+    const result = sa.take(2);
+    if (result.join(",") === "a,b") t.pass();
     else t.fail(`got ${result}`);
 });
 

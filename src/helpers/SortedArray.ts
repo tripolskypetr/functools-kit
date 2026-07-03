@@ -36,7 +36,7 @@ export class SortedArray<T = any> {
     return this.items;
   }
 
-  take(n: number, minScore = Number.POSITIVE_INFINITY): T[] {
+  take(n: number, minScore = Number.NEGATIVE_INFINITY): T[] {
     const result: T[] = [];
     let count = 0;
     for (const { item, score } of this.items) {
