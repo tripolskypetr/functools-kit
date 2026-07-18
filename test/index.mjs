@@ -53,6 +53,7 @@ import "./spec/hof/timeout.test.mjs";
 import "./spec/hof/trycatch.test.mjs";
 import "./spec/hof/ttl.test.mjs";
 import "./spec/hof/waitForNext.test.mjs";
+import "./spec/hof/hof-audit.test.mjs";
 
 import "./spec/rx/integration-chain-throws.test.mjs";
 import "./spec/rx/fromDelay-fromInterval-throws.test.mjs";

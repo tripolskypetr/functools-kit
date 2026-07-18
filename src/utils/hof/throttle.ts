@@ -14,7 +14,6 @@ export interface IClearableThrottle {
  */
 export const throttle = <T extends (...args: any[]) => any>(run: T, delay = 1_000): T & IClearableThrottle => {
 	let timeoutID: any;
-	let cancelled = false;
 	let lastExec = 0;
 	/**
 	 * Clears the existing timeout.
@@ -37,12 +36,14 @@ export const throttle = <T extends (...args: any[]) => any>(run: T, delay = 1_00
 	 */
 	const wrappedFn = (...args: any[]) => {
 		let elapsed = Date.now() - lastExec;
-		if (cancelled) {
-			return;
-		}
 		const exec = () => {
 			lastExec = Date.now();
-			run(...args);
+			const result = run(...args) as any;
+			// rejections on both leading and trailing edges have no awaiting
+			// caller — keep them off the unhandled queue
+			if (result && result instanceof Promise) {
+				result.catch((e: unknown) => console.error("functools-kit throttle uncaught rejection", e));
+			}
 		};
 		clearExistingTimeout();
 		timeoutID = null;

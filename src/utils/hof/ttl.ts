@@ -53,10 +53,32 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
      * @param run - The original function to be memoized.
      * @returns - A memoized function that returns the cached value.
      */
-    const wrappedFn = memoize(<any>key, (...args: Parameters<T>) => ({
-        value: run(...args),
-        ttl: Date.now(),
-    }));
+    const wrappedFn = memoize(<any>key, (...args: Parameters<T>) => {
+        const k = key(args);
+        const record = {
+            value: run(...args),
+            ttl: Date.now(),
+            pending: false,
+        };
+        if (record.value instanceof Promise) {
+            // a still-running computation must not be treated as expired —
+            // that causes a stampede of concurrent recomputes for one key
+            record.pending = true;
+            record.value.then(
+                () => { record.pending = false; record.ttl = Date.now(); },
+                () => {
+                    record.pending = false;
+                    // memoize cannot see the promise inside the record —
+                    // evict here so the next call retries; identity-guarded
+                    // against wiping a newer entry
+                    if (wrappedFn.get(k as string) === record) {
+                        wrappedFn.clear(k as string);
+                    }
+                },
+            );
+        }
+        return record;
+    });
 
     /**
      * Executes a wrapped function with a TTL (Time To Live).
@@ -66,21 +88,16 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
     const executeFn = (...args: Parameters<T>): ReturnType<T> => {
         const currentTtl = Date.now();
         const k = key(args);
-        const { value, ttl } = wrappedFn(...args);
+        const record = wrappedFn(...args);
         const targetTimeout = timeoutOverride.get(k) ?? timeout;
-        if (currentTtl - ttl > targetTimeout) {
+        // rejection eviction is handled inside memoize with an identity
+        // guard; pending records are never expired
+        if (!record.pending && currentTtl - record.ttl > targetTimeout) {
             wrappedFn.clear(k as string);
             timeoutOverride.delete(k);
-            const value = wrappedFn(...args).value;
-            if (value instanceof Promise) {
-                value.catch(() => executeFn.clear(k));
-            }
-            return value;
+            return wrappedFn(...args).value;
         }
-        if (value instanceof Promise) {
-            value.catch(() => executeFn.clear(k));
-        }
-        return value;
+        return record.value;
     };
 
     /**
@@ -93,7 +110,9 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
      * @returns
      */
     executeFn.clear = (key?: K) => {
-        if (key) {
+        // key !== undefined, not truthiness: clear(0) or clear("") must not
+        // wipe every timeout override
+        if (key !== undefined) {
             timeoutOverride.delete(key);
         } else {
             timeoutOverride.clear();
@@ -108,11 +127,11 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
      * @returns
      */
     executeFn.gc = () => {
-        const valueMap: Map<K, IRef<{ ttl: number }>> = wrappedFn[GET_VALUE_MAP]();
+        const valueMap: Map<K, IRef<{ ttl: number; pending?: boolean }>> = wrappedFn[GET_VALUE_MAP]();
         for (const [key, item] of valueMap.entries()) {
             const currentTtl = Date.now();
             const targetTimeout = timeoutOverride.get(key) ?? timeout;
-            if (currentTtl - item.current.ttl > targetTimeout) {
+            if (!item.current.pending && currentTtl - item.current.ttl > targetTimeout) {
                 wrappedFn.clear(key as string);
                 timeoutOverride.delete(key);
             }
@@ -128,9 +147,21 @@ export const ttl = <T extends (...args: any[]) => any, K = string>(run: T, {
     executeFn.add = (key: K, value: ReturnType<T>) => wrappedFn.add(key as string, {
         value,
         ttl: Date.now(),
+        pending: false,
     });
 
     executeFn.remove = wrappedFn.remove;
+
+    executeFn.has = (key: K) => wrappedFn.has(key as string);
+
+    executeFn.get = (key: K): ReturnType<T> | undefined => {
+        const record = wrappedFn.get(key as string);
+        return record ? record.value : undefined;
+    };
+
+    executeFn.values = () => wrappedFn.values().map(({ value }) => value);
+
+    executeFn.keys = () => wrappedFn.keys() as K[];
 
     return executeFn as T & IClearableTtl<K> & IControl<K, ReturnType<T>>;
 };

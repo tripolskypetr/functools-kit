@@ -28,10 +28,23 @@ export const singleshot = <T extends (...args: any[]) => any>(run: T): T & ISing
     const fn = (...args: any) => {
         if (!hasRunned) {
             hasRunned = true;
-            result = run(...args);
+            try {
+                result = run(...args);
+            } catch (e) {
+                // a sync throw must not mark the shot as done with result=null
+                hasRunned = false;
+                throw e;
+            }
             // @ts-ignore
             if (result instanceof Promise) {
-                result.catch(() => { hasRunned = false; });
+                const target = result;
+                target.catch(() => {
+                    // reset only if this promise is still the cached result:
+                    // a stale rejection must not discard a newer value
+                    if (result === target) {
+                        hasRunned = false;
+                    }
+                });
             }
         }
         return result;

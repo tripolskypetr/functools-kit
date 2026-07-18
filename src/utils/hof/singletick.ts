@@ -34,6 +34,11 @@ export const singletick = <T extends (...args: any[]) => any>(run: T): T & IClea
         }, singletick.delay);
         return result;
     };
+    wrappedFn.clear = () => {
+        timeout !== null && clearTimeout(timeout);
+        timeout = null;
+        singleshotFn.clear();
+    };
     return wrappedFn as T & IClearableSingletick;
 };
 

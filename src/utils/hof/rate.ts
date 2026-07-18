@@ -88,6 +88,17 @@ export const rate = <T extends (...args: any[]) => any, K = string>(run: T, {
 
     executeFn.remove = wrappedFn.remove;
 
+    executeFn.has = (key: K) => wrappedFn.has(key);
+
+    executeFn.get = (key: K): ReturnType<T> | undefined => {
+        const record = wrappedFn.get(key);
+        return record ? record.value : undefined;
+    };
+
+    executeFn.values = () => wrappedFn.values().map(({ value }) => value);
+
+    executeFn.keys = () => wrappedFn.keys();
+
     return executeFn as T & IClearableRate<K> & IControl<K, ReturnType<T>>;
 };
 

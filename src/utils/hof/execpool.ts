@@ -74,7 +74,16 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
      * @param args - The arguments to pass to the function.
      */
     const execute = async (awaiter: IAwaiter<T>, ...args: P) => {
-        const exec = run(...args)
+        let target: Promise<T>;
+        try {
+            target = run(...args);
+        } catch (e) {
+            // a synchronously throwing run belongs to this caller only —
+            // it must not crash the shared drain loop
+            awaiter.reject(e);
+            return null as unknown as T;
+        }
+        const exec = target
             .then((value) => {
                 awaiter.resolve(value);
                 execSet.delete(exec);
@@ -96,17 +105,21 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
      */
     const initLoop = singlerun(async () => {
         while (execStack.length) {
-            if (execSet.size) {
-                await Promise.race(execSet);
-            }
             if (execSet.size >= maxExec) {
+                await Promise.race(execSet);
                 if (delay) {
                     await sleep(delay);
                 }
                 continue;
             }
-            const { args, awaiter } = execStack.pop()!;
-            await execute(awaiter, ...args);
+            const next = execStack.pop();
+            if (!next) {
+                break;
+            }
+            // fire without awaiting completion: the backlog must refill the
+            // pool to maxExec concurrency, not drain serially; execute never
+            // rejects (awaiter carries the outcome)
+            void execute(next.awaiter, ...next.args);
         }
     });
 
@@ -122,11 +135,23 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
         if (execSet.size < maxExec) {
             await execute(awaiter, ...args);
         } else {
-            execStack.unshift({
+            const item: Run<T, P> = {
                 awaiter,
                 args,
-            });
-            await initLoop();
+            };
+            // clear() may reject the awaiter while we are parked on the loop
+            // below — observe it early so it never floats unhandled
+            result.catch(() => undefined);
+            execStack.unshift(item);
+            // re-run the loop until our item has actually been picked up (or
+            // discarded by clear): joining a loop that is finishing this very
+            // tick would otherwise strand the task forever
+            while (execStack.includes(item)) {
+                await initLoop();
+                if (execStack.includes(item)) {
+                    await sleep(delay || 1);
+                }
+            }
         }
         return await result;
     };
@@ -138,9 +163,12 @@ export const execpool = <T extends any = any, P extends any[] = any[]>(run: (...
      */
     wrappedFn.clear = () => {
         while (execStack.length) {
-            execStack.pop();
+            const next = execStack.pop();
+            // a discarded task must settle its caller, not hang it forever
+            next && next.awaiter.reject(new Error('functools-kit execpool cleared'));
         }
-        execSet.clear();
+        // execSet is intentionally kept: running tasks still occupy real
+        // slots, wiping it would let new calls exceed maxExec
         initLoop.clear();
     };
 

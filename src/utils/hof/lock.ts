@@ -28,6 +28,7 @@ const NEVER_VALUE = Symbol('never');
 export const lock = <T extends any = any, P extends any[] = any[]>(promise: (...args: P) => Promise<T>): IWrappedLockFn<T, P> => {
 
     let lockCount = 0;
+    let cancelGeneration = 0;
     let lockSubject = new BehaviorSubject(lockCount);
 
     /**
@@ -53,7 +54,13 @@ export const lock = <T extends any = any, P extends any[] = any[]>(promise: (...
      * @returns - A promise that resolves to the value returned by the function.
      */
     const executeFn = queued(async (...args: P) => {
+        const generation = cancelGeneration;
         await waitForUnlock();
+        // cancel() releases the lock to wake waiters — a task parked here
+        // when the cancel happened must not run the user function
+        if (generation !== cancelGeneration) {
+            return null as never;
+        }
         if (first(args) === NEVER_VALUE) {
             return null as never;
         }
@@ -89,6 +96,7 @@ export const lock = <T extends any = any, P extends any[] = any[]>(promise: (...
      *
      */
     wrappedFn.cancel = () => {
+        cancelGeneration += 1;
         wrappedFn.clear();
         executeFn.cancel();
     };

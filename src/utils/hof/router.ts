@@ -78,7 +78,12 @@ export const router = <T extends (...args: any[]) => any, K = string>(
             });
             // @ts-ignore
             if (value instanceof Promise) {
-                value.catch(() => cacheMap.delete(k));
+                value.catch(() => {
+                    const current = cacheMap.get(k);
+                    if (current && current.lastValue === value) {
+                        cacheMap.delete(k);
+                    }
+                });
             }
             return value;
         }
@@ -88,14 +93,21 @@ export const router = <T extends (...args: any[]) => any, K = string>(
             return entry.lastValue;
         }
 
-        // Arguments changed, re-execute
+        // Arguments changed, re-execute; commit only after run succeeds so a
+        // sync throw does not pair new args with the old value
+        const value = run(...args);
         entry.lastArgs = args;
-        entry.lastValue = run(...args);
+        entry.lastValue = value;
         // @ts-ignore
-        if (entry.lastValue instanceof Promise) {
-            entry.lastValue.catch(() => cacheMap.delete(k));
+        if (value instanceof Promise) {
+            value.catch(() => {
+                const current = cacheMap.get(k);
+                if (current && current.lastValue === value) {
+                    cacheMap.delete(k);
+                }
+            });
         }
-        return entry.lastValue;
+        return value;
     };
 
     executeFn.clear = clear;

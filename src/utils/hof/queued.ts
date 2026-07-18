@@ -63,7 +63,8 @@ export const queued = <T extends any = any, P extends any[] = any[]>(promise: (.
      * @function clear
      */
     wrappedFn.clear = () => {
-        lastPromise = Promise.resolve();
+        // lastPromise is intentionally kept: detaching the chain would let
+        // the next call run concurrently with a still-in-flight execution
         cancelFn = undefined;
     };
 
@@ -76,7 +77,8 @@ export const queued = <T extends any = any, P extends any[] = any[]>(promise: (.
      *
      */
     wrappedFn.cancel = () => {
-        lastPromise = Promise.resolve();
+        // canceled queued tasks resolve CANCELED in order; the chain itself
+        // is kept so serialization survives the cancel
         cancelFn && cancelFn();
         cancelFn = undefined;
     };

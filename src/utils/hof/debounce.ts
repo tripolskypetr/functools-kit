@@ -9,8 +9,10 @@ export interface IDebounceClearable {
     pending: () => boolean;
 }
 
-const REQUEST_ANIMATION_FRAME_FN = "requestAnimationFrame" in globalThis ? globalThis.requestAnimationFrame : setTimeout;
-const CANCEL_ANIMATION_FRAME_FN = "cancelAnimationFrame" in globalThis ? globalThis.cancelAnimationFrame : clearTimeout;
+// rAF must stay bound to globalThis: browsers throw "Illegal invocation"
+// when it is called through a bare reference
+const REQUEST_ANIMATION_FRAME_FN = "requestAnimationFrame" in globalThis ? globalThis.requestAnimationFrame.bind(globalThis) : setTimeout;
+const CANCEL_ANIMATION_FRAME_FN = "cancelAnimationFrame" in globalThis ? globalThis.cancelAnimationFrame.bind(globalThis) : clearTimeout;
 
 const REQUEST_ANIMATION_FRAME = (fn: Function) => REQUEST_ANIMATION_FRAME_FN(fn);
 const CANCEL_ANIMATION_FRAME = (id: ReturnType<typeof CANCEL_ANIMATION_FRAME_FN>) => CANCEL_ANIMATION_FRAME_FN(id);
@@ -42,7 +44,13 @@ export const debounce = <T extends (...args: any[]) => any>(run: T, delay = 1_00
       const exec = () => {
         lastRun = null;
         timeout = null;
-        return run(...args);
+        const result = run(...args) as any;
+        // a timer-driven invocation has no awaiting caller — its rejection
+        // must not become an unhandled rejection
+        if (result && result instanceof Promise) {
+          result.catch((e: unknown) => console.error("functools-kit debounce uncaught rejection", e));
+        }
+        return result;
       };
       lastRun = exec;
       timeout = on(exec, delay);
@@ -67,9 +75,12 @@ export const debounce = <T extends (...args: any[]) => any>(run: T, delay = 1_00
      */
     wrappedFn.flush = () => {
       timeout !== null && un(timeout);
-      lastRun && lastRun();
+      // release handles BEFORE invoking: a reentrant call inside run would
+      // otherwise get its fresh timer orphaned by the assignments below
+      const fn = lastRun;
       timeout = null;
       lastRun = null;
+      fn && fn();
     };
 
     wrappedFn.pending = () => {

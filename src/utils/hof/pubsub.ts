@@ -151,6 +151,7 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
     let lastOk = Date.now();
 
     let isStopped = false;
+    let pushingCount = 0;
 
     const handleStop = async () => {
         if (isStopped) {
@@ -161,6 +162,10 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
             await onDestroy(queue);
         }
         await queue.clear();
+        // pending publishers must settle, not hang forever
+        for (const awaiter of awaiterMap.values()) {
+            awaiter.reject(new Error("functools-kit pubsub stopped"));
+        }
         awaiterMap.clear();
     };
 
@@ -185,26 +190,45 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
                 success = await emitter(data);
             } catch (e) {
                 if (onError) {
-                    await onError(data, e);
+                    try {
+                        await onError(data, e);
+                    } catch (callbackError) {
+                        console.error("functools-kit pubsub onError callback failed", callbackError);
+                    }
                 }
                 success = false;
             } finally {
                 await sleep(10);
             }
-            if (success && onEnd) {
-                await onEnd(data);
-            }
             if (success) {
                 lastOk = Date.now();
+                // shift and settle BEFORE onEnd: a throwing onEnd must not
+                // re-deliver an already emitted message on the next round
                 await queue.shift();
                 awaiterMap.delete(id);
                 awaiter.resolve();
+                if (onEnd) {
+                    try {
+                        await onEnd(data);
+                    } catch (e) {
+                        console.error("functools-kit pubsub onEnd callback failed", e);
+                    }
+                }
                 continue;
             }
             await sleep(1_000);
             if (Date.now() - lastOk >= timeout) {
                 await handleStop();
                 return;
+            }
+        }
+        // queue drained: any awaiter left behind belongs to an entry the
+        // queue adapter dropped (e.g. maxItems overflow) — settle it
+        const remaining = await queue.length();
+        if (!isStopped && !remaining && !pushingCount && awaiterMap.size) {
+            for (const [id, awaiter] of [...awaiterMap.entries()]) {
+                awaiterMap.delete(id);
+                awaiter.reject(new Error("functools-kit pubsub item dropped from queue"));
             }
         }
     });
@@ -215,24 +239,38 @@ export const pubsub = <Data = any>(emitter: (data: Data) => Promise<boolean>, {
         }
         const [result, awaiter] = createAwaiter<void>();
         const id = randomString();
-        awaiterMap.set(id, awaiter);
-        await queue.push([id, data]);
+        pushingCount += 1;
+        try {
+            awaiterMap.set(id, awaiter);
+            await queue.push([id, data]);
+        } finally {
+            pushingCount -= 1;
+        }
         if (onProcess) {
             await onProcess(data);
         }
-        await makeBroadcast();
+        const broadcast = makeBroadcast();
+        // if stop() settles our awaiter while the broadcast loop is parked in
+        // its retry backoff, the publisher must not wait the backoff out
+        broadcast.catch(() => undefined);
+        await Promise.race([
+            broadcast,
+            result.then(() => undefined, () => undefined),
+        ]);
         return await result;
     };
 
     const makeInit = singleshot(async () => {
-        const resolveList: Promise<void>[] = [];
+        // register awaiters for the rehydrated backlog but do NOT await its
+        // full drain — the first publisher must not be blocked (or hung on a
+        // failing emitter) by messages persisted in a previous session
         for await (const [id] of queue) {
-            const [resolve, awaiter] = createAwaiter<void>();
+            const [orphan, awaiter] = createAwaiter<void>();
+            // no caller holds the recovered promise; a stop-driven rejection
+            // must not become an unhandled rejection
+            orphan.catch(() => undefined);
             awaiterMap.set(id, awaiter);
-            resolveList.push(resolve);
-        } 
-        await makeBroadcast();
-        await Promise.all(resolveList);
+        }
     });
 
     const wrappedFn = async (data: Data) => {

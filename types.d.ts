@@ -56,7 +56,7 @@ interface IParams {
 declare const formatText: (raw: string, template: string, { symbol, allowed, replace, }?: IParams) => string;
 
 declare const TIMEOUT_SYMBOL: unique symbol;
-declare const timeout: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, delay?: number) => (...args: P) => Promise<symbol | T>;
+declare const timeout: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, delay?: number) => (...args: P) => Promise<typeof TIMEOUT_SYMBOL | T>;
 
 type Function$2 = (...args: any[]) => any;
 /**
@@ -839,11 +839,12 @@ interface IWrappedRetryFn<T extends any = any, P extends any[] = any> {
     (...args: P): Promise<T>;
 }
 /**
- * Retries a function multiple times until it succeeds or reaches the maximum number of retries.
+ * Retries a function multiple times until it succeeds or reaches the maximum number of attempts.
  *
  * @param run - The function to run.
- * @param count - The maximum number of retries (default is 5).
- * @returns - The wrapped function that can be canceled.
+ * @param count - The maximum number of TOTAL attempts (default is 5): count = 1
+ *   performs a single attempt with no retries.
+ * @returns - The wrapped function.
  */
 declare const retry: <T extends unknown = any, P extends any[] = any[]>(run: (...args: P) => Promise<T>, count?: number, delay?: number, condition?: (error: Error) => boolean) => IWrappedRetryFn<T, P>;
 

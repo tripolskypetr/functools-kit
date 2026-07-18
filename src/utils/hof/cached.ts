@@ -45,14 +45,22 @@ export const cached = <T extends (...args: any[]) => any>(changed: (prevArgs: Pa
                 return lastValue;
             }
         }
+        // commit state only after run succeeds: a sync throw must not pair
+        // the new args with the previous value
+        const value = run(...args);
         lastArgs = args;
         initial = false;
-        lastValue = run(...args);
+        lastValue = value;
         // @ts-ignore
-        if (lastValue instanceof Promise) {
-            lastValue.catch(() => clear());
+        if (value instanceof Promise) {
+            value.catch(() => {
+                // a stale rejection must not wipe a newer cached value
+                if (lastValue === value) {
+                    clear();
+                }
+            });
         }
-        return lastValue;
+        return value;
     };
 
     executeFn.clear = clear;

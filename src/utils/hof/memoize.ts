@@ -138,10 +138,23 @@ export const memoize = <T extends (...args: any[]) => any, K = string>(key: (arg
         }
         const ref = { current: undefined };
         valueMap.set(k, ref as unknown as IRefMemoize<ReturnType<T>>);
-        const value = ref.current = run(...args);
+        let value;
+        try {
+            value = ref.current = run(...args);
+        } catch (e) {
+            // a sync throw must not leave the placeholder ref cached
+            valueMap.delete(k);
+            throw e;
+        }
         // @ts-ignore
         if (value instanceof Promise) {
-            value.catch(() => clear(k));
+            value.catch(() => {
+                // evict only if this promise is still the cached value:
+                // a stale rejection must not destroy a newer entry
+                if (valueMap.get(k) === (ref as unknown as IRefMemoize<ReturnType<T>>) && ref.current === value) {
+                    valueMap.delete(k);
+                }
+            });
         }
         return value;
     };

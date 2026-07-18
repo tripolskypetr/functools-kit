@@ -23,25 +23,32 @@ export const schedule = <T extends any = any, P extends any[] = any[]>(
   let argsLast: P | null = null;
 
   const commitQueue = queued(async (args: P) => {
-    if (argsLast) {
-      await onSchedule(argsLast);
-    }
+    // commit the new args BEFORE notifying: a throwing onSchedule must not
+    // silently drop the freshly scheduled call
+    const prevArgs = argsLast;
     argsLast = args;
+    if (prevArgs) {
+      await onSchedule(prevArgs);
+    }
   });
 
   const waitForSchedule = singlerun(async () => {
+    let lastResult: T | null = null;
+    let hasResult = false;
     while (true) {
-      if (executeFn.getStatus() !== "pending") {
-        break;
+      while (executeFn.getStatus() === "pending") {
+        await sleep(delay);
       }
       if (!argsLast) {
-        return null;
+        // args committed while a scheduled run was executing are drained
+        // here instead of being silently dropped
+        return hasResult ? lastResult : null;
       }
-      await sleep(delay);
+      const args = argsLast;
+      argsLast = null;
+      lastResult = await executeFn(...args);
+      hasResult = true;
     }
-    const args = argsLast;
-    argsLast = null;
-    return await executeFn(...args);
   });
 
   const wrappedFn = async (...args: P): Promise<T | null> => {
