@@ -52,7 +52,10 @@ export class BehaviorSubject<Data = any> extends Subject<Data> implements TBehav
         observer[LISTEN_CONNECT](() => {
             unsubscribeRef = this.subscribe(observer.emit);
             if (this._hasValue) {
-                observer.emit(this._data as Data).catch((e) => observer.emitError(e));
+                // a replay rejection was already reported at the throwing
+                // level (connect/map handlers emitError before rethrowing) —
+                // re-reporting here doubled every error
+                observer.emit(this._data as Data).catch(() => undefined);
             }
         });
         return observer;

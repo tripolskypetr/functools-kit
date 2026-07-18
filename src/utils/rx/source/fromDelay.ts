@@ -21,7 +21,9 @@ export const fromDelay = (delay: number): TObserver<void> => {
     };
     observer[LISTEN_CONNECT](() => {
         timeout = setTimeout(() => {
-            process().catch((e) => observer.emitError(e));
+            // a consumer throw was already reported at the throwing level
+            // (connect handler emitErrors before rethrowing)
+            process().catch(() => undefined);
         }, delay);
     });
     return observer;

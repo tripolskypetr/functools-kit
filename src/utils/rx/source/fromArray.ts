@@ -18,16 +18,23 @@ export const fromArray = <Data = any>(data: Data): TObserver<ReadonlyArray<FlatA
                 if (isCanceled) {
                     return;
                 }
-                await observer.emit(item);
+                try {
+                    await observer.emit(item);
+                } catch {
+                    // the throwing consumer already reported at its level;
+                    // aborting here starved every consumer of the remaining
+                    // items — keep delivering the sequence
+                }
             }
         } else {
             if (!isCanceled) {
-                await observer.emit(data);
+                // consumer throws are already reported at the throwing level
+                await observer.emit(data).catch(() => undefined);
             }
         }
     };
     observer[LISTEN_CONNECT](() => {
-        process().catch((e) => observer.emitError(e));
+        process().catch(() => undefined);
     });
     return observer;
 };

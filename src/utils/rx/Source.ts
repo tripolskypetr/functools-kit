@@ -151,7 +151,10 @@ export class Source {
 
         const next = () => {
             if (buffer.every((value) => value !== EMPTY_VALUE)) {
-                observer.emit([...buffer] as any).catch((e) => observer.emitError(e));
+                // a consumer throw was already reported at the throwing level
+                // (connect handler emitErrors before rethrowing) — re-reporting
+                // here doubled every error
+                observer.emit([...buffer] as any).catch(() => undefined);
                 !race && buffer.fill(EMPTY_VALUE as any);
             }
         };
@@ -186,10 +189,29 @@ export class Source {
      */
     public static unicast = <Data = any>(factory: () => TObserver<Data>): TObserver<Data> & {
         isUnicasted: true;
-    } => ({
-        ...createObserver(factory),
-        isUnicasted: true,
-    });
+    } => {
+        // track spawned instances: unsubscribe() used to create a brand-new
+        // throwaway instance and kill it, leaving live connections running
+        const instances = new Set<TObserver<Data>>();
+        const trackedFactory = () => {
+            const instance = factory();
+            instances.add(instance);
+            if (typeof (instance as any)[LISTEN_DISCONNECT] === 'function') {
+                (instance as any)[LISTEN_DISCONNECT](() => instances.delete(instance));
+            }
+            return instance;
+        };
+        return {
+            ...createObserver(trackedFactory),
+            unsubscribe: () => {
+                for (const instance of [...instances]) {
+                    instance.unsubscribe();
+                }
+                instances.clear();
+            },
+            isUnicasted: true,
+        };
+    };
 
     /**
      * Creates a multicast observer.
@@ -213,6 +235,11 @@ export class Source {
                 }
                 return observer;
             }),
+            // unsubscribing with nothing cached must not instantiate the
+            // factory (running a side-effectful emitter) just to kill it
+            unsubscribe: () => {
+                observer && observer.unsubscribe();
+            },
             getRef: () => observer,
             isMulticasted: true,
         };
@@ -229,7 +256,8 @@ export class Source {
         let unsubscribeRef: Function;
         const observer = new Observer<Data>(() => unsubscribeRef());
         const next = (data: Data) => {
-            observer.emit(data).catch((e) => observer.emitError(e));
+            // consumer throws are already reported at the throwing level
+            observer.emit(data).catch(() => undefined);
         };
         unsubscribeRef = emitter(next) || (() => undefined);
         return observer;
@@ -247,7 +275,8 @@ export class Source {
         let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
         const next = (data: Data) => {
-            observer.emit(data).catch((e) => observer.emitError(e));
+            // consumer throws are already reported at the throwing level
+            observer.emit(data).catch(() => undefined);
         };
         observer[LISTEN_CONNECT](() => {
             try {
@@ -277,7 +306,8 @@ export class Source {
         let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Output>(() => unsubscribeRef());
         const next = (data: Output) => {
-            observer.emit(data).catch((e) => observer.emitError(e));
+            // consumer throws are already reported at the throwing level
+            observer.emit(data).catch(() => undefined);
         };
         observer[LISTEN_CONNECT](() => {
             const subject = new Subject<Data>();
@@ -318,7 +348,8 @@ export class Source {
         observer[LISTEN_CONNECT](() => {
             try {
                 const value = typeof data === 'function' ? (data as () => Data)() : data;
-                observer.emit(value).catch((e) => observer.emitError(e));
+                // consumer throws are already reported at the throwing level
+                observer.emit(value).catch(() => undefined);
             } catch (e) {
                 // a synchronously throwing factory must surface on the error
                 // channel, not escape through the unawaited CONNECT emit
@@ -354,7 +385,8 @@ export class Source {
         const observer = new Observer<Data>(() => unsubscribeRef());
         observer[LISTEN_CONNECT](() => {
             if (subject.data !== null && subject.data !== undefined) {
-                observer.emit(subject.data).catch((e) => observer.emitError(e));
+                // consumer throws are already reported at the throwing level
+                observer.emit(subject.data).catch(() => undefined);
             }
         });
         unsubscribeRef = subject.subscribe(observer.emit);

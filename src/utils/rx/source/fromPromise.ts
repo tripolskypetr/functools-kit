@@ -15,11 +15,9 @@ export const fromPromise = <Data = any>(callbackfn: () => Promise<Data>, fallbac
         isCanceled = true;
     });
     const process = async () => {
+        let result: Data;
         try {
-            const result = await callbackfn();
-            if (!isCanceled) {
-                await observer.emit(result);
-            }
+            result = await callbackfn();
         } catch (e: any) {
             if (isCanceled) {
                 return;
@@ -28,11 +26,19 @@ export const fromPromise = <Data = any>(callbackfn: () => Promise<Data>, fallbac
                 fallbackfn(e);
                 return;
             }
-            throw e;
+            // the callback failure was never reported anywhere else — this
+            // is its single report
+            observer.emitError(e);
+            return;
+        }
+        if (!isCanceled) {
+            // a consumer throw, by contrast, was already reported at the
+            // throwing level — re-reporting it here doubled the error
+            await observer.emit(result).catch(() => undefined);
         }
     };
     observer[LISTEN_CONNECT](() => {
-        process().catch((e) => observer.emitError(e));
+        void process();
     });
     return observer;
 };

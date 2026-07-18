@@ -23,11 +23,12 @@ export const fromInterval = (delay: number): TObserver<number> => {
             return;
         }
         try {
-            // a throwing subscriber must not kill the interval:
-            // forward the error downstream and keep ticking
+            // a throwing subscriber must not kill the interval: keep ticking.
+            // The error was already reported at the throwing level (connect
+            // handler emitErrors before rethrowing) — no second report here
             await observer.emit(iterationIdx);
-        } catch (e) {
-            observer.emitError(e);
+        } catch {
+            /* already reported */
         }
         iterationIdx++;
         if (stopped) {
@@ -36,7 +37,10 @@ export const fromInterval = (delay: number): TObserver<number> => {
         timeout = setTimeout(process, delay);
     };
     observer[LISTEN_CONNECT](() => {
-        void process();
+        // defer the first tick by a microtask: emitting synchronously inside
+        // connect() fires before the caller had a chance to attach onError,
+        // making a first-tick error unobservable
+        void Promise.resolve().then(process);
     });
     return observer;
 };

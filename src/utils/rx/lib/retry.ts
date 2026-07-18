@@ -22,9 +22,9 @@ export const retry = <T = any>(attempts: number) => (target: TObserver<T>): TObs
                     lastError = e;
                 }
             }
-            // exhausted retries: the error belongs on this operator's own
-            // channel, not only upstream
-            inner.emitError(lastError);
+            // exhausted retries: every failed attempt already landed on this
+            // operator's error channel (connect handler emitErrors before
+            // rethrowing) — an explicit emitError here duplicated the last one
             throw lastError;
         });
     });

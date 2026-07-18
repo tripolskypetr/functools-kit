@@ -200,7 +200,9 @@ export class Observer<Data = any> implements TObserver<Data> {
         this._subscribe(observer, handler);
         unsubscribeRef = compose(
             () => this._unsubscribe(handler),
-            () => process.clear(),
+            // cancel, not clear: clear() only forgets the cancel handles, so a
+            // queued invocation would still run the user callback after teardown
+            () => process.cancel(),
         );
         return observer;
     };
@@ -285,7 +287,8 @@ export class Observer<Data = any> implements TObserver<Data> {
         this._subscribe(observer, handler);
         unsubscribeRef = compose(
             () => this._unsubscribe(handler),
-            () => process.clear(),
+            // cancel, not clear: see flatMap
+            () => process.cancel(),
         );
         return observer;
     };
@@ -327,7 +330,9 @@ export class Observer<Data = any> implements TObserver<Data> {
         this._subscribe(observer, handler);
         unsubscribeRef = compose(
             () => this._unsubscribe(handler),
-            () => iteraction.clear(),
+            // cancel, not clear: queued invocations resolve CANCELED_PROMISE_SYMBOL
+            // and the guard above skips them — clear() would let them run
+            () => iteraction.cancel(),
         );
         return observer;
     };
@@ -628,6 +633,11 @@ export class Observer<Data = any> implements TObserver<Data> {
      * @returns A Promise that resolves with the data.
      */
     public toPromise = singlerun(() => {
+        // already disposed: CONNECT/DISCONNECT will never fire again, so a
+        // fresh subscription would hang forever — settle immediately
+        if (this._isDisposed) {
+            return Promise.reject(new Error('functools-kit toPromise called on a disposed Observer'));
+        }
         const [promise, awaiter] = createAwaiter<Data>();
         let isDisposed = false;
         const errorHandler = (error: unknown) => {
@@ -705,6 +715,11 @@ export class Observer<Data = any> implements TObserver<Data> {
         };
         // observer torn down externally: end iteration instead of hanging
         this[LISTEN_DISCONNECT](stop);
+        // already disposed before the call: DISCONNECT was emitted in the
+        // past, the listener above will never fire — end the iteration now
+        if (this._isDisposed) {
+            stop();
+        }
         const iterate = async function* () {
             try {
                 while (!isDone || buffer.length > 0) {

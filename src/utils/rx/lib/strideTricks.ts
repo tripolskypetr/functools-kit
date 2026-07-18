@@ -21,6 +21,10 @@ export const strideTricks = <T = any>(strideSize: number, step = Math.floor(stri
       // validate before caching state, otherwise an invalid config throws
       // once and silently emits corrupt windows afterwards
       if (strideSize > buffer.length || step > strideSize) throw new Error('rn-declarative strideTricks too big stride');
+      // step <= 0 (incl. the default floor(1/2)=0 for strideSize=1) makes
+      // totalSteps Infinity/negative and the window loop below never
+      // terminates — the process hangs in a synchronous loop until OOM
+      if (!Number.isInteger(strideSize) || strideSize <= 0 || !Number.isInteger(step) || step <= 0) throw new Error('rn-declarative strideTricks invalid stride config');
       windowSize = buffer.length;
       // window count is floor((w - s) / step) + 1; the tail stride is needed
       // exactly when those windows do not end at the last element

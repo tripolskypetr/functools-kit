@@ -59,7 +59,12 @@ export class EventEmitter {
         }
         // remove a single occurrence: the same callback subscribed twice
         // must survive one unsubscribe
-        const idx = listeners.indexOf(callback);
+        let idx = listeners.indexOf(callback);
+        if (idx === -1) {
+            // a once() wrapper must be removable by its original callback,
+            // matching Node's EventEmitter semantics
+            idx = listeners.findIndex((listener: any) => listener._original === callback);
+        }
         if (idx === -1) {
             return;
         }
@@ -94,6 +99,7 @@ export class EventEmitter {
             this.unsubscribe(eventName, subscriber);
             return callback(...args);
         };
+        (subscriber as any)._original = callback;
         this.subscribe(eventName, subscriber);
         return () => {
             this.unsubscribe(eventName, subscriber);
@@ -109,6 +115,10 @@ export class EventEmitter {
      */
     public async emit(eventName: EventKey, ...args: any[]) {
         const event = [...this._events && this._events[eventName] || []];
+        // one throwing listener must not starve the listeners after it —
+        // run them all, then propagate the first error to the emitter
+        let firstError: unknown = undefined;
+        let hasError = false;
         for (let i = 0; i !== event.length; i++) {
             const listener = event[i];
             // skip listeners unsubscribed while an earlier (async) listener
@@ -117,8 +127,18 @@ export class EventEmitter {
             if (!current.includes(listener)) {
                 continue;
             }
-            const result = listener(...args) as any;
-            if (result && result instanceof Promise) await result;
+            try {
+                const result = listener(...args) as any;
+                if (result && result instanceof Promise) await result;
+            } catch (e) {
+                if (!hasError) {
+                    hasError = true;
+                    firstError = e;
+                }
+            }
+        }
+        if (hasError) {
+            throw firstError;
         }
     };
 
