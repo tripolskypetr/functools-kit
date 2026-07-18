@@ -61,6 +61,7 @@ import "./spec/rx/error-propagation-extra.test.mjs";
 import "./spec/rx/toIteratorContext.test.mjs";
 import "./spec/rx/interval-resilience.test.mjs";
 import "./spec/rx/dead-chains.test.mjs";
+import "./spec/rx/subscription-hygiene.test.mjs";
 
 run(import.meta.url, () => {
     console.log("All tests are finished");

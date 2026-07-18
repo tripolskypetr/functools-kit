@@ -233,6 +233,7 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      */
     public unsubscribeAll() {
         this._emitter.unsubscribeAll();
+        this._rootObservers.clear();
     };
 
     /**

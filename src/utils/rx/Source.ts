@@ -153,7 +153,7 @@ export class Source {
         observer[LISTEN_CONNECT](() => {
             observers.forEach((source, idx) => {
                 if (source) {
-                    if (source instanceof Observer) {
+                    if (typeof source.onError === 'function' && !(source as any).isUnicasted) {
                         const unsubscribeError = source.onError((e) => observer.emitError(e));
                         subscriptions.push(() => unsubscribeError());
                     }

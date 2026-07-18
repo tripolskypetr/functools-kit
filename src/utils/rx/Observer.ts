@@ -571,7 +571,10 @@ export class Observer<Data = any> implements TObserver<Data> {
         let unsubscribe: Fn = () => undefined;
         let unsubscribeRightError: Fn = () => undefined;
         merged[LISTEN_CONNECT](() => {
-            if (observer instanceof Observer) {
+            // duck-typed: multicast/createObserver wrappers expose onError without
+            // being Observer instances; unicast excluded — its every accessor
+            // call spawns a fresh underlying instance
+            if (typeof observer.onError === 'function' && !(observer as any).isUnicasted) {
                 unsubscribeRightError = observer.onError((e) => merged.emitError(e));
             }
             unsubscribe = observer.connect(handler) || (() => undefined);

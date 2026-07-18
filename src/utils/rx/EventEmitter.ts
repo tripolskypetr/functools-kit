@@ -53,10 +53,17 @@ export class EventEmitter {
      * @returns
      */
     public unsubscribe(eventName: EventKey, callback: Function) {
-        if (!this._events[eventName]) {
+        const listeners = this._events[eventName];
+        if (!listeners) {
             return;
         }
-        this._events[eventName] = this._events[eventName].filter(eventCallback => callback !== eventCallback);
+        // remove a single occurrence: the same callback subscribed twice
+        // must survive one unsubscribe
+        const idx = listeners.indexOf(callback);
+        if (idx === -1) {
+            return;
+        }
+        this._events[eventName] = [...listeners.slice(0, idx), ...listeners.slice(idx + 1)];
     };
 
     /**

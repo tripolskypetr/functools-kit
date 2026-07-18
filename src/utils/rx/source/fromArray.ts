@@ -8,14 +8,22 @@ import Observer, { TObserver, LISTEN_CONNECT } from "../Observer";
  * @returns - The observer that emits the flattened and filtered array of data.
  */
 export const fromArray = <Data = any>(data: Data): TObserver<ReadonlyArray<FlatArray<Data[], 20>>> => {
-    const observer = new Observer<any>(() => undefined);
+    let isCanceled = false;
+    const observer = new Observer<any>(() => {
+        isCanceled = true;
+    });
     const process = async () => {
         if (Array.isArray(data)) {
             for (const item of data.flat(Number.POSITIVE_INFINITY)) {
+                if (isCanceled) {
+                    return;
+                }
                 await observer.emit(item);
             }
         } else {
-            await observer.emit(data);
+            if (!isCanceled) {
+                await observer.emit(data);
+            }
         }
     };
     observer[LISTEN_CONNECT](() => {
