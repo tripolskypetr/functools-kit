@@ -15,6 +15,12 @@ export async function* distinctDocuments<Data = IRowData>(
         const rows = [chunk].flatMap(v => v);
         for (const row of rows) {
             const id = getId(row);
+            // rows without an id must pass through: undefined is a single
+            // Set key, so they were all collapsed into the first one
+            if (id === undefined) {
+                yield row;
+                continue;
+            }
             if (!duplicateSet.has(id)) {
                 duplicateSet.add(id);
                 yield row;

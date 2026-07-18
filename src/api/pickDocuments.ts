@@ -26,7 +26,9 @@ export const pickDocuments = <T extends any>(
       break;
     }
     return {
-      rows: result,
+      // copy: returning the live internal array let callers observe later
+      // mutations and corrupt picker state by pushing into it
+      rows: [...result],
       done: limit <= 0,
     };
   };

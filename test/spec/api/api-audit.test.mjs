@@ -2,6 +2,9 @@ import { test } from "worker-testbed";
 import {
     iterateDocuments,
     iterateUnion,
+    pickDocuments,
+    paginateDocuments,
+    distinctDocuments,
     SortedArray,
     LimitedMap,
     LimitedSet,
@@ -150,6 +153,86 @@ test("regression: iterateUnion: closes sources on early consumer break", async (
     const next = await b.next();
     if (closed.includes("a") && next.done === true) t.pass();
     else t.fail(`closed=[${closed}], b.next()=${JSON.stringify(next)}`);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// pickDocuments (src/api/pickDocuments.ts)
+// The picker returned its live internal accumulator: earlier results silently
+// grew on later calls, and pushing into a returned rows array corrupted the
+// picker state.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test("regression: pickDocuments: returned rows are a copy, not the live accumulator", (t) => {
+    const iter = pickDocuments(10, 0);
+    const first = iter([1, 2]);
+    iter([3, 4]);
+    if (first.rows.join(",") === "1,2") t.pass();
+    else t.fail(`earlier result mutated by later call: [${first.rows}]`);
+});
+
+test("regression: pickDocuments: mutating returned rows does not corrupt picker state", (t) => {
+    const iter = pickDocuments(10, 0);
+    iter([1]).rows.push("INJECTED");
+    const rows = iter([2]).rows;
+    if (rows.join(",") === "1,2") t.pass();
+    else t.fail(`picker state corrupted: [${rows}]`);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// paginateDocuments (src/api/paginateDocuments.ts)
+// With limit <= 0 the page is complete before consuming anything, but one
+// chunk (a potentially expensive fetch) was still pulled from the source.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test("regression: paginateDocuments: limit=0 pulls zero chunks from the source", async (t) => {
+    let pulls = 0;
+    const source = (async function* () {
+        pulls += 1;
+        yield [1, 2];
+        pulls += 1;
+        yield [3, 4];
+    })();
+    const rows = await paginateDocuments(source, 0, 0);
+    if (rows.length === 0 && pulls === 0) t.pass();
+    else t.fail(`rows=[${rows}], pulls=${pulls}`);
+});
+
+test("regression: paginateDocuments: still fills a normal page correctly", async (t) => {
+    const source = (async function* () {
+        yield [1, 2, 3];
+        yield [4, 5, 6];
+        yield [7, 8, 9];
+    })();
+    const rows = await paginateDocuments(source, 3, 2);
+    if (rows.join(",") === "3,4,5") t.pass();
+    else t.fail(`expected [3,4,5], got [${rows}]`);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// distinctDocuments (src/api/distinctDocuments.ts)
+// Rows without an id all mapped to the single Set key `undefined`, so every
+// row after the first was silently dropped as a "duplicate".
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test("regression: distinctDocuments: id-less rows pass through instead of collapsing", async (t) => {
+    const source = (async function* () {
+        yield [{ name: "a" }, { name: "b" }, { name: "c" }];
+    })();
+    const out = [];
+    for await (const row of distinctDocuments(source)) out.push(row.name);
+    if (out.join(",") === "a,b,c") t.pass();
+    else t.fail(`expected all rows, got [${out}]`);
+});
+
+test("regression: distinctDocuments: real ids still deduplicate (including falsy 0 and '')", async (t) => {
+    const source = (async function* () {
+        yield [{ id: 0 }, { id: "" }, { id: 1 }];
+        yield [{ id: 0 }, { id: 1 }, { id: 2 }];
+    })();
+    const out = [];
+    for await (const row of distinctDocuments(source)) out.push(row.id);
+    if (out.join(",") === "0,,1,2") t.pass();
+    else t.fail(`expected [0,,1,2], got [${out}]`);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
