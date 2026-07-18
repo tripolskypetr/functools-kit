@@ -45,7 +45,7 @@ export class BehaviorSubject<Data = any> extends Subject<Data> implements TBehav
         const observer = new Observer<Data>(() => unsubscribeRef());
         observer[LISTEN_CONNECT](() => {
             if (this._data !== null && this._data !== undefined) {
-                observer.emit(this._data);
+                observer.emit(this._data).catch((e) => observer.emitError(e));
             }
         });
         unsubscribeRef = this.subscribe(observer.emit);

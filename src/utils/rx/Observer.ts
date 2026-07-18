@@ -408,6 +408,14 @@ export class Observer<Data = any> implements TObserver<Data> {
         };
         this._subscribe(observer, handler);
         unsubscribeRef = compose(
+            () => {
+                // release the upstream emit awaiting the debounced value,
+                // otherwise the source's emit loop hangs forever
+                if (prevAwaiter) {
+                    prevAwaiter.resolve(undefined as any);
+                    prevAwaiter = null;
+                }
+            },
             () => { if (timeout !== null) { clearTimeout(timeout); timeout = null; } },
             () => this._unsubscribe(handler),
         );
@@ -529,7 +537,11 @@ export class Observer<Data = any> implements TObserver<Data> {
             }
             const result = observer.emit(value);
             if (this.hasListeners) {
-                timeout = setTimeout(handler, interval, value);
+                timeout = setTimeout(() => {
+                    // a timer-driven re-emit has no awaiting parent —
+                    // route its rejection to the error channel
+                    handler(value).catch((e) => observer.emitError(e));
+                }, interval);
             }
             return result;
         };

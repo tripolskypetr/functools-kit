@@ -130,33 +130,40 @@ export class Source {
         ],
         race?: boolean;
     } = {}): TObserver<[A, B, C, D, E, F, G, H, I, J]> => {
-        let disposeRef: Function = () => undefined;
+        const subscriptions: Function[] = [];
         const observer = new Observer<[A, B, C, D, E, F, G, H, I, J]>(
-            () => disposeRef(),
+            () => {
+                while (subscriptions.length) {
+                    const unsubscribe = subscriptions.pop();
+                    unsubscribe && unsubscribe();
+                }
+            },
         );
 
         observers = observers.filter((value) => !!value) as any;
         buffer = [...new Array(observers.length)].map((_, idx) => buffer[idx]) as any;
-        const subscriptions: Function[] = [];
 
         const next = () => {
             if (buffer.every((value) => value !== undefined)) {
-                observer.emit([...buffer] as any);
+                observer.emit([...buffer] as any).catch((e) => observer.emitError(e));
                 !race && buffer.fill(undefined);
             }
         };
 
         observer[LISTEN_CONNECT](() => {
-            observers.forEach((observer, idx) => {
-                if (observer) {
-                    const unsubscribe = observer.connect((value) => {
+            observers.forEach((source, idx) => {
+                if (source) {
+                    if (source instanceof Observer) {
+                        const unsubscribeError = source.onError((e) => observer.emitError(e));
+                        subscriptions.push(() => unsubscribeError());
+                    }
+                    const unsubscribe = source.connect((value) => {
                         buffer[idx] = value;
                         next();
                     });
                     subscriptions.push(() => unsubscribe());
                 }
             });
-            disposeRef = compose(...subscriptions);
         });
 
         return observer;
@@ -311,7 +318,7 @@ export class Source {
         const observer = new Observer<Data>(() => unsubscribeRef());
         observer[LISTEN_CONNECT](() => {
             if (subject.data !== null && subject.data !== undefined) {
-                observer.emit(subject.data);
+                observer.emit(subject.data).catch((e) => observer.emitError(e));
             }
         });
         unsubscribeRef = subject.subscribe(observer.emit);
