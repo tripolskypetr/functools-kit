@@ -63,6 +63,8 @@ import "./spec/rx/interval-resilience.test.mjs";
 import "./spec/rx/dead-chains.test.mjs";
 import "./spec/rx/subscription-hygiene.test.mjs";
 import "./spec/rx/deep-audit.test.mjs";
+import "./spec/rx/leak-matrix.test.mjs";
+import "./spec/rx/chaos-and-limits.test.mjs";
 
 run(import.meta.url, () => {
     console.log("All tests are finished");
