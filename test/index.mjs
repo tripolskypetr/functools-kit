@@ -3,6 +3,7 @@ import { run } from 'worker-testbed';
 
 
 import "./spec/math/math.test.mjs";
+import "./spec/math/math-audit.test.mjs";
 import "./spec/utils/utils.test.mjs";
 import "./spec/helpers/helpers.test.mjs";
 import "./spec/helpers/lock.test.mjs";

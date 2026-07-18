@@ -26,7 +26,9 @@ export const match = <A = Promise<Value>, T = Promise<Value>, E = false>({
     const check = typeof condition === 'function' ? (condition as Function)() : condition;
     const getRun = () => typeof run === 'function' ? (run as Function)() : run;
     const getNot = () => typeof not === 'function' ? (not as Function)() : not;
-    if (check instanceof Promise) {
+    // thenable conditions must take the async path: `instanceof Promise`
+    // missed them, so a truthy thenable object always took the run branch
+    if (check instanceof Promise || (check && typeof (check as any).then === "function")) {
         return new Promise(async (res, rej) => {
             try {
                 if (await check) {

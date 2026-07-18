@@ -8,8 +8,13 @@ type Value = number | boolean;
  * @throws If any of the arguments is a rejected promise.
  * @typeparam T - The type of the arguments and the return value.
  */
+// thenables must take the async path too: `instanceof Promise` missed them,
+// so the thenable object itself (always truthy) hit the boolean reduce
+const isThenable = (arg: any): boolean =>
+    arg instanceof Promise || Boolean(arg && typeof arg.then === "function");
+
 export const or = <T = Promise<Value>>(...args: T[]): T => {
-    if (args.some((arg) => arg instanceof Promise)) {
+    if (args.some(isThenable)) {
         return new Promise<boolean>(async (res, rej) => {
             try {
                 const items = await Promise.all(args);

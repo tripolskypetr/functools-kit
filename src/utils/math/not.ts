@@ -9,8 +9,13 @@ type Value = number | boolean;
  * @param arg - The argument to apply the logical negation operator.
  * @returns - The result of apply the logical negation operator to the argument.
  */
+// thenables must take the async path too: `instanceof Promise` missed them,
+// so `!thenableObject` was always false regardless of the resolved value
+const isThenable = (arg: any): boolean =>
+    arg instanceof Promise || Boolean(arg && typeof arg.then === "function");
+
 export const not = <T = Promise<Value>>(arg: T): T => {
-    if (arg instanceof Promise) {
+    if (isThenable(arg)) {
         return new Promise(async (res, rej) => {
             try {
                 const result = await arg;

@@ -5,7 +5,9 @@ const join = <T = string>(...arr: (T | T[] | null)[] | (T | T[] | null)[][]): T[
             return join(item as T[]);
         }
         return item;
-    }).filter((v) => typeof v === "string" || !!v) as T[];
+        // keep all strings and all numbers: `!!v` alone dropped 0 even though
+        // the public signatures accept number
+    }).filter((v) => typeof v === "string" || typeof v === "number" || !!v) as T[];
 };
 
 /**

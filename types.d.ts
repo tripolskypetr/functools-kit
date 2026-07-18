@@ -1721,36 +1721,12 @@ declare function iterateList<T = IRowData>(rows: T[], map?: (row: T) => Promise<
 declare const has: <T = unknown>(arr: T | T[] | Set<T> | Map<T, unknown> | null | undefined, ...value: T[]) => boolean;
 
 type Value$3 = number | boolean;
-/**
- * Performs a logical AND operation on multiple values.
- *
- * @template T - The type of the values
- * @param args - The values to perform the logical AND operation on
- * @returns - The result of the logical AND operation
- */
 declare const and: <T = Promise<Value$3>>(...args: T[]) => T;
 
 type Value$2 = number | boolean;
-/**
- * Returns a value of type T representing the logical OR operation on the given arguments.
- *
- * @param args - The arguments to be evaluated for the logical OR operation.
- * @returns A value of type T representing the result of the logical OR operation.
- * @throws If any of the arguments is a rejected promise.
- * @typeparam T - The type of the arguments and the return value.
- */
 declare const or: <T = Promise<Value$2>>(...args: T[]) => T;
 
 type Value$1 = number | boolean;
-/**
- * Applies the logical negation operator to the given argument.
- * If the argument is a Promise, it returns a new Promise that resolves to the negation of the resolved value of the argument Promise.
- * If the argument is not a Promise, it returns the negation of the argument.
- *
- * @template T - The type of the argument and the return value.
- * @param arg - The argument to apply the logical negation operator.
- * @returns - The result of apply the logical negation operator to the argument.
- */
 declare const not: <T = Promise<Value$1>>(arg: T) => T;
 
 type Value = number | boolean;

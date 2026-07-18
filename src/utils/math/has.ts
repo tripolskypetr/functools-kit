@@ -11,7 +11,9 @@ export const has = <T = unknown>(
   if (arr instanceof Map) {
     return value.some((v) => arr.has(v));
   }
-  if (arr) {
+  // exclude only null/undefined: a truthiness check made falsy scalars
+  // (0, "", false) unmatchable — has(0, 0) returned false
+  if (arr !== null && arr !== undefined) {
     return value.some((v) => arr === v);
   }
   return false;
