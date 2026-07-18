@@ -10,21 +10,33 @@ declare var setTimeout: any;
  */
 export const fromInterval = (delay: number): TObserver<number> => {
     let timeout: ReturnType<typeof setTimeout>;
+    let stopped = false;
     let iterationIdx = 0;
     const observer = new Observer<number>(() => {
+        stopped = true;
         if (timeout !== undefined) {
             clearTimeout(timeout);
         }
     });
     const process = async () => {
-        await observer.emit(iterationIdx);
+        if (stopped) {
+            return;
+        }
+        try {
+            // a throwing subscriber must not kill the interval:
+            // forward the error downstream and keep ticking
+            await observer.emit(iterationIdx);
+        } catch (e) {
+            observer.emitError(e);
+        }
         iterationIdx++;
-        timeout = setTimeout(() => {
-            process().catch((e) => observer.emitError(e));
-        }, delay);
+        if (stopped) {
+            return;
+        }
+        timeout = setTimeout(process, delay);
     };
     observer[LISTEN_CONNECT](() => {
-        process().catch((e) => observer.emitError(e));
+        void process();
     });
     return observer;
 };

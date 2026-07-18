@@ -37,8 +37,12 @@ export class Task {
      * @return - This method does not return any value.
      */
     constructor(public readonly target: Promise<any>) {
-        target.then(() => this._status = "fulfilled");
-        target.catch(() => this._status = "rejected");
+        // single then(onFulfilled, onRejected) so the derived promise
+        // never rejects unhandled when target rejects
+        target.then(
+            () => this._status = "fulfilled",
+            () => this._status = "rejected",
+        );
     };
 };
 

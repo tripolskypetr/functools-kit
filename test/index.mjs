@@ -59,6 +59,7 @@ import "./spec/rx/fromDelay-fromInterval-throws.test.mjs";
 import "./spec/rx/from-chain-throws.test.mjs";
 import "./spec/rx/error-propagation-extra.test.mjs";
 import "./spec/rx/toIteratorContext.test.mjs";
+import "./spec/rx/interval-resilience.test.mjs";
 
 run(import.meta.url, () => {
     console.log("All tests are finished");

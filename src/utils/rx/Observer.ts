@@ -103,8 +103,8 @@ export class Observer<Data = any> implements TObserver<Data> {
             this.broadcast.emit(CONNECT_EVENT);
         });
         observer[LISTEN_DISCONNECT](() => {
+            this.broadcast.unsubscribe(ERROR_EVENT, errorForwarder);
             if (!this.hasListeners) {
-                this.broadcast.unsubscribe(ERROR_EVENT, errorForwarder);
                 this.broadcast.emit(DISCONNECT_EVENT);
             }
         });
@@ -576,9 +576,12 @@ export class Observer<Data = any> implements TObserver<Data> {
      * Unsubscribes from all events and performs cleanup.
      */
     public unsubscribe = () => {
-        this.broadcast.unsubscribeAll();
-        this.broadcast.emit(DISCONNECT_EVENT);
+        // dispose first so the parent's disconnect listener sees this
+        // observer detached; emit before unsubscribeAll or the listener
+        // registered by the parent is wiped and never runs
         this.dispose();
+        this.broadcast.emit(DISCONNECT_EVENT);
+        this.broadcast.unsubscribeAll();
     };
 
     /**
@@ -593,6 +596,7 @@ export class Observer<Data = any> implements TObserver<Data> {
             if (isDisposed) return;
             isDisposed = true;
             this.broadcast.unsubscribe(ERROR_EVENT, errorHandler);
+            unsub && unsub();
             awaiter.reject(error);
         };
         this.broadcast.subscribe(ERROR_EVENT, errorHandler);
@@ -604,6 +608,11 @@ export class Observer<Data = any> implements TObserver<Data> {
             unsub && unsub();
             awaiter.resolve(value);
         });
+        // a value or error delivered synchronously during connect fires
+        // before unsub is assigned — release the subscription here
+        if (isDisposed) {
+            unsub();
+        }
         return promise;
     });
 
