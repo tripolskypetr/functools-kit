@@ -74,35 +74,49 @@ export const iterateDocuments = async function* <Data = IRowData>({
    * @property page - The current page number. Defaults to 0.
    * @property limit - The maximum number of objects to fetch per request.
    */
-  let lastQuery = request({
+  let lastQuery: Promise<Data[]> | null = Promise.resolve(request({
     lastId: null,
     offset: 0,
     page: 0,
     limit,
-  });
+  }));
+  // guard the prefetched page: if the consumer stops iterating (break/return)
+  // while it is in flight, its rejection must not become an unhandled one
+  lastQuery.catch(() => undefined);
 
-  while (counter < totalDocuments) {
-    const response = await lastQuery;
-    if (response.length < limit) {
+  try {
+    while (counter < totalDocuments && lastQuery) {
+      const response = await lastQuery;
+      lastQuery = null;
+      if (response.length < limit) {
+        yield response;
+        break;
+      }
+      if (response.length > limit) {
+        throw new Error('functool-kit iterateDocuments response.length > limit');
+      }
+      lastId = getId(response[response.length - 1]) ?? null;
+      counter += limit;
+      // prefetch the next page only when it will actually be consumed —
+      // the old unconditional prefetch fired one orphan request past the
+      // totalDocuments boundary
+      if (counter < totalDocuments) {
+        /**
+         * Represents the last query made by the user.
+         * @class
+         */
+        lastQuery = Promise.resolve(request({
+          lastId,
+          offset: counter,
+          page: Math.ceil(counter / limit),
+          limit,
+        }));
+        lastQuery.catch(() => undefined);
+      }
       yield response;
-      break;
     }
-    if (response.length > limit) {
-      throw new Error('functool-kit iterateDocuments response.length > limit');
-    }
-    lastId = getId(response[response.length - 1]) ?? null;
-    counter += limit;
-    /**
-     * Represents the last query made by the user.
-     * @class
-     */
-    lastQuery = request({
-      lastId,
-      offset: counter,
-      page: Math.ceil(counter / limit),
-      limit,
-    });
-    yield response;
+  } finally {
+    lastQuery = null;
   }
 
 };
