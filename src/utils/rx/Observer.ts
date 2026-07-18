@@ -34,6 +34,7 @@ export class Observer<Data = any> implements TObserver<Data> {
 
     private readonly broadcast = new EventEmitter();
     private _isShared = false;
+    private _isDisposed = false;
 
     /**
      * Returns the current value of the 'isShared' property.
@@ -60,7 +61,7 @@ export class Observer<Data = any> implements TObserver<Data> {
      * Sources use this to propagate async process errors through the chain.
      */
     public emitError = (error: unknown) => {
-        this.broadcast.emit(ERROR_EVENT, error);
+        this.broadcast.emit(ERROR_EVENT, error).catch(() => undefined);
     };
 
     /**
@@ -104,8 +105,11 @@ export class Observer<Data = any> implements TObserver<Data> {
         });
         observer[LISTEN_DISCONNECT](() => {
             this.broadcast.unsubscribe(ERROR_EVENT, errorForwarder);
-            if (!this.hasListeners) {
-                this.broadcast.emit(DISCONNECT_EVENT);
+            // a shared parent stays alive when its last child leaves —
+            // cascading DISCONNECT here would sever the upstream error
+            // forwarder of a live node
+            if (!this.hasListeners && !this._isShared) {
+                this.broadcast.emit(DISCONNECT_EVENT).catch(() => undefined);
             }
         });
     };
@@ -124,9 +128,10 @@ export class Observer<Data = any> implements TObserver<Data> {
      * If disposed successfully, emits the DISCONNECT_EVENT.
      */
     private tryDispose = () => {
-        if (!this.hasListeners && !this._isShared) {
+        if (!this.hasListeners && !this._isShared && !this._isDisposed) {
+            this._isDisposed = true;
             this.dispose();
-            this.broadcast.emit(DISCONNECT_EVENT);
+            this.broadcast.emit(DISCONNECT_EVENT).catch(() => undefined);
         }
     };
 
@@ -144,14 +149,17 @@ export class Observer<Data = any> implements TObserver<Data> {
         );
         const observer = new Observer<T>(dispose);
         const handler = async (value: Data): Promise<void> => {
+            let pendingValue: T;
             try {
                 const raw = callbackfn(value) as any;
-                const pendingValue: T = raw && raw instanceof Promise ? await raw : raw;
-                await observer.emit(pendingValue);
+                pendingValue = raw && raw instanceof Promise ? await raw : raw;
             } catch (e) {
+                // local callback error: notify this chain; a downstream emit
+                // error was already reported at the throwing level — propagate only
                 observer.emitError(e);
                 throw e;
             }
+            await observer.emit(pendingValue);
         };
         this._subscribe(observer, handler);
         unsubscribeRef = () => this._unsubscribe(handler);
@@ -173,18 +181,19 @@ export class Observer<Data = any> implements TObserver<Data> {
         );
         const observer = new Observer<T>(dispose);
         const process = queued(async (value: Data) => {
+            let pendingValue: T[] | T;
             try {
-                const pendingValue = callbackfn(value);
-                if (Array.isArray(pendingValue)) {
-                    for (const v of pendingValue) {
-                        await observer.emit(v);
-                    }
-                } else {
-                    await observer.emit(pendingValue);
-                }
+                pendingValue = callbackfn(value);
             } catch (e) {
                 observer.emitError(e);
                 throw e;
+            }
+            if (Array.isArray(pendingValue)) {
+                for (const v of pendingValue) {
+                    await observer.emit(v);
+                }
+            } else {
+                await observer.emit(pendingValue);
             }
         });
         const handler = (value: Data) => process(value);
@@ -225,15 +234,16 @@ export class Observer<Data = any> implements TObserver<Data> {
         );
         const observer = new Observer<T>(dispose);
         const handler = async (value: Data): Promise<void> => {
+            let pendingValue: T;
             try {
                 const raw = callbackfn(acm, value) as any;
-                const pendingValue: T = raw && raw instanceof Promise ? await raw : raw;
+                pendingValue = raw && raw instanceof Promise ? await raw : raw;
                 acm = pendingValue;
-                await observer.emit(pendingValue);
             } catch (e) {
                 observer.emitError(e);
                 throw e;
             }
+            await observer.emit(pendingValue);
         };
         this._subscribe(observer, handler);
         unsubscribeRef = () => this._unsubscribe(handler);
@@ -254,17 +264,21 @@ export class Observer<Data = any> implements TObserver<Data> {
         );
         const observer = new Observer(dispose);
         const process = queued(async (data: Data) => {
+            let items: any[] | null = null;
             try {
                 if (Array.isArray(data)) {
-                    for (const item of data.flat(Number.POSITIVE_INFINITY)) {
-                        await observer.emit(item);
-                    }
-                } else {
-                    await observer.emit(data);
+                    items = data.flat(Number.POSITIVE_INFINITY);
                 }
             } catch (e) {
                 observer.emitError(e);
                 throw e;
+            }
+            if (items) {
+                for (const item of items) {
+                    await observer.emit(item);
+                }
+            } else {
+                await observer.emit(data);
             }
         });
         const handler = (data: Data) => process(data);
@@ -293,18 +307,21 @@ export class Observer<Data = any> implements TObserver<Data> {
         const observer = new Observer<T>(dispose);
         const iteraction = queued(callbackfn);
         const handler = async (value: Data) => {
+            let pendingValue: T | typeof CANCELED_PROMISE_SYMBOL;
             try {
-                const pendingValue = await iteraction(value);
-                if (pendingValue !== CANCELED_PROMISE_SYMBOL) {
-                    await observer.emit(pendingValue);
-                }
+                pendingValue = await iteraction(value);
             } catch (e: any) {
+                // the boundary covers only the user callback: fallbackfn must
+                // not swallow downstream consumer errors
                 if (fallbackfn) {
                     fallbackfn(e);
-                } else {
-                    observer.emitError(e);
-                    throw e;
+                    return;
                 }
+                observer.emitError(e);
+                throw e;
+            }
+            if (pendingValue !== CANCELED_PROMISE_SYMBOL) {
+                await observer.emit(pendingValue);
             }
         };
         this._subscribe(observer, handler);
@@ -329,14 +346,15 @@ export class Observer<Data = any> implements TObserver<Data> {
         );
         const observer = new Observer<Data>(dispose);
         const handler = async (value: Data): Promise<void> => {
+            let delegate: boolean;
             try {
                 const raw = callbackfn(value) as any;
-                const delegate: boolean = raw && raw instanceof Promise ? await raw : raw;
-                if (delegate) await observer.emit(value);
+                delegate = raw && raw instanceof Promise ? await raw : raw;
             } catch (e) {
                 observer.emitError(e);
                 throw e;
             }
+            if (delegate) await observer.emit(value);
         };
         this._subscribe(observer, handler);
         unsubscribeRef = () => this._unsubscribe(handler);
@@ -360,11 +378,11 @@ export class Observer<Data = any> implements TObserver<Data> {
             try {
                 const r = callbackfn(value) as any;
                 if (r && r instanceof Promise) await r;
-                await observer.emit(value);
             } catch (e) {
                 observer.emitError(e);
                 throw e;
             }
+            await observer.emit(value);
         };
         this._subscribe(observer, handler);
         unsubscribeRef = () => this._unsubscribe(handler);
@@ -479,7 +497,9 @@ export class Observer<Data = any> implements TObserver<Data> {
             }
         };
         this.broadcast.subscribe(OBSERVER_EVENT, handler);
-        this.broadcast.emit(CONNECT_EVENT);
+        // a synchronously throwing source emitter must surface on the
+        // error channel, not as a floating rejection
+        this.broadcast.emit(CONNECT_EVENT).catch((e) => this.emitError(e));
         return compose(
             () => this.tryDispose(),
             () => this._unsubscribe(handler),
@@ -536,7 +556,7 @@ export class Observer<Data = any> implements TObserver<Data> {
                 clearTimeout(timeout);
             }
             const result = observer.emit(value);
-            if (this.hasListeners) {
+            if (observer.hasListeners) {
                 timeout = setTimeout(() => {
                     // a timer-driven re-emit has no awaiting parent —
                     // route its rejection to the error channel
@@ -594,8 +614,11 @@ export class Observer<Data = any> implements TObserver<Data> {
         // dispose first so the parent's disconnect listener sees this
         // observer detached; emit before unsubscribeAll or the listener
         // registered by the parent is wiped and never runs
-        this.dispose();
-        this.broadcast.emit(DISCONNECT_EVENT);
+        if (!this._isDisposed) {
+            this._isDisposed = true;
+            this.dispose();
+            this.broadcast.emit(DISCONNECT_EVENT).catch(() => undefined);
+        }
         this.broadcast.unsubscribeAll();
     };
 
@@ -615,6 +638,14 @@ export class Observer<Data = any> implements TObserver<Data> {
             awaiter.reject(error);
         };
         this.broadcast.subscribe(ERROR_EVENT, errorHandler);
+        // observer torn down externally while pending: settle instead of
+        // hanging forever (singlerun would pin the dead promise otherwise)
+        this[LISTEN_DISCONNECT](() => {
+            if (isDisposed) return;
+            isDisposed = true;
+            this.broadcast.unsubscribe(ERROR_EVENT, errorHandler);
+            awaiter.reject(new Error('functools-kit Observer disposed while toPromise was pending'));
+        });
         let unsub: Fn;
         unsub = this.connect((value) => {
             if (isDisposed) return;
@@ -641,27 +672,39 @@ export class Observer<Data = any> implements TObserver<Data> {
     public toIteratorContext = () => {
         const buffer: Data[] = [];
         let isDone = false;
+        let isStopped = false;
         let pendingError: unknown = undefined;
         let hasError = false;
         let awaiter: ReturnType<typeof createAwaiter<void>>[1] | null = null;
-        const unsub = this.connect((value) => {
-            buffer.push(value);
+        const wake = () => {
             if (awaiter) {
                 const a = awaiter;
                 awaiter = null;
                 a.resolve();
             }
-        });
+        };
+        // error subscription goes first: a cold source connecting
+        // synchronously can fail before connect() returns
         const unsubError = this.onError((error) => {
             hasError = true;
             pendingError = error;
             isDone = true;
-            if (awaiter) {
-                const a = awaiter;
-                awaiter = null;
-                a.resolve();
-            }
+            wake();
         });
+        const unsub = this.connect((value) => {
+            buffer.push(value);
+            wake();
+        });
+        const stop = () => {
+            if (isStopped) return;
+            isStopped = true;
+            isDone = true;
+            wake();
+            unsub();
+            unsubError();
+        };
+        // observer torn down externally: end iteration instead of hanging
+        this[LISTEN_DISCONNECT](stop);
         const iterate = async function* () {
             try {
                 while (!isDone || buffer.length > 0) {
@@ -675,23 +718,16 @@ export class Observer<Data = any> implements TObserver<Data> {
                     }
                     if (hasError) throw pendingError;
                 }
+                // an error that arrived before iteration started (or with an
+                // empty buffer) never enters the loop body — rethrow here
+                if (hasError) throw pendingError;
             } finally {
-                unsub();
-                unsubError();
+                stop();
             }
         };
         return {
             iterate,
-            done() {
-                isDone = true;
-                if (awaiter) {
-                    const a = awaiter;
-                    awaiter = null;
-                    a.resolve();
-                }
-                unsub();
-                unsubError();
-            },
+            done: stop,
         }
     };
 

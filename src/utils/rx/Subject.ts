@@ -1,5 +1,5 @@
 import EventEmitter from "./EventEmitter";
-import Observer from "./Observer";
+import Observer, { LISTEN_CONNECT } from "./Observer";
 
 import type TSubject from "../../model/TSubject";
 import TObserver, { TObservable } from "../../model/TObserver";
@@ -7,6 +7,8 @@ import sleep from "../sleep";
 import singlerun from "../hof/singlerun";
 
 export const SUBJECT_EVENT = Symbol('rn-declarative-subject');
+
+const SUBJECT_ERROR_EVENT = Symbol('rn-declarative-subject-error');
 
 type Function = (...args: any[]) => void;
 
@@ -20,6 +22,7 @@ type Function = (...args: any[]) => void;
 export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
 
     private _emitter = new EventEmitter();
+    private _errorEmitter = new EventEmitter();
     private _rootObservers = new Set<Observer<Data>>();
 
     private _subscribeObserver(observer: Observer<Data>): () => void {
@@ -58,9 +61,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - An observer with the mapped values.
      */
     public map<T = any>(callbackfn: (value: Data) => T): TObserver<T> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.map(callbackfn);
     };
 
@@ -71,9 +76,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - The observer that emits the flattened values.
      */
     public flatMap<T = any>(callbackfn: (value: Data) => T[]): TObserver<T> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.flatMap(callbackfn);
     };
 
@@ -86,9 +93,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - An observer that emits the accumulated value when the original observer completes
      */
     public reduce<T = any>(callbackfn: (acm: T, cur: Data) => T, begin: T): TObserver<T> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.reduce(callbackfn, begin);
     };
 
@@ -101,9 +110,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - Returns a new observer that emits the mapped values.
      */
     public mapAsync<T = any>(callbackfn: (value: Data) => Promise<T>, fallbackfn?: (e: Error) => void): TObserver<T> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.mapAsync(callbackfn, fallbackfn);
     };
 
@@ -114,9 +125,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - A new observer with filtered values.
      */
     public filter(callbackfn: (value: Data) => boolean): TObserver<Data> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.filter(callbackfn);
     };
 
@@ -125,9 +138,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      *
      */
     public tap(callbackfn: (value: Data) => void): TObserver<Data> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.tap(callbackfn);
     };
 
@@ -142,9 +157,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @category Observables
      */
     public operator<T = any>(callbackfn: (value: TObserver<Data>) => TObserver<T>): TObserver<T> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.operator(callbackfn);
     };
 
@@ -154,9 +171,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - The observer that emits batches of arrays.
      */
     public split(): Observer<ReadonlyArray<FlatArray<Data[], 20>>> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.split();
     };
 
@@ -166,9 +185,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - The debounced observer.
      */
     public debounce(delay?: number): TObserver<Data> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.debounce(delay);
     };
 
@@ -178,9 +199,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - The delayed observer.
      */
     public delay(delay?: number): TObserver<Data> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.delay(delay);
     };
 
@@ -191,9 +214,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - The created observer.
      */
     public repeat(interval?: number): TObserver<Data> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer.repeat(interval);
     };
 
@@ -205,9 +230,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - A new observer that emits values from both observers.
      */
     public merge<T = any>(observer: TObserver<T>): TObserver<Data | T> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const merged = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(merged);
+        merged[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(merged);
+        });
         return merged.merge(observer);
     };
 
@@ -233,6 +260,7 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      */
     public unsubscribeAll() {
         this._emitter.unsubscribeAll();
+        this._errorEmitter.unsubscribeAll();
         this._rootObservers.clear();
     };
 
@@ -264,9 +292,20 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
             });
             errorHandlers.push(unsub);
         }
-        await this._emitter.emit(SUBJECT_EVENT, data);
-        for (const unsub of errorHandlers) unsub();
-        if (hasError) throw firstError;
+        try {
+            await this._emitter.emit(SUBJECT_EVENT, data);
+        } catch (e) {
+            this._errorEmitter.emit(SUBJECT_ERROR_EVENT, e).catch(() => undefined);
+            throw e;
+        } finally {
+            // without finally a rejecting emit leaks one handler per root
+            // observer on every failed next()
+            for (const unsub of errorHandlers) unsub();
+        }
+        if (hasError) {
+            this._errorEmitter.emit(SUBJECT_ERROR_EVENT, firstError).catch(() => undefined);
+            throw firstError;
+        }
     };
 
     /**
@@ -274,12 +313,12 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * Returns an unsubscribe function.
      */
     public onError(fn: (error: unknown) => void): () => void {
-        const observer = new Observer<Data>(() => unsubscribeRef());
-        let unsubscribeRef: Function = this._subscribeObserver(observer);
-        const unsubscribeError = observer.onError(fn);
+        // errors are collected at next() level: chain errors reject the
+        // awaited emit and never reach a detached root observer's channel,
+        // so a dedicated error emitter is the only reliable delivery path
+        this._errorEmitter.subscribe(SUBJECT_ERROR_EVENT, fn);
         return () => {
-            unsubscribeError();
-            unsubscribeRef();
+            this._errorEmitter.unsubscribe(SUBJECT_ERROR_EVENT, fn);
         };
     };
 
@@ -291,9 +330,11 @@ export class Subject<Data = any> implements TSubject<Data>, TObservable<Data> {
      * @returns - The created observer.
      */
     public toObserver(): TObserver<Data> {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = this._subscribeObserver(observer);
+        observer[LISTEN_CONNECT](() => {
+            unsubscribeRef = this._subscribeObserver(observer);
+        });
         return observer;
     };
 

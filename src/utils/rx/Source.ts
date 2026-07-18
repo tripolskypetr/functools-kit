@@ -14,6 +14,8 @@ import compose from "../compose";
 
 type Function = (...args: any[]) => void;
 
+const EMPTY_VALUE = Symbol('empty-value');
+
 /**
  * The Source class provides utility functions for creating and manipulating Observers.
  */
@@ -141,12 +143,16 @@ export class Source {
         );
 
         observers = observers.filter((value) => !!value) as any;
-        buffer = [...new Array(observers.length)].map((_, idx) => buffer[idx]) as any;
+        // EMPTY_VALUE sentinel instead of undefined: a legitimately emitted
+        // undefined must not read as "no value yet"
+        buffer = [...new Array(observers.length)].map((_, idx) =>
+            buffer[idx] === undefined ? EMPTY_VALUE : buffer[idx]
+        ) as any;
 
         const next = () => {
-            if (buffer.every((value) => value !== undefined)) {
+            if (buffer.every((value) => value !== EMPTY_VALUE)) {
                 observer.emit([...buffer] as any).catch((e) => observer.emitError(e));
-                !race && buffer.fill(undefined);
+                !race && buffer.fill(EMPTY_VALUE as any);
             }
         };
 
@@ -222,7 +228,10 @@ export class Source {
     public static createHot = <Data = any>(emitter: (next: (data: Data) => void) => ((() => void) | void)) => {
         let unsubscribeRef: Function;
         const observer = new Observer<Data>(() => unsubscribeRef());
-        unsubscribeRef = emitter(observer.emit) || (() => undefined);
+        const next = (data: Data) => {
+            observer.emit(data).catch((e) => observer.emitError(e));
+        };
+        unsubscribeRef = emitter(next) || (() => undefined);
         return observer;
     };
 
@@ -237,8 +246,15 @@ export class Source {
     public static createCold = <Data = any>(emitter: (next: (data: Data) => void) => ((() => void) | void)) => {
         let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
+        const next = (data: Data) => {
+            observer.emit(data).catch((e) => observer.emitError(e));
+        };
         observer[LISTEN_CONNECT](() => {
-            unsubscribeRef = emitter(observer.emit) || (() => undefined);
+            try {
+                unsubscribeRef = emitter(next) || (() => undefined);
+            } catch (e) {
+                observer.emitError(e);
+            }
         });
         return observer;
     };
@@ -260,11 +276,25 @@ export class Source {
     public static pipe = <Data = any, Output = any>(target: TObserver<Data>, emitter: (subject: TSubject<Data>, next: (output: Output) => void) => ((() => void) | void)) => {
         let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Output>(() => unsubscribeRef());
+        const next = (data: Output) => {
+            observer.emit(data).catch((e) => observer.emitError(e));
+        };
         observer[LISTEN_CONNECT](() => {
             const subject = new Subject<Data>();
+            let unsubscribeError: Function = () => undefined;
+            // target-chain errors must reach the pipe output, not vanish upstream
+            if (typeof target.onError === 'function' && !(target as any).isUnicasted) {
+                unsubscribeError = target.onError((e) => observer.emitError(e));
+            }
             const unsubscribeTarget = target.connect(subject.next);
-            const unsubscribeEmitter = emitter(subject, observer.emit) || (() => undefined);
+            let unsubscribeEmitter: Function = () => undefined;
+            try {
+                unsubscribeEmitter = emitter(subject, next) || (() => undefined);
+            } catch (e) {
+                observer.emitError(e);
+            }
             unsubscribeRef = compose(
+                () => unsubscribeError(),
                 () => unsubscribeEmitter(),
                 () => unsubscribeTarget(),
             );
@@ -286,8 +316,14 @@ export class Source {
     public static fromValue = <Data = any>(data: Data | (() => Data)): TObserver<Data> => {
         const observer = new Observer<Data>(() => undefined);
         observer[LISTEN_CONNECT](() => {
-            const value = typeof data === 'function' ? (data as () => Data)() : data;
-            observer.emit(value).catch((e) => observer.emitError(e));
+            try {
+                const value = typeof data === 'function' ? (data as () => Data)() : data;
+                observer.emit(value).catch((e) => observer.emitError(e));
+            } catch (e) {
+                // a synchronously throwing factory must surface on the error
+                // channel, not escape through the unawaited CONNECT emit
+                observer.emitError(e);
+            }
         });
         return observer;
     };

@@ -83,7 +83,14 @@ export class EventEmitter {
      * @returns - A function that can be called to unsubscribe the callback function from the event.
      */
     public once(eventName: EventKey, callback: Function) {
+        let fired = false;
         const subscriber = (...args: any[]) => {
+            // two interleaved emits can both hold this subscriber in their
+            // snapshots — self-unsubscribe alone is not enough
+            if (fired) {
+                return;
+            }
+            fired = true;
             this.unsubscribe(eventName, subscriber);
             return callback(...args);
         };
@@ -103,7 +110,14 @@ export class EventEmitter {
     public async emit(eventName: EventKey, ...args: any[]) {
         const event = [...this._events && this._events[eventName] || []];
         for (let i = 0; i !== event.length; i++) {
-            const result = event[i](...args) as any;
+            const listener = event[i];
+            // skip listeners unsubscribed while an earlier (async) listener
+            // of this same emission was awaited
+            const current = this._events && this._events[eventName] || [];
+            if (!current.includes(listener)) {
+                continue;
+            }
+            const result = listener(...args) as any;
             if (result && result instanceof Promise) await result;
         }
     };

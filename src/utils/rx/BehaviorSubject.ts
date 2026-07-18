@@ -11,8 +11,13 @@ import TObserver, { TObservable } from "../../model/TObserver";
  */
 export class BehaviorSubject<Data = any> extends Subject<Data> implements TBehaviorSubject<Data>, TObservable<Data>  {
 
+    private _hasValue: boolean;
+
     constructor(private _data: Data | null = null) {
         super();
+        // a null/undefined constructor default means "never set"; an explicit
+        // next(null) later must still be replayed
+        this._hasValue = _data !== null && _data !== undefined;
     };
 
     /**
@@ -32,6 +37,7 @@ export class BehaviorSubject<Data = any> extends Subject<Data> implements TBehav
      */
     public next = async (data: Data) => {
         this._data = data;
+        this._hasValue = true;
         await super.next(data);
     };
 
@@ -41,14 +47,14 @@ export class BehaviorSubject<Data = any> extends Subject<Data> implements TBehav
      * @returns The observer instance.
      */
     public toObserver = (): TObserver<Data> => {
-        let unsubscribeRef: Function;
+        let unsubscribeRef: Function = () => undefined;
         const observer = new Observer<Data>(() => unsubscribeRef());
         observer[LISTEN_CONNECT](() => {
-            if (this._data !== null && this._data !== undefined) {
-                observer.emit(this._data).catch((e) => observer.emitError(e));
+            unsubscribeRef = this.subscribe(observer.emit);
+            if (this._hasValue) {
+                observer.emit(this._data as Data).catch((e) => observer.emitError(e));
             }
         });
-        unsubscribeRef = this.subscribe(observer.emit);
         return observer;
     };
 

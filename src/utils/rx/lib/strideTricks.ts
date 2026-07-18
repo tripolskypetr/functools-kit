@@ -15,13 +15,18 @@ export const strideTricks = <T = any>(strideSize: number, step = Math.floor(stri
   let needExtraStep = false;
   return target
     .tap((buffer) => {
-      if (windowSize === -1) {
-        windowSize = buffer.length;
-        totalSteps = Math.ceil((windowSize - strideSize) / step);
-        needExtraStep = totalSteps * strideSize !== windowSize;
-        resultSize = totalSteps + (needExtraStep ? 1 : 0);
-        if (strideSize > windowSize || step > strideSize) throw new Error('rn-declarative strideTricks too big stride');
+      if (windowSize !== -1) {
+        return;
       }
+      // validate before caching state, otherwise an invalid config throws
+      // once and silently emits corrupt windows afterwards
+      if (strideSize > buffer.length || step > strideSize) throw new Error('rn-declarative strideTricks too big stride');
+      windowSize = buffer.length;
+      // window count is floor((w - s) / step) + 1; the tail stride is needed
+      // exactly when those windows do not end at the last element
+      totalSteps = Math.floor((windowSize - strideSize) / step) + 1;
+      needExtraStep = (totalSteps - 1) * step + strideSize !== windowSize;
+      resultSize = totalSteps + (needExtraStep ? 1 : 0);
     })
     .flatMap((buffer) => {
 

@@ -45,18 +45,20 @@ export const cancelable = <T extends any = any, P extends any[] = any[]>(promise
             resolve(CANCELED_PROMISE_SYMBOL);
         };
         const result = promise(...args);
-        result.then((val) => {
-            if (!hasCanceled) {
-                resolve(val);
-                return;
-            }
-        });
-        result.catch((error) => {
-            if (!hasCanceled) {
-                reject(error);
-                return;
-            }
-        });
+        // single then(onFulfilled, onRejected): a separate .then(cb) derives
+        // a promise that rejects unhandled whenever result rejects
+        result.then(
+            (val) => {
+                if (!hasCanceled) {
+                    resolve(val);
+                }
+            },
+            (error) => {
+                if (!hasCanceled) {
+                    reject(error);
+                }
+            },
+        );
     });
 
     /**

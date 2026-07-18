@@ -38,6 +38,9 @@ export const queued = <T extends any = any, P extends any[] = any[]>(promise: (.
         const cancel: Function = () => { isCanceled = true };
         cancelFn = cancelFn ? compose(cancelFn, cancel) : cancel;
         const currentPromise: Promise<any> = lastPromise
+            // a predecessor's rejection is its caller's to handle — it must
+            // not poison this call (skipping it and stealing its error)
+            .catch(() => undefined)
             .then(async () => {
                 if (!isCanceled) {
                     return await promise(...args)

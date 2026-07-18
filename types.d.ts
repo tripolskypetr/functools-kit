@@ -249,6 +249,7 @@ declare class Observer<Data = any> implements TObserver$1<Data> {
     private readonly dispose;
     private readonly broadcast;
     private _isShared;
+    private _isDisposed;
     /**
      * Returns the current value of the 'isShared' property.
      *
@@ -439,7 +440,7 @@ declare class Observer<Data = any> implements TObserver$1<Data> {
      */
     toIteratorContext: () => {
         iterate: () => AsyncGenerator<Awaited<Data>, void, unknown>;
-        done(): void;
+        done: () => void;
     };
 }
 
@@ -493,6 +494,7 @@ type Function$1 = (...args: any[]) => void;
  */
 declare class Subject<Data = any> implements TSubject$1<Data>, TObservable$1<Data> {
     private _emitter;
+    private _errorEmitter;
     private _rootObservers;
     private _subscribeObserver;
     constructor();
@@ -1270,6 +1272,7 @@ interface TBehaviorSubject$1<Data = unknown> extends TSubject$1<Data> {
  */
 declare class BehaviorSubject<Data = any> extends Subject<Data> implements TBehaviorSubject$1<Data>, TObservable$1<Data> {
     private _data;
+    private _hasValue;
     constructor(_data?: Data | null);
     /**
      * Retrieves the data stored in the instance.
