@@ -1,6 +1,7 @@
-import not from "../utils/math/not";
 import isObject from "../utils/isObject";
-import deepClone from "../utils/deepClone";
+
+const hasTool = (tools: Record<string, unknown>, name: string) =>
+  Object.prototype.hasOwnProperty.call(tools, name);
 
 export class ToolRegistry<T extends Record<string, unknown> = {}> {
   constructor(private registryName: string, private tools: T = {} as T) {}
@@ -9,7 +10,9 @@ export class ToolRegistry<T extends Record<string, unknown> = {}> {
     name: K,
     tool: U
   ): ToolRegistry<T & Record<K, U>> => {
-    if (name in this.tools) {
+    // hasOwnProperty, not `in`: `in` walks the prototype chain, so names like
+    // toString / constructor would falsely read as already-registered
+    if (hasTool(this.tools, name)) {
       throw new Error(
         `functools-kit Tool is already registered name=${String(
           name
@@ -26,7 +29,7 @@ export class ToolRegistry<T extends Record<string, unknown> = {}> {
     name: K,
     tool: U
   ): ToolRegistry<T & Record<K, U>> => {
-    if (name in this.tools) {
+    if (hasTool(this.tools, name)) {
       return new ToolRegistry(this.registryName, {
         ...this.tools,
         [name]: isObject(tool)
@@ -41,7 +44,7 @@ export class ToolRegistry<T extends Record<string, unknown> = {}> {
   };
 
   public get = <K extends keyof T>(name: K): T[K] => {
-    if (name in this.tools) {
+    if (hasTool(this.tools, name as string)) {
       return this.tools[name];
     }
     throw new Error(
@@ -54,7 +57,7 @@ export class ToolRegistry<T extends Record<string, unknown> = {}> {
   public init = () => {
     for (const tool of Object.values(this.tools)) {
       // @ts-ignore
-      tool.init && tool.init();
+      tool && tool.init && tool.init();
     }
   };
 }

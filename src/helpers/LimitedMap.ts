@@ -5,9 +5,16 @@ export class LimitedMap<K, V> extends Map<K, V> {
     }
 
     set(key: K, value: V) {
-        if (!this.has(key) && this.size >= this._maxSize) {
-            const oldestKey = this.keys().next().value;
-            this.delete(oldestKey);
+        // maxSize <= 0 means "hold nothing" — the previous single-evict left
+        // one entry behind
+        if (this._maxSize <= 0) {
+            return this;
+        }
+        if (!this.has(key)) {
+            while (this.size >= this._maxSize && this.size > 0) {
+                const oldestKey = this.keys().next().value;
+                this.delete(oldestKey);
+            }
         }
         return super.set(key, value);
     }

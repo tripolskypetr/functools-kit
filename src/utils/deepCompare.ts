@@ -11,10 +11,16 @@ export const deepCompare = (obj1: any, obj2: any) => {
     if (obj1 === obj2) {
         return true;
     } else if (isObject(obj1) && isObject(obj2)) {
-        if (Object.keys(obj1).length !== Object.keys(obj2).length) { 
+        const keys1 = Object.keys(obj1);
+        if (keys1.length !== Object.keys(obj2).length) {
             return false;
         }
-        for (const prop in obj1) {
+        for (const prop of keys1) {
+            // a key present in obj1 but absent in obj2 must not compare equal
+            // just because both read as undefined
+            if (!Object.prototype.hasOwnProperty.call(obj2, prop)) {
+                return false;
+            }
             if (!deepCompare(obj1[prop], obj2[prop])) {
                 return false;
             }
